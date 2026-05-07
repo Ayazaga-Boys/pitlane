@@ -8,6 +8,7 @@ import 'src/features/auth/ui/invite_code_screen.dart';
 import 'src/features/auth/ui/login_screen.dart';
 import 'src/features/auth/ui/otp_screen.dart';
 import 'src/features/auth/ui/waiting_list_screen.dart';
+import 'src/features/communities/ui/community_detail_screen.dart';
 import 'src/features/communities/ui/communities_screen.dart';
 import 'src/features/map/ui/map_screen.dart';
 import 'src/features/profile/ui/profile_completion_screen.dart';
@@ -79,6 +80,12 @@ final _routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/communities',
             builder: (_, __) => const CommunitiesScreen(),
+          ),
+          GoRoute(
+            path: '/communities/:slug',
+            builder: (_, state) => CommunityDetailScreen(
+              slug: state.pathParameters['slug']!,
+            ),
           ),
           GoRoute(
             path: '/messages',
