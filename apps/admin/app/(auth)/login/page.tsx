@@ -10,17 +10,17 @@ export default function LoginPage() {
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-pit-red to-transparent" />
           <p className="font-mono text-xs uppercase tracking-[0.22em] text-pit-red-soft">Pitlane Admin</p>
           <h1 className="mt-lg max-w-md text-4xl font-semibold leading-tight text-text-primary">
-            Moderasyon ve operasyon merkezi tek yerden yonetilsin.
+            Moderasyon ve operasyon merkezi tek yerden yönetilsin.
           </h1>
           <p className="mt-lg max-w-xl text-sm leading-7 text-text-secondary">
-            Dashboard, rapor kuyrugu, topluluk akisleri ve isletme pin dogrulamalari bu panelde toplanir.
-            Yetkisiz hesaplar giris yapsa bile admin rolu olmadan ilerleyemez.
+            Dashboard, rapor kuyruğu, topluluk akışları ve işletme pin doğrulamaları bu panelde toplanır.
+            Yetkisiz hesaplar giriş yapsa bile admin rolü olmadan ilerleyemez.
           </p>
           <div className="mt-2xl grid gap-md sm:grid-cols-2">
             {[
-              "Supabase tabanli oturum yonetimi",
-              "Role dayali route korumasi",
-              "Tailwind token uyumlu karanlik tema",
+              "Supabase tabanlı oturum yönetimi",
+              "Role dayalı route koruması",
+              "Tailwind token uyumlu karanlık tema",
               "Klavye dostu focus ve 44px hedefler",
             ].map((item) => (
               <div key={item} className="surface-card flex items-start gap-md p-lg">
@@ -33,15 +33,15 @@ export default function LoginPage() {
 
         <section className="surface-panel p-2xl">
           <div className="space-y-sm">
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-pit-red-soft">Admin girisi</p>
-            <h2 className="text-2xl font-semibold text-text-primary">E-posta ve sifre ile devam et</h2>
+            <p className="font-mono text-xs uppercase tracking-[0.22em] text-pit-red-soft">Admin girişi</p>
+            <h2 className="text-2xl font-semibold text-text-primary">E-posta ve şifre ile devam et</h2>
             <p className="text-sm leading-6 text-text-secondary">
-              OTP kullanilmiyor. Supabase e-posta ve sifre girisi admin paneli icin dogrudan aktif.
+              OTP kullanılmıyor. Supabase e-posta ve şifre girişi admin paneli için doğrudan aktif.
             </p>
           </div>
 
           <div className="mt-xl">
-            <Suspense fallback={<p className="text-sm text-text-secondary">Form hazirlaniyor...</p>}>
+            <Suspense fallback={<p className="text-sm text-text-secondary">Form hazırlanıyor...</p>}>
               <LoginForm />
             </Suspense>
           </div>

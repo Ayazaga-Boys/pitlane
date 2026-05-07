@@ -8,12 +8,12 @@ export function UsersTable({ users }: { users: MockUser[] }) {
       <Table>
         <THead>
           <TR>
-            <TH>Kullanici</TH>
+            <TH>Kullanıcı</TH>
             <TH>Rol</TH>
-            <TH>Sehir</TH>
-            <TH>Sikayet</TH>
+            <TH>Şehir</TH>
+            <TH>Şikayet</TH>
             <TH>Durum</TH>
-            <TH>Kayit</TH>
+            <TH>Kayıt</TH>
           </TR>
         </THead>
         <TBody>
@@ -27,13 +27,15 @@ export function UsersTable({ users }: { users: MockUser[] }) {
               </TD>
               <TD>
                 <Badge tone={user.role === "admin" ? "error" : user.role === "moderator" ? "info" : "default"}>
-                  {user.role}
+                  {user.role === "admin" ? "admin" : user.role === "moderator" ? "moderatör" : "kullanıcı"}
                 </Badge>
               </TD>
               <TD>{user.city}</TD>
               <TD>{user.reports}</TD>
               <TD>
-                <Badge tone={user.status === "active" ? "success" : "warning"}>{user.status}</Badge>
+                <Badge tone={user.status === "active" ? "success" : "warning"}>
+                  {user.status === "active" ? "aktif" : "askıda"}
+                </Badge>
               </TD>
               <TD>{user.createdAt}</TD>
             </TR>

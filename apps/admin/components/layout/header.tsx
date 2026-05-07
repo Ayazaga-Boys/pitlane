@@ -30,8 +30,8 @@ export function Header({ email }: HeaderProps) {
       <div className="flex flex-col gap-md md:flex-row md:items-center">
         <label className="relative block min-w-[280px]">
           <Search aria-hidden="true" className="pointer-events-none absolute left-md top-1/2 size-4 -translate-y-1/2 text-text-tertiary" />
-          <span className="sr-only">Panel ici arama</span>
-          <Input className="pl-10" placeholder="Kullanici, pin veya sikayet ara" type="search" />
+          <span className="sr-only">Panel içi arama</span>
+          <Input className="pl-10" placeholder="Kullanıcı, pin veya şikayet ara" type="search" />
         </label>
 
         <div className="flex items-center gap-sm">
@@ -49,7 +49,7 @@ export function Header({ email }: HeaderProps) {
 
           <Button className="gap-sm" onClick={handleSignOut} variant="ghost">
             <LogOut aria-hidden="true" className="size-4" />
-            Cikis
+            Çıkış
           </Button>
         </div>
       </div>
