@@ -14,9 +14,17 @@ describe('app routes', () => {
   });
 
   it('serves default config without Supabase env', async () => {
+    const previousUrl = process.env.SUPABASE_URL;
+    const previousServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     const app = createApp();
     const response = await app.request('/v1/config');
     const body = await response.json();
+
+    process.env.SUPABASE_URL = previousUrl;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = previousServiceRoleKey;
 
     expect(response.status).toBe(200);
     expect(body.data.app_name).toBe('Pitlane');

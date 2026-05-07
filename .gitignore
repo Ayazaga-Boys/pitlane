@@ -14,6 +14,10 @@ dist/
 .next/
 coverage/
 
+# Supabase local metadata
+supabase/.temp/
+apps/*/supabase/.temp/
+
 # Flutter / Dart
 .dart_tool/
 .flutter-plugins

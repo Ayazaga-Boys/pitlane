@@ -1,4 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
+
+if (!globalThis.WebSocket) {
+  Object.defineProperty(globalThis, 'WebSocket', {
+    configurable: true,
+    value: WebSocket,
+  });
+}
 
 export function getAnonSupabaseClient(): SupabaseClient | null {
   const url = process.env.SUPABASE_URL;
