@@ -8,6 +8,7 @@ import 'src/features/auth/ui/invite_code_screen.dart';
 import 'src/features/auth/ui/login_screen.dart';
 import 'src/features/auth/ui/otp_screen.dart';
 import 'src/features/auth/ui/waiting_list_screen.dart';
+import 'src/features/communities/ui/community_create_screen.dart';
 import 'src/features/communities/ui/community_detail_screen.dart';
 import 'src/features/communities/ui/communities_screen.dart';
 import 'src/features/map/providers/ws_connection_provider.dart';
@@ -81,6 +82,10 @@ final _routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/communities',
             builder: (_, __) => const CommunitiesScreen(),
+          ),
+          GoRoute(
+            path: '/communities/create',
+            builder: (_, __) => const CommunityCreateScreen(),
           ),
           GoRoute(
             path: '/communities/:slug',

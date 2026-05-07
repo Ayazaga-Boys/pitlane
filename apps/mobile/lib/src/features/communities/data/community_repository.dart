@@ -74,6 +74,27 @@ class CommunityRepository {
     }
   }
 
+  Future<Community> createCommunity(CreateCommunityDraft draft) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/v1/communities',
+        data: draft.toJson(),
+        options: Options(headers: _authHeaders()),
+      );
+
+      final data = response.data?['data'];
+      if (data is Map<String, dynamic>) {
+        return Community.fromJson(data);
+      }
+      return _communityFromDraft(draft);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
+      return _communityFromDraft(draft);
+    }
+  }
+
   Future<void> joinCommunity(String id) async {
     try {
       await _dio.post<void>(
@@ -163,6 +184,22 @@ class CommunityRepository {
       lastActivityLabel: 'Dün',
     ),
   ];
+
+  Community _communityFromDraft(CreateCommunityDraft draft) {
+    return Community(
+      id: draft.slug,
+      name: draft.name,
+      slug: draft.slug,
+      description: draft.description,
+      type: draft.type,
+      vehicleType: draft.vehicleType,
+      city: draft.city,
+      coverUrl: draft.coverUrl,
+      memberCount: 1,
+      isVerified: false,
+      lastActivityLabel: 'Az önce',
+    );
+  }
 
   CommunityDetail _mockDetail(Community community) {
     return CommunityDetail(
