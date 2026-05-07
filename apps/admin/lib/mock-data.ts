@@ -7,6 +7,29 @@ export interface MockUser {
   reports: number;
   createdAt: string;
   status: "active" | "suspended";
+  bio: string;
+  phone: string;
+  lastSeenAt: string;
+  supportNote: string;
+  vehicles: Array<{
+    id: string;
+    type: "car" | "motorcycle" | "other";
+    make: string;
+    model: string;
+    year: number;
+    isPrimary: boolean;
+  }>;
+  communities: Array<{
+    id: string;
+    name: string;
+    role: "captain" | "moderator" | "member";
+  }>;
+  reportHistory: Array<{
+    id: string;
+    reason: string;
+    status: "pending" | "reviewing" | "resolved";
+    createdAt: string;
+  }>;
 }
 
 export interface MockCommunity {
@@ -54,6 +77,21 @@ export const mockUsers: MockUser[] = [
     reports: 1,
     createdAt: "2026-05-01",
     status: "active",
+    bio: "Gece surusleri ve pist gunleriyle ilgileniyor.",
+    phone: "+90 532 100 10 10",
+    lastSeenAt: "2026-05-07 20:15",
+    supportNote: "Topluluk moderasyonunda aktif, hata raporlarina hizli donuyor.",
+    vehicles: [
+      { id: "veh_01", type: "motorcycle", make: "Yamaha", model: "MT-07", year: 2023, isPrimary: true },
+      { id: "veh_02", type: "car", make: "Mini", model: "Cooper S", year: 2020, isPrimary: false },
+    ],
+    communities: [
+      { id: "com_01", name: "Bogaz Night Riders", role: "moderator" },
+      { id: "com_03", name: "Route 35 Garage", role: "member" },
+    ],
+    reportHistory: [
+      { id: "rpt_hist_01", reason: "Yanit dili sert", status: "resolved", createdAt: "2026-05-02 12:10" },
+    ],
   },
   {
     id: "usr_02",
@@ -64,6 +102,21 @@ export const mockUsers: MockUser[] = [
     reports: 3,
     createdAt: "2026-04-28",
     status: "active",
+    bio: "Track day organizasyonlarina katiliyor ve flare olusturuyor.",
+    phone: "+90 533 200 20 20",
+    lastSeenAt: "2026-05-07 19:42",
+    supportNote: "Son 1 haftada 2 flare iptal etti; tekrar davranisi izlenecek.",
+    vehicles: [
+      { id: "veh_03", type: "car", make: "Honda", model: "Civic Type R", year: 2022, isPrimary: true },
+    ],
+    communities: [
+      { id: "com_02", name: "Ankara Track Days", role: "member" },
+    ],
+    reportHistory: [
+      { id: "rpt_hist_02", reason: "Yaniltici flare bilgisi", status: "reviewing", createdAt: "2026-05-07 15:05" },
+      { id: "rpt_hist_03", reason: "Spam yorum", status: "resolved", createdAt: "2026-05-01 18:45" },
+      { id: "rpt_hist_04", reason: "Kurallara aykiri dil", status: "pending", createdAt: "2026-04-30 22:11" },
+    ],
   },
   {
     id: "usr_03",
@@ -74,6 +127,17 @@ export const mockUsers: MockUser[] = [
     reports: 0,
     createdAt: "2026-04-17",
     status: "suspended",
+    bio: "Kafe bulusmalari ve sehir ici kisa rotalara odaklaniyor.",
+    phone: "+90 534 300 30 30",
+    lastSeenAt: "2026-05-05 09:30",
+    supportNote: "7 gunluk gecici askida. Yeniden aktiflestirme once destek onayi isteyecek.",
+    vehicles: [
+      { id: "veh_04", type: "other", make: "Vespa", model: "Primavera", year: 2021, isPrimary: true },
+    ],
+    communities: [
+      { id: "com_03", name: "Route 35 Garage", role: "member" },
+    ],
+    reportHistory: [],
   },
 ];
 
@@ -203,3 +267,7 @@ export const mockFlags = [
     enabled: false,
   },
 ];
+
+export function getMockUserById(id: string): MockUser | undefined {
+  return mockUsers.find((user) => user.id === id);
+}
