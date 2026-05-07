@@ -15,5 +15,7 @@ abstract final class AppConstants {
 
   static const googleMapsApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
 
+  static const apiTimeoutSeconds = 8;
+
   static const isDev = bool.fromEnvironment('DART_VM_FLAGS', defaultValue: true);
 }
