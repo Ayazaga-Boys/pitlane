@@ -6,11 +6,11 @@ import { mockCommunities } from "@/lib/mock-data";
 export default function CommunitiesPage() {
   return (
     <PageShell
-      eyebrow="Sprint 2 hazirlik"
+      eyebrow="Sprint 2 hazırlık"
       title="Topluluklar"
-      description="Topluluk listesi ve moderasyon ekraninin temel masaustu tablosu hazir."
+      description="Topluluk listesi ve moderasyon ekranının temel masaüstü tablosu hazır."
     >
-      <MockDataBanner label="Communities backend bagimliligi gelene kadar mock akista" />
+      <MockDataBanner label="Topluluk backend bağımlılığı gelene kadar mock akışta" />
       <div className="surface-panel p-xl">
         <CommunitiesTable communities={mockCommunities} />
       </div>

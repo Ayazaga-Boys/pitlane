@@ -6,11 +6,11 @@ import { mockPins } from "@/lib/mock-data";
 export default function PinsPage() {
   return (
     <PageShell
-      eyebrow="Sprint 3 hazirlik"
-      title="Isletme pinleri"
-      description="Pin dogrulama kuyrugunun tablo duzeni, durum etiketleri ve inceleme akisi mock veriyle kuruldu."
+      eyebrow="Sprint 3 hazırlık"
+      title="İşletme pinleri"
+      description="Pin doğrulama kuyruğunun tablo düzeni, durum etiketleri ve inceleme akışı mock veriyle kuruldu."
     >
-      <MockDataBanner label="Business pins tablosu hazir olmayinca mock basvurular gosteriliyor" />
+      <MockDataBanner label="İşletme pinleri tablosu hazır olmayınca mock başvurular gösteriliyor" />
       <div className="surface-panel p-xl">
         <PinsTable pins={mockPins} />
       </div>
