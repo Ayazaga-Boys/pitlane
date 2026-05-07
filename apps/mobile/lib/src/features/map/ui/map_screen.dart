@@ -162,31 +162,31 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 GestureDetector(
                   onTap: () => showMapFilterSheet(context),
                   child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface2.withAlpha(220),
-                    borderRadius: BorderRadius.circular(AppSpacing.xl),
-                    border: Border.all(color: AppColors.surface3),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.tune,
-                          size: 16, color: AppColors.textSecondary),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'Filtre',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface2.withAlpha(220),
+                      borderRadius: BorderRadius.circular(AppSpacing.xl),
+                      border: Border.all(color: AppColors.surface3),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.tune,
+                            size: 16, color: AppColors.textSecondary),
+                        SizedBox(width: AppSpacing.xs),
+                        Text(
+                          'Filtre',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   ),
                 ),
               ],
