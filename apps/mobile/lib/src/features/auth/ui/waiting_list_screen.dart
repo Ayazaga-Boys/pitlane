@@ -138,7 +138,7 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
               Text('Şehrin', style: Theme.of(context).textTheme.labelMedium),
               const SizedBox(height: AppSpacing.sm),
               DropdownButtonFormField<String>(
-                value: _selectedCity,
+                initialValue: _selectedCity,
                 decoration: const InputDecoration(),
                 dropdownColor: AppColors.surface2,
                 items: _cities

@@ -9,6 +9,7 @@
     "start": "node dist/index.js",
     "lint": "eslint src --ext .ts",
     "seed:dev": "tsx scripts/seed-dev.ts",
+    "smoke:auth": "tsx scripts/smoke-auth.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
