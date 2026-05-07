@@ -36,6 +36,11 @@ class _CommunitiesScreenState extends ConsumerState<CommunitiesScreen> {
         title: const Text('Topluluklar'),
         actions: [
           IconButton(
+            tooltip: 'Topluluk oluştur',
+            onPressed: () => context.push('/communities/create'),
+            icon: const Icon(Icons.add),
+          ),
+          IconButton(
             tooltip: 'Yenile',
             onPressed: () => ref.read(communitiesProvider.notifier).refresh(),
             icon: const Icon(Icons.refresh),
