@@ -13,5 +13,8 @@ abstract final class AppConstants {
     defaultValue: 'ws://localhost:8080',
   );
 
-  static const isDev = bool.fromEnvironment('DART_VM_FLAGS', defaultValue: true);
+  static const apiTimeoutSeconds = 8;
+
+  static const isDev =
+      bool.fromEnvironment('DART_VM_FLAGS', defaultValue: true);
 }
