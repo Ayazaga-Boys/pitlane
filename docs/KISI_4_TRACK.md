@@ -102,7 +102,7 @@ flutter run \
 - [x] Profil ekranı gerçek veri ile (kullanıcı adı, araç listesi, avatar)
 
 ### Sprint 3 — Topluluklar & Flares (Hafta 5-6)
-- [ ] Topluluk keşif ekranı (`/communities`) — arama + filtre (F3.1)
+- [x] Topluluk keşif ekranı (`/communities`) — arama + filtre (F3.1)
 - [ ] Topluluk detay ekranı — üyeler, flares, katıl butonu
 - [ ] Topluluk oluşturma formu (ad, slug, tip, araç tipi, şehir)
 - [ ] Flare oluşturma ekranı (F4.1) — haritadan konum seç → H3 hücre
