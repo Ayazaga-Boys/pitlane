@@ -7,8 +7,8 @@ import '../../core/theme/app_spacing.dart';
 
 final _connectivityProvider = StreamProvider<bool>((ref) {
   return Connectivity().onConnectivityChanged.map(
-    (results) => !results.contains(ConnectivityResult.none),
-  );
+        (results) => !results.contains(ConnectivityResult.none),
+      );
 });
 
 class ConnectivityBanner extends ConsumerWidget {
@@ -33,11 +33,11 @@ class ConnectivityBanner extends ConsumerWidget {
                   horizontal: AppSpacing.lg,
                 ),
                 color: AppColors.warning.withAlpha(30),
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.wifi_off, size: 16, color: AppColors.warning),
-                    const SizedBox(width: AppSpacing.xs),
+                    Icon(Icons.wifi_off, size: 16, color: AppColors.warning),
+                    SizedBox(width: AppSpacing.xs),
                     Text(
                       'İnternet bağlantısı yok',
                       style: TextStyle(
