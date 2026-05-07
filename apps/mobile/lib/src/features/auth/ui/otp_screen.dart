@@ -34,13 +34,15 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       return;
     }
 
-    await ref.read(authNotifierProvider.notifier).verifyOtp(widget.email, token);
+    await ref
+        .read(authNotifierProvider.notifier)
+        .verifyOtp(widget.email, token);
 
     final authState = ref.read(authNotifierProvider);
     if (!mounted) return;
 
     authState.when(
-      data: (_) => context.go('/map'),
+      data: (_) => context.go('/profile/complete'),
       error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
       ),
@@ -77,15 +79,15 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               Text(
                 'Kodu gir',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 '${widget.email} adresine 6 haneli kod gönderdik.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: AppSpacing.xl2),
               TextField(
@@ -96,9 +98,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 autofocus: true,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  letterSpacing: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                      letterSpacing: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                 decoration: const InputDecoration(counterText: ''),
                 onSubmitted: (_) => _verify(),
               ),
