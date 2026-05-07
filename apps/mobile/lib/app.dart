@@ -9,6 +9,7 @@ import 'src/features/auth/ui/login_screen.dart';
 import 'src/features/auth/ui/otp_screen.dart';
 import 'src/features/auth/ui/waiting_list_screen.dart';
 import 'src/features/map/ui/map_screen.dart';
+import 'src/features/profile/ui/profile_completion_screen.dart';
 import 'src/features/profile/ui/profile_screen.dart';
 import 'src/shared/widgets/main_shell.dart';
 
@@ -64,18 +65,37 @@ final _routerProvider = Provider<GoRouter>((ref) {
         path: '/auth/otp',
         builder: (_, state) => OtpScreen(email: state.extra as String),
       ),
+      GoRoute(
+        path: '/profile/complete',
+        builder: (_, __) => const ProfileCompletionScreen(),
+      ),
 
       // ── Ana shell (bottom nav) ─────────────────────────────────────────────
       ShellRoute(
         builder: (_, __, child) => MainShell(child: child),
         routes: [
-          GoRoute(path: '/map',         builder: (_, __) => const MapScreen()),
-          GoRoute(path: '/communities', builder: (_, __) => const _PlaceholderScreen('Topluluklar')),
-          GoRoute(path: '/messages',    builder: (_, __) => const _PlaceholderScreen('Mesajlar')),
-          GoRoute(path: '/profile',     builder: (_, __) => const ProfileScreen()),
-          GoRoute(path: '/settings',    builder: (_, __) => const _PlaceholderScreen('Ayarlar')),
-          GoRoute(path: '/help',        builder: (_, __) => const _PlaceholderScreen('Acil Yardım')),
-          GoRoute(path: '/camera',      builder: (_, __) => const _PlaceholderScreen('Snap Kamera')),
+          GoRoute(path: '/map', builder: (_, __) => const MapScreen()),
+          GoRoute(
+            path: '/communities',
+            builder: (_, __) => const _PlaceholderScreen('Topluluklar'),
+          ),
+          GoRoute(
+            path: '/messages',
+            builder: (_, __) => const _PlaceholderScreen('Mesajlar'),
+          ),
+          GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+          GoRoute(
+            path: '/settings',
+            builder: (_, __) => const _PlaceholderScreen('Ayarlar'),
+          ),
+          GoRoute(
+            path: '/help',
+            builder: (_, __) => const _PlaceholderScreen('Acil Yardım'),
+          ),
+          GoRoute(
+            path: '/camera',
+            builder: (_, __) => const _PlaceholderScreen('Snap Kamera'),
+          ),
         ],
       ),
     ],
