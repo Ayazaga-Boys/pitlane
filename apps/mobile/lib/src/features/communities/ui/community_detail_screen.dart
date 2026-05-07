@@ -229,6 +229,7 @@ class _FlareTile extends StatelessWidget {
       leading: const Icon(Icons.local_fire_department, color: AppColors.pitRed),
       title: flare.title,
       subtitle: '${flare.startsAtLabel} · ${flare.rsvpCount} RSVP',
+      onTap: () => context.push('/flares/${flare.id}'),
     );
   }
 }
@@ -260,11 +261,13 @@ class _SurfaceTile extends StatelessWidget {
     required this.leading,
     required this.title,
     required this.subtitle,
+    this.onTap,
   });
 
   final Widget leading;
   final String title;
   final String subtitle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -280,6 +283,7 @@ class _SurfaceTile extends StatelessWidget {
           leading: leading,
           title: Text(title),
           subtitle: Text(subtitle),
+          onTap: onTap,
         ),
       ),
     );
