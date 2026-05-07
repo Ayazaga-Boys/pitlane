@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Context, Next } from 'hono';
+import type { AppEnv } from '../types/hono.js';
 
-export async function requireAuth(c: Context, next: Next): Promise<Response | void> {
-  if (process.env.NODE_ENV === 'development' && c.req.header('x-dev-user-id')) {
-    c.set('userId', c.req.header('x-dev-user-id'));
+export async function requireAuth(c: Context<AppEnv>, next: Next): Promise<Response | void> {
+  const devUserId = c.req.header('x-dev-user-id');
+  if (process.env.NODE_ENV === 'development' && devUserId) {
+    c.set('userId', devUserId);
+    c.set('userEmail', c.req.header('x-dev-user-email') ?? '');
     await next();
     return;
   }
