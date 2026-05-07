@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/community_constants.dart';
 import '../data/community_repository.dart';
 import '../models/community.dart';
+import '../models/community_detail.dart';
 
 class CommunitiesState {
   const CommunitiesState({
@@ -86,4 +87,33 @@ class CommunitiesNotifier extends AsyncNotifier<CommunitiesState> {
 final communitiesProvider =
     AsyncNotifierProvider<CommunitiesNotifier, CommunitiesState>(
   CommunitiesNotifier.new,
+);
+
+class CommunityDetailNotifier
+    extends AutoDisposeFamilyAsyncNotifier<CommunityDetail, String> {
+  @override
+  Future<CommunityDetail> build(String slug) {
+    return ref.read(communityRepositoryProvider).getCommunityDetail(slug);
+  }
+
+  Future<void> toggleMembership() async {
+    final previous = state.valueOrNull;
+    if (previous == null) return;
+
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(communityRepositoryProvider);
+      if (previous.isJoined) {
+        await repository.leaveCommunity(previous.community.id);
+      } else {
+        await repository.joinCommunity(previous.community.id);
+      }
+      return previous.copyWith(isJoined: !previous.isJoined);
+    });
+  }
+}
+
+final communityDetailProvider = AsyncNotifierProvider.autoDispose
+    .family<CommunityDetailNotifier, CommunityDetail, String>(
+  CommunityDetailNotifier.new,
 );

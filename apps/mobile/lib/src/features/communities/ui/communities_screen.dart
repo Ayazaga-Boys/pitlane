@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -158,99 +159,110 @@ class _CommunityCard extends StatelessWidget {
     return Semantics(
       button: true,
       label: '${community.name} topluluğu',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surface2,
+      child: Material(
+        color: AppColors.surface2,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: AppColors.surface3),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+          onTap: () => context.push('/communities/${community.slug}'),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: AppColors.surface3),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _CommunityAvatar(community: community),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _CommunityAvatar(community: community),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              child: Text(
-                                community.name,
-                                style: Theme.of(context).textTheme.titleMedium,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    community.name,
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (community.isVerified) ...[
+                                  const SizedBox(width: AppSpacing.xs),
+                                  const Icon(
+                                    Icons.verified,
+                                    color: AppColors.info,
+                                    size: AppSpacing.lg,
+                                  ),
+                                ],
+                              ],
                             ),
-                            if (community.isVerified) ...[
-                              const SizedBox(width: AppSpacing.xs),
-                              const Icon(
-                                Icons.verified,
-                                color: AppColors.info,
-                                size: AppSpacing.lg,
-                              ),
-                            ],
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              '@${community.slug}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.textTertiary,
+                                  ),
+                            ),
                           ],
                         ),
-                        const SizedBox(height: AppSpacing.xs),
+                      ),
+                    ],
+                  ),
+                  if (community.description != null &&
+                      community.description!.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      community.description!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.group_outlined,
+                        color: AppColors.textSecondary,
+                        size: AppSpacing.lg,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        '${community.memberCount} üye',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const Spacer(),
+                      if (community.lastActivityLabel != null)
                         Text(
-                          '@${community.slug}',
+                          community.lastActivityLabel!,
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: AppColors.textTertiary,
                                   ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
                 ],
               ),
-              if (community.description != null &&
-                  community.description!.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  community.description!,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textTertiary,
-                    ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  const Icon(
-                    Icons.group_outlined,
-                    color: AppColors.textSecondary,
-                    size: AppSpacing.lg,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    '${community.memberCount} üye',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const Spacer(),
-                  if (community.lastActivityLabel != null)
-                    Text(
-                      community.lastActivityLabel!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textTertiary,
-                          ),
-                    ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -4,7 +4,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/h3_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
@@ -51,7 +50,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       final intensity = entry.value / maxCount;
       polygons.add(Polygon(
         polygonId: PolygonId(entry.key),
-        points: boundary.map((g) => LatLng(g.lat, g.lng)).toList(),
+        points: boundary.map((g) => LatLng(g.lat, g.lon)).toList(),
         fillColor: _heatColor(intensity).withAlpha(110),
         strokeWidth: 0,
         strokeColor: Colors.transparent,
@@ -62,9 +61,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Color _heatColor(double intensity) {
     if (intensity < 0.5) {
-      return Color.lerp(const Color(0xFF0096C7), const Color(0xFFFFB703), intensity * 2)!;
+      return Color.lerp(
+          const Color(0xFF0096C7), const Color(0xFFFFB703), intensity * 2)!;
     }
-    return Color.lerp(const Color(0xFFFFB703), AppColors.pitRed, (intensity - 0.5) * 2)!;
+    return Color.lerp(
+        const Color(0xFFFFB703), AppColors.pitRed, (intensity - 0.5) * 2)!;
   }
 
   @override
@@ -125,7 +126,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             : AppColors.surface2.withAlpha(220),
                         borderRadius: BorderRadius.circular(AppSpacing.xl),
                         border: Border.all(
-                          color: isGhost ? AppColors.pitRed : AppColors.surface3,
+                          color:
+                              isGhost ? AppColors.pitRed : AppColors.surface3,
                         ),
                       ),
                       child: Row(
@@ -134,7 +136,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           Icon(
                             Icons.visibility_off_outlined,
                             size: 16,
-                            color: isGhost ? Colors.white : AppColors.textSecondary,
+                            color: isGhost
+                                ? Colors.white
+                                : AppColors.textSecondary,
                           ),
                           const SizedBox(width: AppSpacing.xs),
                           Text(
@@ -142,7 +146,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: isGhost ? Colors.white : AppColors.textSecondary,
+                              color: isGhost
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -165,7 +171,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.tune, size: 16, color: AppColors.textSecondary),
+                      const Icon(Icons.tune,
+                          size: 16, color: AppColors.textSecondary),
                       const SizedBox(width: AppSpacing.xs),
                       Text(
                         'Filtre',
@@ -249,10 +256,19 @@ class _NoApiKeyPlaceholder extends StatelessWidget {
         children: [
           const Icon(Icons.map_outlined, size: 64, color: AppColors.pitRed),
           const SizedBox(height: AppSpacing.md),
-          Text('Harita', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary)),
+          Text('Harita',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: AppSpacing.sm),
-          Text('GOOGLE_MAPS_API_KEY lazım — Erol\'dan iste',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary)),
+          Text(
+            'GOOGLE_MAPS_API_KEY lazım — Erol\'dan iste',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: AppColors.textTertiary),
+          ),
         ],
       ),
     );
@@ -260,7 +276,11 @@ class _NoApiKeyPlaceholder extends StatelessWidget {
 }
 
 class _MapFab extends StatelessWidget {
-  const _MapFab({required this.icon, required this.label, required this.onPressed, this.color});
+  const _MapFab(
+      {required this.icon,
+      required this.label,
+      required this.onPressed,
+      this.color});
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
