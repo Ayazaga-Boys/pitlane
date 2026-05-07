@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "lint": "eslint src --ext .ts",
+    "seed:dev": "tsx scripts/seed-dev.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
