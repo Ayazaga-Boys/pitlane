@@ -107,6 +107,19 @@ func (h *Hub) SendToUser(userID string, msg []byte) {
 	}
 }
 
+// SendToAll — tüm bağlı kullanıcılara mesaj yayınla (heatmap broadcast)
+func (h *Hub) SendToAll(msg []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for userID, c := range h.clients {
+		select {
+		case c.send <- msg:
+		default:
+			log.Warn().Str("userID", userID).Msg("send_buffer_full_broadcast")
+		}
+	}
+}
+
 // ActiveCount — anlık bağlı kullanıcı sayısı (Prometheus için)
 func (h *Hub) ActiveCount() int {
 	h.mu.RLock()
