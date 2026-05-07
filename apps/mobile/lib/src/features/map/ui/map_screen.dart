@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
+import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -35,7 +36,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       await Geolocator.requestPermission();
     }
     if (!mounted) return;
-    ref.read(locationProvider.notifier).startTracking();
+    final isGhost = ref.read(ghostModeProvider);
+    if (!isGhost) {
+      ref.read(locationProvider.notifier).startTracking();
+    }
   }
 
   Set<Polygon> _buildHeatmap(Map<String, int> cells) {
@@ -67,17 +71,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   Widget build(BuildContext context) {
     final heatmap = ref.watch(heatmapProvider);
+    final isGhost = ref.watch(ghostModeProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface0,
       body: Stack(
         children: [
+          // ── Google Maps ──────────────────────────────────────────────────
           AppConstants.googleMapsApiKey.isEmpty
               ? _NoApiKeyPlaceholder()
               : GoogleMap(
                   initialCameraPosition: _defaultPosition,
                   onMapCreated: (c) => _mapController = c,
-                  myLocationEnabled: true,
+                  myLocationEnabled: !isGhost,
                   myLocationButtonEnabled: false,
                   zoomControlsEnabled: false,
                   mapToolbarEnabled: false,
@@ -87,7 +93,103 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       : {},
                 ),
 
-          // FAB'lar
+          // ── Üst bar: Hayalet mod + Filtre ───────────────────────────────
+          Positioned(
+            top: MediaQuery.of(context).padding.top + AppSpacing.sm,
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            child: Row(
+              children: [
+                // Hayalet mod toggle
+                Semantics(
+                  label: isGhost ? 'Hayalet mod kapalı' : 'Hayalet mod açık',
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () {
+                      ref.read(ghostModeProvider.notifier).toggle();
+                      if (!isGhost) {
+                        // Ghost açılıyor
+                        ref.read(locationProvider.notifier).stopTracking();
+                      } else {
+                        // Ghost kapanıyor
+                        ref.read(locationProvider.notifier).startTracking();
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isGhost
+                            ? AppColors.pitRed.withAlpha(200)
+                            : AppColors.surface2.withAlpha(220),
+                        borderRadius: BorderRadius.circular(AppSpacing.xl),
+                        border: Border.all(
+                          color:
+                              isGhost ? AppColors.pitRed : AppColors.surface3,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.visibility_off_outlined,
+                            size: 16,
+                            color: isGhost
+                                ? Colors.white
+                                : AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            isGhost ? 'Hayalet' : 'Görünür',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isGhost
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                // Filtre butonu (Sprint 2 — sadece UI şimdilik)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface2.withAlpha(220),
+                    borderRadius: BorderRadius.circular(AppSpacing.xl),
+                    border: Border.all(color: AppColors.surface3),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.tune,
+                          size: 16, color: AppColors.textSecondary),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Filtre',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Sağ FAB'lar ─────────────────────────────────────────────────
           Positioned(
             right: AppSpacing.lg,
             bottom: AppSpacing.xl + AppSpacing.xl,
@@ -96,7 +198,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 _MapFab(
                   icon: Icons.my_location,
                   label: 'Konumum',
-                  onPressed: _goToMyLocation,
+                  onPressed: isGhost ? null : _goToMyLocation,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _MapFab(
@@ -115,6 +217,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
           ),
 
+          // ── Heatmap yükleniyor ───────────────────────────────────────────
           if (heatmap.isLoading)
             const Positioned(
               top: 60,
@@ -159,11 +262,13 @@ class _NoApiKeyPlaceholder extends StatelessWidget {
                   .titleLarge
                   ?.copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: AppSpacing.sm),
-          Text('GOOGLE_MAPS_API_KEY lazım — Erol\'dan iste',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: AppColors.textTertiary)),
+          Text(
+            'GOOGLE_MAPS_API_KEY lazım — Erol\'dan iste',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: AppColors.textTertiary),
+          ),
         ],
       ),
     );
@@ -178,7 +283,7 @@ class _MapFab extends StatelessWidget {
       this.color});
   final IconData icon;
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color? color;
 
   @override
@@ -188,7 +293,9 @@ class _MapFab extends StatelessWidget {
       label: label,
       child: FloatingActionButton.small(
         heroTag: label,
-        backgroundColor: color ?? AppColors.pitRed,
+        backgroundColor: onPressed == null
+            ? AppColors.surface3
+            : (color ?? AppColors.pitRed),
         foregroundColor: Colors.white,
         onPressed: onPressed,
         child: Icon(icon),
