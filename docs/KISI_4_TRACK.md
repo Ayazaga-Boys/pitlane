@@ -105,7 +105,7 @@ flutter run \
 - [x] Topluluk keşif ekranı (`/communities`) — arama + filtre (F3.1)
 - [x] Topluluk detay ekranı — üyeler, flares, katıl butonu
 - [x] Topluluk oluşturma formu (ad, slug, tip, araç tipi, şehir)
-- [ ] Flare oluşturma ekranı (F4.1) — haritadan konum seç → H3 hücre
+- [x] Flare oluşturma ekranı (F4.1) — H3 hücre ile oluşturma, harita route param desteği
 - [ ] Flare detay ekranı — RSVP butonu (going/maybe/not_going)
 - [ ] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
 

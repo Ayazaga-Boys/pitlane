@@ -11,6 +11,7 @@ import 'src/features/auth/ui/waiting_list_screen.dart';
 import 'src/features/communities/ui/community_create_screen.dart';
 import 'src/features/communities/ui/community_detail_screen.dart';
 import 'src/features/communities/ui/communities_screen.dart';
+import 'src/features/flares/ui/flare_create_screen.dart';
 import 'src/features/map/providers/ws_connection_provider.dart';
 import 'src/features/map/ui/map_screen.dart';
 import 'src/features/profile/ui/profile_completion_screen.dart';
@@ -91,6 +92,13 @@ final _routerProvider = Provider<GoRouter>((ref) {
             path: '/communities/:slug',
             builder: (_, state) => CommunityDetailScreen(
               slug: state.pathParameters['slug']!,
+            ),
+          ),
+          GoRoute(
+            path: '/flares/create',
+            builder: (_, state) => FlareCreateScreen(
+              initialH3Cell: state.uri.queryParameters['h3cell'],
+              communityId: state.uri.queryParameters['communityId'],
             ),
           ),
           GoRoute(

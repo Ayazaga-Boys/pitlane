@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -65,6 +66,14 @@ class _CommunityDetailContent extends ConsumerWidget {
         _SectionHeader(
           title: 'Flares',
           trailing: '${detail.flares.length}',
+        ),
+        const SizedBox(height: AppSpacing.md),
+        PitlaneButton(
+          label: 'Flare oluştur',
+          variant: PitlaneButtonVariant.secondary,
+          onPressed: () => context.push(
+            '/flares/create?communityId=${community.id}',
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         if (detail.flares.isEmpty)
