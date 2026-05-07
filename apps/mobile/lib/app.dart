@@ -39,11 +39,19 @@ final _routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
-    // Akış: invite-code → login → otp → /map
-    // DEV BYPASS: Harita testi için direkt /map'e git
-    // Backend hazır olunca '/auth/invite-code' yapılacak
-    initialLocation: '/map',
-    redirect: (context, state) => null,
+    initialLocation: '/auth/invite-code',
+    redirect: (context, state) {
+      final session = authState.valueOrNull?.session;
+      final isLoggedIn = session != null;
+      final isAuthRoute = state.matchedLocation.startsWith('/auth');
+
+      // Supabase yokken (dev) direkt haritaya git
+      if (AppConstants.supabaseUrl.isEmpty) return '/map';
+
+      if (!isLoggedIn && !isAuthRoute) return '/auth/invite-code';
+      if (isLoggedIn && isAuthRoute) return '/map';
+      return null;
+    },
     routes: [
       // ── Auth ──────────────────────────────────────────────────────────────
       GoRoute(

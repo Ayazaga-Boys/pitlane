@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
@@ -9,7 +10,9 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
 import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
+import 'location_permission_screen.dart';
 import 'map_filter_sheet.dart';
+import 'sos_pulse_widget.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -20,26 +23,25 @@ class MapScreen extends ConsumerStatefulWidget {
 
 class _MapScreenState extends ConsumerState<MapScreen> {
   GoogleMapController? _mapController;
-  static const _defaultPosition = CameraPosition(
-    target: LatLng(41.0082, 28.9784), // İstanbul merkez
+  bool _showPermissionRationale = false;
+
+  static const _istanbul = CameraPosition(
+    target: LatLng(41.0082, 28.9784),
     zoom: 13,
   );
 
   @override
   void initState() {
     super.initState();
-    _initLocation();
+    _checkAndStartLocation();
   }
 
-  Future<void> _initLocation() async {
-    final permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      await Geolocator.requestPermission();
-    }
-    if (!mounted) return;
-    final isGhost = ref.read(ghostModeProvider);
-    if (!isGhost) {
+  Future<void> _checkAndStartLocation() async {
+    final status = await Permission.locationWhenInUse.status;
+    if (status.isGranted) {
       ref.read(locationProvider.notifier).startTracking();
+    } else if (status.isDenied) {
+      setState(() => _showPermissionRationale = true);
     }
   }
 
@@ -47,32 +49,46 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final maxCount = cells.values.fold(1, (a, b) => a > b ? a : b);
     final polygons = <Polygon>{};
     for (final entry in cells.entries) {
-      final boundary = h3CellBoundary(entry.key);
-      final intensity = entry.value / maxCount;
-      polygons.add(Polygon(
-        polygonId: PolygonId(entry.key),
-        points: boundary.map((g) => LatLng(g.lat, g.lon)).toList(),
-        fillColor: _heatColor(intensity).withAlpha(110),
-        strokeWidth: 0,
-        strokeColor: Colors.transparent,
-      ));
+      try {
+        final boundary = h3CellBoundary(entry.key);
+        final intensity = entry.value / maxCount;
+        polygons.add(Polygon(
+          polygonId: PolygonId(entry.key),
+          points: boundary.map((g) => LatLng(g.lat, g.lon)).toList(),
+          fillColor: _heatColor(intensity).withAlpha(110),
+          strokeWidth: 0,
+          strokeColor: Colors.transparent,
+        ));
+      } catch (_) {
+        continue;
+      }
     }
     return polygons;
   }
 
   Color _heatColor(double intensity) {
     if (intensity < 0.5) {
-      return Color.lerp(
-          const Color(0xFF0096C7), const Color(0xFFFFB703), intensity * 2)!;
+      return Color.lerp(const Color(0xFF0096C7), const Color(0xFFFFB703), intensity * 2)!;
     }
-    return Color.lerp(
-        const Color(0xFFFFB703), AppColors.pitRed, (intensity - 0.5) * 2)!;
+    return Color.lerp(const Color(0xFFFFB703), AppColors.pitRed, (intensity - 0.5) * 2)!;
+  }
+
+  Future<void> _goToMyLocation() async {
+    try {
+      final pos = await Geolocator.getCurrentPosition();
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(LatLng(pos.latitude, pos.longitude), 15),
+      );
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
-    final heatmap = ref.watch(heatmapProvider);
-    final isGhost = ref.watch(ghostModeProvider);
+    final heatmap    = ref.watch(heatmapProvider);
+    final isGhost    = ref.watch(ghostModeProvider);
+    final currentCell = ref.watch(locationProvider).valueOrNull;
+    final filters    = ref.watch(mapFiltersProvider);
+    final hasFilter  = !filters.isDefault;
 
     return Scaffold(
       backgroundColor: AppColors.surface0,
@@ -82,7 +98,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           AppConstants.googleMapsApiKey.isEmpty
               ? _NoApiKeyPlaceholder()
               : GoogleMap(
-                  initialCameraPosition: _defaultPosition,
+                  initialCameraPosition: _istanbul,
                   onMapCreated: (c) => _mapController = c,
                   myLocationEnabled: !isGhost,
                   myLocationButtonEnabled: false,
@@ -94,7 +110,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       : {},
                 ),
 
-          // ── Üst bar: Hayalet mod + Filtre ───────────────────────────────
+          // ── Üst bar ─────────────────────────────────────────────────────
           Positioned(
             top: MediaQuery.of(context).padding.top + AppSpacing.sm,
             left: AppSpacing.lg,
@@ -102,98 +118,57 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             child: Row(
               children: [
                 // Hayalet mod toggle
-                Semantics(
-                  label: isGhost ? 'Hayalet mod kapalı' : 'Hayalet mod açık',
-                  button: true,
-                  child: GestureDetector(
-                    onTap: () {
-                      ref.read(ghostModeProvider.notifier).toggle();
-                      if (!isGhost) {
-                        // Ghost açılıyor
-                        ref.read(locationProvider.notifier).stopTracking();
-                      } else {
-                        // Ghost kapanıyor
-                        ref.read(locationProvider.notifier).startTracking();
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isGhost
-                            ? AppColors.pitRed.withAlpha(200)
-                            : AppColors.surface2.withAlpha(220),
-                        borderRadius: BorderRadius.circular(AppSpacing.xl),
-                        border: Border.all(
-                          color:
-                              isGhost ? AppColors.pitRed : AppColors.surface3,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.visibility_off_outlined,
-                            size: 16,
-                            color: isGhost
-                                ? Colors.white
-                                : AppColors.textSecondary,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            isGhost ? 'Hayalet' : 'Görünür',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isGhost
-                                  ? Colors.white
-                                  : AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                _TopBarChip(
+                  icon: Icons.visibility_off_outlined,
+                  label: isGhost ? 'Hayalet' : 'Görünür',
+                  active: isGhost,
+                  onTap: () {
+                    ref.read(ghostModeProvider.notifier).toggle();
+                    if (!isGhost) {
+                      ref.read(locationProvider.notifier).stopTracking();
+                    } else {
+                      ref.read(locationProvider.notifier).startTracking();
+                    }
+                  },
                 ),
                 const Spacer(),
                 // Filtre butonu
-                GestureDetector(
+                _TopBarChip(
+                  icon: Icons.tune,
+                  label: 'Filtre',
+                  active: hasFilter,
                   onTap: () => showMapFilterSheet(context),
-                  child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface2.withAlpha(220),
-                    borderRadius: BorderRadius.circular(AppSpacing.xl),
-                    border: Border.all(color: AppColors.surface3),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.tune,
-                          size: 16, color: AppColors.textSecondary),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        'Filtre',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  ),
                 ),
               ],
             ),
           ),
 
-          // ── Sağ FAB'lar ─────────────────────────────────────────────────
+          // ── Konum hücresi bilgisi (dev) ──────────────────────────────────
+          if (currentCell != null)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 56,
+              left: AppSpacing.lg,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface2.withAlpha(200),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  currentCell,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.textTertiary,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+            ),
+
+          // ── FAB'lar ─────────────────────────────────────────────────────
           Positioned(
             right: AppSpacing.lg,
             bottom: AppSpacing.xl + AppSpacing.xl,
@@ -211,11 +186,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   onPressed: () {},
                 ),
                 const SizedBox(height: AppSpacing.md),
-                _MapFab(
-                  icon: Icons.sos,
-                  label: 'SOS',
-                  color: AppColors.error,
-                  onPressed: () {},
+                SosPulseWidget(
+                  child: _MapFab(
+                    icon: Icons.sos,
+                    label: 'SOS',
+                    color: AppColors.error,
+                    onPressed: () {},
+                  ),
                 ),
               ],
             ),
@@ -238,53 +215,87 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 ),
               ),
             ),
+
+          // ── Konum izni rationale ────────────────────────────────────────
+          if (_showPermissionRationale)
+            LocationPermissionScreen(
+              onGranted: () {
+                setState(() => _showPermissionRationale = false);
+                ref.read(locationProvider.notifier).startTracking();
+              },
+              onDismiss: () => setState(() => _showPermissionRationale = false),
+            ),
         ],
       ),
     );
   }
-
-  Future<void> _goToMyLocation() async {
-    final pos = await Geolocator.getCurrentPosition();
-    _mapController?.animateCamera(
-      CameraUpdate.newLatLngZoom(LatLng(pos.latitude, pos.longitude), 15),
-    );
-  }
 }
 
-class _NoApiKeyPlaceholder extends StatelessWidget {
+// ── Üst bar chip ─────────────────────────────────────────────────────────────
+
+class _TopBarChip extends StatelessWidget {
+  const _TopBarChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.active = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool active;
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.map_outlined, size: 64, color: AppColors.pitRed),
-          const SizedBox(height: AppSpacing.md),
-          Text('Harita',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(color: AppColors.textSecondary)),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'GOOGLE_MAPS_API_KEY lazım — Erol\'dan iste',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: AppColors.textTertiary),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: active
+              ? AppColors.pitRed.withAlpha(200)
+              : AppColors.surface2.withAlpha(220),
+          borderRadius: BorderRadius.circular(AppSpacing.xl),
+          border: Border.all(
+            color: active ? AppColors.pitRed : AppColors.surface3,
           ),
-        ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16,
+                color: active ? Colors.white : AppColors.textSecondary),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: active ? Colors.white : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+// ── FAB ──────────────────────────────────────────────────────────────────────
+
 class _MapFab extends StatelessWidget {
-  const _MapFab(
-      {required this.icon,
-      required this.label,
-      required this.onPressed,
-      this.color});
+  const _MapFab({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.color,
+  });
+
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
@@ -297,9 +308,8 @@ class _MapFab extends StatelessWidget {
       label: label,
       child: FloatingActionButton.small(
         heroTag: label,
-        backgroundColor: onPressed == null
-            ? AppColors.surface3
-            : (color ?? AppColors.pitRed),
+        backgroundColor:
+            onPressed == null ? AppColors.surface3 : (color ?? AppColors.pitRed),
         foregroundColor: Colors.white,
         onPressed: onPressed,
         child: Icon(icon),
@@ -307,6 +317,29 @@ class _MapFab extends StatelessWidget {
     );
   }
 }
+
+// ── No API Key ────────────────────────────────────────────────────────────────
+
+class _NoApiKeyPlaceholder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.map_outlined, size: 64, color: AppColors.pitRed),
+          const SizedBox(height: AppSpacing.md),
+          Text('GOOGLE_MAPS_API_KEY lazım',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textTertiary,
+                  )),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Dark map style ────────────────────────────────────────────────────────────
 
 const _darkMapStyle = '''[
   {"elementType":"geometry","stylers":[{"color":"#1a1a2e"}]},
