@@ -82,6 +82,19 @@ class CommunitiesNotifier extends AsyncNotifier<CommunitiesState> {
   Future<List<Community>> _fetch(CommunityFilters filters) {
     return ref.read(communityRepositoryProvider).listCommunities(filters);
   }
+
+  Future<Community> createCommunity(CreateCommunityDraft draft) async {
+    final previous = state.valueOrNull ?? const CommunitiesState();
+    state = const AsyncLoading();
+    final created =
+        await ref.read(communityRepositoryProvider).createCommunity(draft);
+    state = AsyncData(
+      previous.copyWith(
+        communities: [created, ...previous.communities],
+      ),
+    );
+    return created;
+  }
 }
 
 final communitiesProvider =

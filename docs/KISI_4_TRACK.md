@@ -104,9 +104,9 @@ flutter run \
 ### Sprint 3 — Topluluklar & Flares (Hafta 5-6)
 - [x] Topluluk keşif ekranı (`/communities`) — arama + filtre (F3.1)
 - [x] Topluluk detay ekranı — üyeler, flares, katıl butonu
-- [ ] Topluluk oluşturma formu (ad, slug, tip, araç tipi, şehir)
-- [ ] Flare oluşturma ekranı (F4.1) — haritadan konum seç → H3 hücre
-- [ ] Flare detay ekranı — RSVP butonu (going/maybe/not_going)
+- [x] Topluluk oluşturma formu (ad, slug, tip, araç tipi, şehir)
+- [x] Flare oluşturma ekranı (F4.1) — H3 hücre ile oluşturma, harita route param desteği
+- [x] Flare detay ekranı — RSVP butonu (going/maybe/not_going)
 - [ ] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
 
 ### Sprint 4 — Mesajlaşma & Bildirimler (Hafta 7-8)

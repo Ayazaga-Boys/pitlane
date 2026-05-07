@@ -105,3 +105,36 @@ class CommunityFilters {
     );
   }
 }
+
+class CreateCommunityDraft {
+  const CreateCommunityDraft({
+    required this.name,
+    required this.slug,
+    required this.type,
+    required this.vehicleType,
+    this.description,
+    this.city,
+    this.coverUrl,
+  });
+
+  final String name;
+  final String slug;
+  final CommunityType type;
+  final CommunityVehicleType vehicleType;
+  final String? description;
+  final String? city;
+  final String? coverUrl;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'slug': slug,
+      'type': type.apiValue,
+      'vehicle_type': vehicleType.apiValue,
+      if (description != null && description!.isNotEmpty)
+        'description': description,
+      if (city != null && city!.isNotEmpty) 'city': city,
+      if (coverUrl != null && coverUrl!.isNotEmpty) 'cover_url': coverUrl,
+    };
+  }
+}

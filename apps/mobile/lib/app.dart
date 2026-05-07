@@ -8,8 +8,11 @@ import 'src/features/auth/ui/invite_code_screen.dart';
 import 'src/features/auth/ui/login_screen.dart';
 import 'src/features/auth/ui/otp_screen.dart';
 import 'src/features/auth/ui/waiting_list_screen.dart';
+import 'src/features/communities/ui/community_create_screen.dart';
 import 'src/features/communities/ui/community_detail_screen.dart';
 import 'src/features/communities/ui/communities_screen.dart';
+import 'src/features/flares/ui/flare_create_screen.dart';
+import 'src/features/flares/ui/flare_detail_screen.dart';
 import 'src/features/map/providers/ws_connection_provider.dart';
 import 'src/features/map/ui/map_screen.dart';
 import 'src/features/profile/ui/profile_completion_screen.dart';
@@ -85,9 +88,26 @@ final _routerProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const CommunitiesScreen(),
           ),
           GoRoute(
+            path: '/communities/create',
+            builder: (_, __) => const CommunityCreateScreen(),
+          ),
+          GoRoute(
             path: '/communities/:slug',
             builder: (_, state) => CommunityDetailScreen(
               slug: state.pathParameters['slug']!,
+            ),
+          ),
+          GoRoute(
+            path: '/flares/create',
+            builder: (_, state) => FlareCreateScreen(
+              initialH3Cell: state.uri.queryParameters['h3cell'],
+              communityId: state.uri.queryParameters['communityId'],
+            ),
+          ),
+          GoRoute(
+            path: '/flares/:id',
+            builder: (_, state) => FlareDetailScreen(
+              id: state.pathParameters['id']!,
             ),
           ),
           GoRoute(
