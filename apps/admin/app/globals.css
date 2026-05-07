@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-surface-3;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-screen bg-surface-0 bg-panel-grid bg-[size:24px_24px] text-text-primary antialiased;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+}
+
+@layer utilities {
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pit-red focus-visible:ring-offset-2 focus-visible:ring-offset-surface-1;
+  }
+
+  .surface-card {
+    @apply rounded-md border border-surface-3 bg-surface-2 shadow-elev-2;
+  }
+
+  .surface-panel {
+    @apply rounded-lg border border-surface-3 bg-surface-1 shadow-elev-3;
+  }
+}
