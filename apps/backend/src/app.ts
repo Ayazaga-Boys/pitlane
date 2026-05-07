@@ -2,7 +2,11 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { requireAuth } from './middleware/auth.js';
+import { maintenanceMode } from './middleware/maintenance.js';
+import { requestLogger } from './middleware/request-logger.js';
+import { rateLimit } from './middleware/rate-limit.js';
 import { mountProtectedRoutes, mountPublicRoutes } from './routes/index.js';
+import { logger } from './lib/logger.js';
 import type { AppEnv } from './types/hono.js';
 
 export function createApp() {
@@ -10,10 +14,13 @@ export function createApp() {
 
   app.use('*', secureHeaders());
   app.use('*', cors({ origin: ['http://localhost:3001', 'https://admin.pitlane.app'] }));
+  app.use('*', requestLogger);
 
   app.get('/health', (c) => c.json({ ok: true, service: 'pitlane-api' }));
 
   const v1 = new Hono();
+  v1.use('*', maintenanceMode);
+  v1.use('*', rateLimit);
   mountPublicRoutes(v1);
 
   const protectedV1 = new Hono<AppEnv>();
@@ -24,7 +31,7 @@ export function createApp() {
   app.route('/v1', v1);
 
   app.onError((error, c) => {
-    console.error(error);
+    logger.error({ err: error, path: c.req.path, method: c.req.method }, 'Unhandled request error');
     return c.json({ code: 'INTERNAL_ERROR', error: 'Internal server error' }, 500);
   });
 
