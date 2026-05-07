@@ -1,0 +1,32 @@
+import { createClient } from '@supabase/supabase-js';
+import type { Context, Next } from 'hono';
+
+export async function requireAuth(c: Context, next: Next): Promise<Response | void> {
+  if (process.env.NODE_ENV === 'development' && c.req.header('x-dev-user-id')) {
+    c.set('userId', c.req.header('x-dev-user-id'));
+    await next();
+    return;
+  }
+
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return c.json({ code: 'UNAUTHORIZED', error: 'Missing bearer token' }, 401);
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return c.json({ code: 'SERVICE_UNAVAILABLE', error: 'Auth is not configured' }, 503);
+  }
+
+  const token = authHeader.slice(7);
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data.user) {
+    return c.json({ code: 'UNAUTHORIZED', error: 'Invalid token' }, 401);
+  }
+
+  c.set('userId', data.user.id);
+  await next();
+}
