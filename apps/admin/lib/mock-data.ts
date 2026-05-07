@@ -40,6 +40,22 @@ export interface MockCommunity {
   members: number;
   type: "public" | "private" | "secret";
   vehicleType: "car" | "motorcycle" | "all";
+  description: string;
+  foundedAt: string;
+  captain: string;
+  moderationNote: string;
+  memberList: Array<{
+    id: string;
+    name: string;
+    role: "captain" | "moderator" | "member";
+  }>;
+  activeFlares: Array<{
+    id: string;
+    title: string;
+    startsAt: string;
+    rsvpCount: number;
+    status: "active" | "draft" | "cancelled";
+  }>;
 }
 
 export interface MockPin {
@@ -150,6 +166,19 @@ export const mockCommunities: MockCommunity[] = [
     members: 128,
     type: "public",
     vehicleType: "motorcycle",
+    description: "Bogaz hattinda gece surusleri ve hafta sonu bulusmalari organize eden motosiklet toplulugu.",
+    foundedAt: "2025-11-03",
+    captain: "Ayga Zengin",
+    moderationNote: "Rota duyurulari net. Son 30 gunde moderasyon aksiyonu gerektirmedi.",
+    memberList: [
+      { id: "usr_01", name: "Ayga Zengin", role: "moderator" },
+      { id: "usr_04", name: "Can Arda", role: "captain" },
+      { id: "usr_05", name: "Bora Sener", role: "member" },
+    ],
+    activeFlares: [
+      { id: "flr_01", title: "Cuma gece boğaz turu", startsAt: "2026-05-09 22:00", rsvpCount: 36, status: "active" },
+      { id: "flr_02", title: "Pazar kahve molası", startsAt: "2026-05-11 10:30", rsvpCount: 18, status: "active" },
+    ],
   },
   {
     id: "com_02",
@@ -159,6 +188,19 @@ export const mockCommunities: MockCommunity[] = [
     members: 86,
     type: "private",
     vehicleType: "car",
+    description: "Pist gunleri, telemetri paylasimi ve arac hazirlik oturumlari odakli otomobil toplulugu.",
+    foundedAt: "2025-12-19",
+    captain: "Emir Demir",
+    moderationNote: "Uyelik talepleri manuel inceleniyor. Yeni gelen 4 rapor henuz risk olusturmuyor.",
+    memberList: [
+      { id: "usr_02", name: "Alp Koc", role: "member" },
+      { id: "usr_06", name: "Emir Demir", role: "captain" },
+      { id: "usr_07", name: "Mina Ates", role: "moderator" },
+    ],
+    activeFlares: [
+      { id: "flr_03", title: "Hafta sonu pist seansı", startsAt: "2026-05-10 08:00", rsvpCount: 24, status: "active" },
+      { id: "flr_04", title: "Telemetri workshop", startsAt: "2026-05-14 19:30", rsvpCount: 12, status: "draft" },
+    ],
   },
   {
     id: "com_03",
@@ -168,6 +210,18 @@ export const mockCommunities: MockCommunity[] = [
     members: 214,
     type: "public",
     vehicleType: "all",
+    description: "Karma arac toplulugu; sehir ici etkinlikler, kafe bulusmalari ve ortak rota paylasimlari yapiyor.",
+    foundedAt: "2025-08-08",
+    captain: "Doga Tunc",
+    moderationNote: "Mesaj akisi hizli. Yeni moderasyon araclari geldiğinde topluluk sohbeti ilk adaylardan biri.",
+    memberList: [
+      { id: "usr_03", name: "Ece Karaca", role: "member" },
+      { id: "usr_08", name: "Doga Tunc", role: "captain" },
+      { id: "usr_09", name: "Selin Ucar", role: "member" },
+    ],
+    activeFlares: [
+      { id: "flr_05", title: "Moda rotası buluşması", startsAt: "2026-05-12 20:00", rsvpCount: 41, status: "active" },
+    ],
   },
 ];
 
@@ -270,4 +324,8 @@ export const mockFlags = [
 
 export function getMockUserById(id: string): MockUser | undefined {
   return mockUsers.find((user) => user.id === id);
+}
+
+export function getMockCommunityById(id: string): MockCommunity | undefined {
+  return mockCommunities.find((community) => community.id === id);
 }
