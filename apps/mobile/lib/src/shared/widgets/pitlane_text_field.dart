@@ -8,6 +8,7 @@ class PitlaneTextField extends StatelessWidget {
     this.controller,
     this.keyboardType,
     this.textInputAction,
+    this.onChanged,
     this.onSubmitted,
     this.errorText,
     this.autofocus = false,
@@ -20,6 +21,7 @@ class PitlaneTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+  final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final String? errorText;
   final bool autofocus;
@@ -37,6 +39,7 @@ class PitlaneTextField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           textInputAction: textInputAction,
+          onChanged: onChanged,
           onSubmitted: onSubmitted,
           autofocus: autofocus,
           obscureText: obscureText,
