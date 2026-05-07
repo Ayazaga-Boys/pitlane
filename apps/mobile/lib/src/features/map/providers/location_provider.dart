@@ -23,9 +23,6 @@ class LocationNotifier extends AsyncNotifier<String?> {
     final user = ref.read(currentUserProvider);
     if (user == null) return;
 
-    final isGhost = false; // Sprint 3'te profil provider'dan gelecek
-    if (isGhost) return;
-
     const settings = LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: kLocationDistanceFilterMeters,
