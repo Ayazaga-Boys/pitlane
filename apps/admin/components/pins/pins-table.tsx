@@ -8,19 +8,31 @@ export function PinsTable({ pins }: { pins: MockPin[] }) {
       <Table>
         <THead>
           <TR>
-            <TH>Isletme</TH>
+            <TH>İşletme</TH>
             <TH>Kategori</TH>
             <TH>Sahip</TH>
-            <TH>Sehir</TH>
+            <TH>Şehir</TH>
             <TH>Durum</TH>
-            <TH>Basvuru</TH>
+            <TH>Başvuru</TH>
           </TR>
         </THead>
         <TBody>
           {pins.map((pin) => (
             <TR key={pin.id}>
               <TD className="font-medium text-text-primary">{pin.name}</TD>
-              <TD>{pin.category}</TD>
+              <TD>
+                {pin.category === "repair"
+                  ? "tamir"
+                  : pin.category === "fuel"
+                    ? "yakıt"
+                    : pin.category === "cafe"
+                      ? "kafe"
+                      : pin.category === "garage"
+                        ? "garaj"
+                        : pin.category === "parts"
+                          ? "parça"
+                          : "diğer"}
+              </TD>
               <TD>{pin.owner}</TD>
               <TD>{pin.city}</TD>
               <TD>
@@ -33,7 +45,7 @@ export function PinsTable({ pins }: { pins: MockPin[] }) {
                         : "warning"
                   }
                 >
-                  {pin.status}
+                  {pin.status === "verified" ? "doğrulandı" : pin.status === "rejected" ? "reddedildi" : "bekliyor"}
                 </Badge>
               </TD>
               <TD>{pin.submittedAt}</TD>

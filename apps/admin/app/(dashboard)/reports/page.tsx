@@ -6,11 +6,11 @@ import { mockReports } from "@/lib/mock-data";
 export default function ReportsPage() {
   return (
     <PageShell
-      eyebrow="Sprint 3 hazirlik"
-      title="Sikayetler"
-      description="Moderasyon kuyrugunun oncelik mantigi ve liste duzeni mock raporlarla calisiyor."
+      eyebrow="Sprint 3 hazırlık"
+      title="Şikayetler"
+      description="Moderasyon kuyruğunun öncelik mantığı ve liste düzeni mock raporlarla çalışıyor."
     >
-      <MockDataBanner label="Reports tablosu hazir olana kadar sahte moderasyon kuyrugu aktif" />
+      <MockDataBanner label="Reports tablosu hazır olana kadar sahte moderasyon kuyruğu aktif" />
       <div className="surface-panel p-xl">
         <ReportsTable reports={mockReports} />
       </div>

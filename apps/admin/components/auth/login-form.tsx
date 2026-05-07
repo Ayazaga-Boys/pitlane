@@ -15,7 +15,7 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(
     searchParams.get("error") === "unauthorized"
-      ? "Bu panel yalnizca admin rolundeki hesaplar icin aciktir."
+      ? "Bu panel yalnızca admin rolündeki hesaplar için açıktır."
       : null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,7 +61,7 @@ export function LoginForm() {
 
       <div className="space-y-sm">
         <label className="block text-sm font-medium text-text-secondary" htmlFor="password">
-          Sifre
+          Şifre
         </label>
         <Input
           autoComplete="current-password"
@@ -84,7 +84,7 @@ export function LoginForm() {
 
       <Button className="w-full gap-sm" disabled={isSubmitting} type="submit">
         {isSubmitting ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin" /> : null}
-        {isSubmitting ? "Giris yapiliyor" : "Giris yap"}
+        {isSubmitting ? "Giriş yapılıyor" : "Giriş yap"}
       </Button>
     </form>
   );

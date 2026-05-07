@@ -3,18 +3,18 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "@/app/globals.css";
 
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-inter",
 });
 
 const jetBrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-jetbrains-mono",
 });
 
 export const metadata: Metadata = {
   title: "Pitlane Admin",
-  description: "Pitlane admin paneli: moderasyon, analitik ve isletme dogrulama akislari.",
+  description: "Pitlane admin paneli: moderasyon, analitik ve işletme doğrulama akışları.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

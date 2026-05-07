@@ -189,17 +189,17 @@ export const mockAnalytics = {
 export const mockFlags = [
   {
     key: "feature_business_pins",
-    description: "Isletme pinleri mobil istemcide gorunsun mu",
+    description: "İşletme pinleri mobil istemcide görünsün mü",
     enabled: true,
   },
   {
     key: "feature_help_requests",
-    description: "Yardim talepleri yeni kullanicilar icin acik mi",
+    description: "Yardım talepleri yeni kullanıcılar için açık mı",
     enabled: true,
   },
   {
     key: "feature_waiting_list",
-    description: "Bekleme listesi dalga davet akislarini ac",
+    description: "Bekleme listesi dalga davet akışlarını aç",
     enabled: false,
   },
 ];

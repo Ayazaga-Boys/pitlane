@@ -8,10 +8,10 @@ export function ReportsTable({ reports }: { reports: MockReport[] }) {
       <Table>
         <THead>
           <TR>
-            <TH>Icerik</TH>
+            <TH>İçerik</TH>
             <TH>Neden</TH>
             <TH>Bildiren</TH>
-            <TH>Oncelik</TH>
+            <TH>Öncelik</TH>
             <TH>Durum</TH>
             <TH>Zaman</TH>
           </TR>
@@ -19,7 +19,13 @@ export function ReportsTable({ reports }: { reports: MockReport[] }) {
         <TBody>
           {reports.map((report) => (
             <TR key={report.id}>
-              <TD className="font-medium capitalize text-text-primary">{report.contentType.replace("_", " ")}</TD>
+              <TD className="font-medium capitalize text-text-primary">
+                {report.contentType === "message"
+                  ? "mesaj"
+                  : report.contentType === "flare"
+                    ? "flare"
+                    : "topluluk gönderisi"}
+              </TD>
               <TD>{report.reason}</TD>
               <TD>@{report.reporter}</TD>
               <TD>
@@ -32,11 +38,13 @@ export function ReportsTable({ reports }: { reports: MockReport[] }) {
                         : "info"
                   }
                 >
-                  {report.severity}
+                  {report.severity === "high" ? "yüksek" : report.severity === "medium" ? "orta" : "düşük"}
                 </Badge>
               </TD>
               <TD>
-                <Badge tone={report.status === "pending" ? "warning" : "info"}>{report.status}</Badge>
+                <Badge tone={report.status === "pending" ? "warning" : "info"}>
+                  {report.status === "pending" ? "bekliyor" : "inceleniyor"}
+                </Badge>
               </TD>
               <TD>{report.createdAt}</TD>
             </TR>
