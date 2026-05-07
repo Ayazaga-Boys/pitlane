@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/providers/auth_provider.dart';
+import 'src/features/auth/ui/invite_code_screen.dart';
 import 'src/features/auth/ui/login_screen.dart';
 import 'src/features/auth/ui/otp_screen.dart';
+import 'src/features/auth/ui/waiting_list_screen.dart';
 import 'src/features/map/ui/map_screen.dart';
 import 'src/features/profile/ui/profile_screen.dart';
 import 'src/shared/widgets/main_shell.dart';
@@ -34,18 +35,27 @@ final _routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
 
   return GoRouter(
-    initialLocation: '/auth/login',
+    // Akış: invite-code → login → otp → /map
+    initialLocation: '/auth/invite-code',
     redirect: (context, state) {
       final session = authState.valueOrNull?.session;
       final isLoggedIn = session != null;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
 
-      if (!isLoggedIn && !isAuthRoute) return '/auth/login';
+      if (!isLoggedIn && !isAuthRoute) return '/auth/invite-code';
       if (isLoggedIn && isAuthRoute) return '/map';
       return null;
     },
     routes: [
-      // Auth
+      // ── Auth ──────────────────────────────────────────────────────────────
+      GoRoute(
+        path: '/auth/invite-code',
+        builder: (_, __) => const InviteCodeScreen(),
+      ),
+      GoRoute(
+        path: '/auth/waiting-list',
+        builder: (_, __) => const WaitingListScreen(),
+      ),
       GoRoute(
         path: '/auth/login',
         builder: (_, __) => const LoginScreen(),
@@ -55,17 +65,17 @@ final _routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => OtpScreen(email: state.extra as String),
       ),
 
-      // Ana shell (bottom nav)
+      // ── Ana shell (bottom nav) ─────────────────────────────────────────────
       ShellRoute(
         builder: (_, __, child) => MainShell(child: child),
         routes: [
-          GoRoute(path: '/map',          builder: (_, __) => const MapScreen()),
-          GoRoute(path: '/communities',  builder: (_, __) => const _PlaceholderScreen('Topluluklar')),
-          GoRoute(path: '/messages',     builder: (_, __) => const _PlaceholderScreen('Mesajlar')),
-          GoRoute(path: '/profile',      builder: (_, __) => const ProfileScreen()),
-          GoRoute(path: '/settings',     builder: (_, __) => const _PlaceholderScreen('Ayarlar')),
-          GoRoute(path: '/help',         builder: (_, __) => const _PlaceholderScreen('Acil Yardım')),
-          GoRoute(path: '/camera',       builder: (_, __) => const _PlaceholderScreen('Snap Kamera')),
+          GoRoute(path: '/map',         builder: (_, __) => const MapScreen()),
+          GoRoute(path: '/communities', builder: (_, __) => const _PlaceholderScreen('Topluluklar')),
+          GoRoute(path: '/messages',    builder: (_, __) => const _PlaceholderScreen('Mesajlar')),
+          GoRoute(path: '/profile',     builder: (_, __) => const ProfileScreen()),
+          GoRoute(path: '/settings',    builder: (_, __) => const _PlaceholderScreen('Ayarlar')),
+          GoRoute(path: '/help',        builder: (_, __) => const _PlaceholderScreen('Acil Yardım')),
+          GoRoute(path: '/camera',      builder: (_, __) => const _PlaceholderScreen('Snap Kamera')),
         ],
       ),
     ],
