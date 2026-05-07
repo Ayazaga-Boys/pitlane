@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { JoinWaitingListSchema, ValidateInviteCodeSchema } from '../src/schemas/auth.schema.js';
+import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 
@@ -52,5 +53,36 @@ describe('map schemas', () => {
   it('validates optional pin category', () => {
     expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'garage' }).success).toBe(true);
     expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'mall' }).success).toBe(false);
+  });
+});
+
+describe('flare schemas', () => {
+  it('accepts a valid future flare', () => {
+    const startsAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const parsed = CreateFlareSchema.parse({
+      title: 'Cars and Coffee',
+      h3_cell: '8928308280fffff',
+      starts_at: startsAt,
+    });
+
+    expect(parsed.title).toBe('Cars and Coffee');
+  });
+
+  it('rejects flares starting too soon', () => {
+    const startsAt = new Date(Date.now() + 60 * 1000).toISOString();
+
+    expect(CreateFlareSchema.safeParse({
+      title: 'Too soon',
+      h3_cell: '8928308280fffff',
+      starts_at: startsAt,
+    }).success).toBe(false);
+  });
+
+  it('requires update payloads to include a field', () => {
+    expect(UpdateFlareSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('defaults RSVP status to going', () => {
+    expect(RsvpFlareSchema.parse({}).status).toBe('going');
   });
 });
