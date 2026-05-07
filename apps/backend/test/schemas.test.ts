@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { JoinWaitingListSchema, ValidateInviteCodeSchema } from '../src/schemas/auth.schema.js';
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
+import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
 import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
@@ -114,6 +115,26 @@ describe('pin schemas', () => {
     expect(StartCampaignSchema.safeParse({
       campaign_text: 'Bugun fren bakımında indirim',
       campaign_ends_at: tooLateEnd,
+    }).success).toBe(false);
+  });
+});
+
+describe('help schemas', () => {
+  it('accepts a valid help request', () => {
+    const parsed = CreateHelpSchema.parse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'flat_tire',
+      description: 'Lastik patladı',
+    });
+
+    expect(parsed.issue_type).toBe('flat_tire');
+  });
+
+  it('rejects long help descriptions', () => {
+    expect(CreateHelpSchema.safeParse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'fuel',
+      description: 'x'.repeat(301),
     }).success).toBe(false);
   });
 });
