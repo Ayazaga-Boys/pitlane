@@ -6,11 +6,11 @@ import { mockFlags } from "@/lib/mock-data";
 export default function SettingsPage() {
   return (
     <PageShell
-      eyebrow="Sprint 5 hazirlik"
+      eyebrow="Sprint 5 hazırlık"
       title="Ayarlar"
-      description="Feature flag sayfasinin ilk duzeni ve durum etiketleri olusturuldu."
+      description="Özellik bayrakları sayfasının ilk düzeni ve durum etiketleri oluşturuldu."
     >
-      <MockDataBanner label="Remote config tablosu baglanana kadar ornek feature flag listesi aktif" />
+      <MockDataBanner label="Uzak yapılandırma tablosu bağlanana kadar örnek özellik bayrağı listesi aktif" />
       <div className="surface-panel p-xl">
         <div className="space-y-md">
           {mockFlags.map((flag) => (
@@ -22,7 +22,7 @@ export default function SettingsPage() {
                 <p className="font-medium text-text-primary">{flag.key}</p>
                 <p className="mt-xs text-sm text-text-secondary">{flag.description}</p>
               </div>
-              <Badge tone={flag.enabled ? "success" : "warning"}>{flag.enabled ? "enabled" : "disabled"}</Badge>
+              <Badge tone={flag.enabled ? "success" : "warning"}>{flag.enabled ? "aktif" : "kapalı"}</Badge>
             </div>
           ))}
         </div>

@@ -9,10 +9,10 @@ export interface DashboardStat {
 }
 
 const mockStats: DashboardStat[] = [
-  { key: "users", label: "Toplam Kullanici", value: 1280, tone: "brand", detail: "Mock veri: profiles migration bekleniyor" },
+  { key: "users", label: "Toplam Kullanıcı", value: 1280, tone: "brand", detail: "Mock veri: profiles migration bekleniyor" },
   { key: "flares", label: "Aktif Flare", value: 42, tone: "info", detail: "Canli etkinlik sayisi" },
-  { key: "help", label: "Acik Yardim", value: 7, tone: "warning", detail: "Mudahale bekleyen talepler" },
-  { key: "pins", label: "Bekleyen Pin", value: 18, tone: "success", detail: "Dogrulama sirasi" },
+  { key: "help", label: "Açık Yardım", value: 7, tone: "warning", detail: "Müdahale bekleyen talepler" },
+  { key: "pins", label: "Bekleyen Pin", value: 18, tone: "success", detail: "Doğrulama sırası" },
 ];
 
 export async function getDashboardStats(): Promise<{ stats: DashboardStat[]; usingMockData: boolean }> {
@@ -40,10 +40,10 @@ export async function getDashboardStats(): Promise<{ stats: DashboardStat[]; usi
     stats: [
       {
         key: "users",
-        label: "Toplam Kullanici",
+        label: "Toplam Kullanıcı",
         value: profilesResult.count ?? 0,
         tone: "brand",
-        detail: "Kayitli profil sayisi",
+        detail: "Kayıtlı profil sayısı",
       },
       {
         key: "flares",
@@ -57,14 +57,14 @@ export async function getDashboardStats(): Promise<{ stats: DashboardStat[]; usi
         label: "Acik Yardim",
         value: helpResult.count ?? 0,
         tone: "warning",
-        detail: "Status open olan yardim talepleri",
+        detail: "Status open olan yardım talepleri",
       },
       {
         key: "pins",
         label: "Bekleyen Pin",
         value: pinsResult.count ?? 0,
         tone: "success",
-        detail: "Henuz dogrulanmamis isletmeler",
+        detail: "Henüz doğrulanmamış işletmeler",
       },
     ],
   };

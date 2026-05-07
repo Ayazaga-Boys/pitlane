@@ -9,10 +9,10 @@ export function CommunitiesTable({ communities }: { communities: MockCommunity[]
         <THead>
           <TR>
             <TH>Topluluk</TH>
-            <TH>Sehir</TH>
-            <TH>Tur</TH>
-            <TH>Arac tipi</TH>
-            <TH>Uyeler</TH>
+            <TH>Şehir</TH>
+            <TH>Tür</TH>
+            <TH>Araç tipi</TH>
+            <TH>Üyeler</TH>
           </TR>
         </THead>
         <TBody>
@@ -27,10 +27,16 @@ export function CommunitiesTable({ communities }: { communities: MockCommunity[]
               <TD>{community.city}</TD>
               <TD>
                 <Badge tone={community.type === "public" ? "success" : community.type === "private" ? "warning" : "error"}>
-                  {community.type}
+                  {community.type === "public" ? "açık" : community.type === "private" ? "özel" : "gizli"}
                 </Badge>
               </TD>
-              <TD>{community.vehicleType}</TD>
+              <TD>
+                {community.vehicleType === "car"
+                  ? "otomobil"
+                  : community.vehicleType === "motorcycle"
+                    ? "motosiklet"
+                    : "tümü"}
+              </TD>
               <TD>{community.members}</TD>
             </TR>
           ))}

@@ -16,7 +16,7 @@ export function Sidebar() {
           <div>
             <h1 className="text-xl font-semibold text-text-primary">Kontrol Paneli</h1>
             <p className="mt-xs text-sm text-text-secondary">
-              Moderasyon, analitik ve dogrulama akislarinin merkezi.
+              Moderasyon, analitik ve doğrulama akışlarının merkezi.
             </p>
           </div>
         </div>
@@ -49,7 +49,7 @@ export function Sidebar() {
       </div>
 
       <div className="rounded-md border border-surface-3 bg-surface-2 p-md text-xs leading-5 text-text-secondary">
-        Sadece admin rolu erisebilir. Service role anahtari yalnizca server tarafinda tutulur.
+        Sadece admin rolü erişebilir. Service role anahtarı yalnızca server tarafında tutulur.
       </div>
     </aside>
   );
