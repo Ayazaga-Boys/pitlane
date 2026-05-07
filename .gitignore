@@ -1,91 +1,35 @@
-# ─── OS ───────────────────────────────────────────────
+# OS / editors
 .DS_Store
-.DS_Store?
-Thumbs.db
-desktop.ini
-
-# ─── IDE ──────────────────────────────────────────────
 .idea/
 .vscode/
-*.iml
-*.ipr
-*.iws
-.cursor/
 
-# ─── ENV / SECRETS ────────────────────────────────────
+# Env
 .env
-.env.local
-.env.*.local
-.envrc
-*.pem
-*.key
-*.p8
-*.p12
+.env.*
+!.env.example
 
-# ══════════════════════════════════════════════════════
-# FLUTTER / DART  (apps/mobile)
-# ══════════════════════════════════════════════════════
-apps/mobile/.dart_tool/
-apps/mobile/.flutter-plugins
-apps/mobile/.flutter-plugins-dependencies
-apps/mobile/.packages
-apps/mobile/build/
-apps/mobile/.fvm/
-apps/mobile/android/.gradle/
-apps/mobile/android/local.properties
-apps/mobile/android/key.properties
-apps/mobile/android/*.jks
-apps/mobile/android/*.keystore
-apps/mobile/ios/.symlinks/
-apps/mobile/ios/Pods/
-apps/mobile/ios/Flutter/Flutter.framework/
-apps/mobile/ios/Flutter/Flutter.podspec
-apps/mobile/coverage/
-apps/mobile/*.g.dart
-apps/mobile/*.freezed.dart
-
-# ══════════════════════════════════════════════════════
-# NODE / TYPESCRIPT  (apps/backend + apps/admin)
-# ══════════════════════════════════════════════════════
+# Node
 node_modules/
-apps/backend/dist/
-apps/backend/coverage/
-apps/admin/.next/
-apps/admin/out/
-apps/admin/coverage/
-pnpm-debug.log*
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+dist/
+.next/
+coverage/
 
-# ══════════════════════════════════════════════════════
-# GO  (apps/realtime)
-# ══════════════════════════════════════════════════════
-apps/realtime/realtime
-apps/realtime/coverage.out
-apps/realtime/coverage.html
-apps/realtime/*.test
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
 
-# ══════════════════════════════════════════════════════
-# FASTLANE  (apps/mobile/fastlane)
-# ══════════════════════════════════════════════════════
-apps/mobile/fastlane/report.xml
-apps/mobile/fastlane/Preview.html
-apps/mobile/fastlane/screenshots/
-apps/mobile/fastlane/test_output/
-apps/mobile/vendor/
+# Mobile secrets
+*.keystore
+*.jks
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
 
-# ══════════════════════════════════════════════════════
-# SUPABASE
-# ══════════════════════════════════════════════════════
-supabase/.branches/
-supabase/.temp/
+# Go
+bin/
+*.test
 
-# ══════════════════════════════════════════════════════
-# MISC
-# ══════════════════════════════════════════════════════
+# Logs
 *.log
-*.tmp
-*.swp
-*.swo
-.turbo/

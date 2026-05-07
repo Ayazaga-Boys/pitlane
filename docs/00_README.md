@@ -1,24 +1,27 @@
-# Car Snap (Pitlane) — Geliştirme Dokümantasyonu
+# Pitlane — Geliştirme Dokümantasyonu
 
 > Otomobil ve motosiklet tutkunları için harita odaklı, premium, reklamsız sosyal ağ.
 
 Bu dizin, projenin sıfırdan App Store / Google Play yayın kalitesine ulaşana kadar takip edilecek tüm mimari, sprint ve teknik kararlarını içerir. Sırayla okunması tavsiye edilir; ancak track bazlı çalışırken doğrudan ilgili dosyaya gidilebilir.
 
-## İsim Kararı
+## Marka Kararı
 
-İki aday: **"Car Snap"** ve **"Pitlane"**.
+Marka adı **Pitlane** olarak seçilmiştir.
 
-| Kriter | Car Snap | Pitlane |
-|---|---|---|
-| SEO / aranabilirlik | Düşük (genel kelimeler) | Yüksek (özgün) |
-| Marka tescili kolaylığı | Zor | Kolay |
-| Kapsam (motor + araç) | Sadece "car" çağrışımı | Yarış kültürü, hem 2 hem 4 teker |
-| Telaffuz / global | Kolay | Kolay |
-| Snapchat çağrışımı | Yüksek (risk: marka karışması) | Yok |
+App Store / Play Store başlığı: **"Pitlane — Car & Moto Social"**.
 
-**Öneri:** Marka olarak **Pitlane**, App Store başlığında **"Pitlane — Car & Moto Social"**. Kod tabanında paket adı `app.pitlane.mobile`, repo adı `pitlane`. "Snap" terimi yalnızca özellik adı olarak (kamera akışı: "Snap") kullanılır.
+Kod tabanı ve altyapı adları:
 
-> Kalan dokümanlarda kod örnekleri **Pitlane** ismini kullanır; nihai karar pazarlama ile birlikte verilecektir.
+| Alan | Değer |
+|---|---|
+| GitHub repo | `Ayazaga-Boys/pitlane` |
+| Flutter package | `pitlane` |
+| Mobile bundle/package ID | `app.pitlane.mobile` |
+| API app | `pitlane-api` |
+| Realtime app | `pitlane-realtime` |
+| Admin app | `pitlane-admin` |
+
+"Snap" terimi yalnızca kamera özelliği için kullanılır: **Snap Kamera**.
 
 ## Doküman Haritası
 
@@ -83,7 +86,7 @@ Bu dizin, projenin sıfırdan App Store / Google Play yayın kalitesine ulaşana
 
 ```bash
 # 1. Repo klonla
-git clone git@github.com:<org>/pitlane.git && cd pitlane
+git clone git@github.com:Ayazaga-Boys/pitlane.git && cd pitlane
 
 # 2. Submodüller (mobil / backend / realtime / admin tek monorepoda)
 pnpm install                # backend + admin
