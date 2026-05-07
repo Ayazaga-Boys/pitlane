@@ -9,6 +9,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
 import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
+import 'map_filter_sheet.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -157,8 +158,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   ),
                 ),
                 const Spacer(),
-                // Filtre butonu (Sprint 2 — sadece UI şimdilik)
-                Container(
+                // Filtre butonu
+                GestureDetector(
+                  onTap: () => showMapFilterSheet(context),
+                  child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
                     vertical: AppSpacing.sm,
@@ -183,6 +186,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         ),
                       ),
                     ],
+                  ),
                   ),
                 ),
               ],
