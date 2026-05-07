@@ -18,6 +18,7 @@
     "@hono/node-server": "^1.13.7",
     "@supabase/supabase-js": "^2.48.1",
     "dotenv": "^16.4.7",
+    "h3-js": "^4.4.0",
     "hono": "^4.6.16",
     "hono-rate-limiter": "^0.4.2",
     "pino": "^9.6.0",

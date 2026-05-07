@@ -42,6 +42,13 @@ describe('app routes', () => {
     expect(response.status).toBe(401);
   });
 
+  it('keeps map routes protected', async () => {
+    const app = createApp();
+    const response = await app.request('/v1/map/flares?h3cell=8928308280fffff');
+
+    expect(response.status).toBe(401);
+  });
+
   it('returns 503 when maintenance mode is enabled', async () => {
     process.env.MAINTENANCE_MODE = 'true';
     const app = createApp();

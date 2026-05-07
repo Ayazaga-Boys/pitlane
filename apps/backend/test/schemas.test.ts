@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { JoinWaitingListSchema, ValidateInviteCodeSchema } from '../src/schemas/auth.schema.js';
+import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 
 describe('auth schemas', () => {
@@ -31,5 +32,25 @@ describe('profile schemas', () => {
       model: 'E30',
       year: 1800,
     })).toThrow();
+  });
+});
+
+describe('map schemas', () => {
+  it('coerces nearby query k value', () => {
+    const parsed = MapNearbyQuerySchema.parse({
+      h3cell: '8928308280fffff',
+      k: '3',
+    });
+
+    expect(parsed.k).toBe(3);
+  });
+
+  it('keeps map radius bounded', () => {
+    expect(MapNearbyQuerySchema.safeParse({ h3cell: '8928308280fffff', k: '9' }).success).toBe(false);
+  });
+
+  it('validates optional pin category', () => {
+    expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'garage' }).success).toBe(true);
+    expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'mall' }).success).toBe(false);
   });
 });
