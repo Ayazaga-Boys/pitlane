@@ -82,7 +82,7 @@ func (h *Hub) Run(ctx context.Context) {
 			if _, ok := h.clients[c.userID]; ok {
 				delete(h.clients, c.userID)
 				close(c.send)
-				_ = h.store.DeleteUserCell(nil, c.userID)
+				_ = h.store.DeleteUserCell(context.TODO(), c.userID)
 				metrics.WsActiveConnections.Dec()
 			}
 			h.mu.Unlock()

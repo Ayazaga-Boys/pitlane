@@ -164,14 +164,14 @@ func TestIsValidH3Cell(t *testing.T) {
 		input string
 		want  bool
 	}{
-		{"89283082803ffff", true},            // geçerli res-9
-		{"8928308280fffff", true},            // geçerli res-8
-		{"", false},                          // boş
-		{"89283082803fff", false},            // 14 char — kısa
-		{"89283082803fffff", false},          // 16 char — uzun
-		{"89283082803FFFF", false},           // büyük harf
-		{"89283082803gfff", false},           // geçersiz hex char
-		{"89283082803 fff", false},           // boşluk içeriyor
+		{"89283082803ffff", true},   // geçerli res-9
+		{"8928308280fffff", true},   // geçerli res-8
+		{"", false},                 // boş
+		{"89283082803fff", false},   // 14 char — kısa
+		{"89283082803fffff", false}, // 16 char — uzun
+		{"89283082803FFFF", false},  // büyük harf
+		{"89283082803gfff", false},  // geçersiz hex char
+		{"89283082803 fff", false},  // boşluk içeriyor
 	}
 	for _, tt := range tests {
 		got := isValidH3Cell(tt.input)
