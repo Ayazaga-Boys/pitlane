@@ -81,6 +81,17 @@ Future<List<MapPin>> _fetchBusinessPins(Dio dio) async {
   }).toList();
 }
 
+String? _formatDate(String? iso) {
+  if (iso == null) return null;
+  try {
+    final dt = DateTime.parse(iso).toLocal();
+    final months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}';
+  } catch (_) {
+    return iso;
+  }
+}
+
 Future<List<MapPin>> _fetchFlarePins(Dio dio) async {
   final res = await dio.get<Map<String, dynamic>>('/flares');
   final items = (res.data?['data'] as List?) ?? [];
@@ -90,7 +101,7 @@ Future<List<MapPin>> _fetchFlarePins(Dio dio) async {
       id: item['id'] as String,
       type: MapPinType.flare,
       title: item['title'] as String? ?? '',
-      subtitle: item['starts_at'] as String?,
+      subtitle: _formatDate(item['starts_at'] as String?),
       position: _h3ToLatLng(h3Cell),
     );
   }).toList();
