@@ -68,8 +68,9 @@ LatLng _h3ToLatLng(String h3Cell) {
 
 Future<List<MapPin>> _fetchBusinessPins(Dio dio) async {
   final res = await dio.get<Map<String, dynamic>>('/pins');
-  final items = (res.data?['data'] as List?) ?? [];
-  return items.map((item) {
+  final items = (res.data?['data'] as List<dynamic>?) ?? [];
+  return items.map((dynamic raw) {
+    final item = raw as Map<String, dynamic>;
     final h3Cell = item['h3_cell'] as String? ?? '';
     return MapPin(
       id: item['id'] as String,
@@ -107,8 +108,9 @@ String? _formatDate(String? iso) {
 
 Future<List<MapPin>> _fetchFlarePins(Dio dio) async {
   final res = await dio.get<Map<String, dynamic>>('/flares');
-  final items = (res.data?['data'] as List?) ?? [];
-  return items.map((item) {
+  final items = (res.data?['data'] as List<dynamic>?) ?? [];
+  return items.map((dynamic raw) {
+    final item = raw as Map<String, dynamic>;
     final h3Cell = item['h3_cell'] as String? ?? '';
     return MapPin(
       id: item['id'] as String,
