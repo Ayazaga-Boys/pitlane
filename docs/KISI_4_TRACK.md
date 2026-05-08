@@ -114,7 +114,7 @@ flutter run \
 - [x] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
 - [x] Topluluk mesaj odası
 - [x] Flare sohbet odası
-- [ ] Şikayet et + Engelle UI (UF-09)
+- [x] Şikayet et + Engelle UI (UF-09)
 - [ ] firebase_messaging foreground/background/terminated handler (UF-13)
 - [ ] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
 - [ ] Cihaz token kayıt — `POST /v1/notifications/devices`
