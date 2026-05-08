@@ -64,6 +64,7 @@ func (h *Hub) Run() {
 			h.clients[c.userID] = c
 			h.mu.Unlock()
 			metrics.WsConnectionsTotal.Inc()
+			metrics.WsActiveConnections.Inc()
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_connected")
 
 		case c := <-h.unregister:
@@ -72,6 +73,7 @@ func (h *Hub) Run() {
 				delete(h.clients, c.userID)
 				close(c.send)
 				_ = h.store.DeleteUserCell(nil, c.userID)
+				metrics.WsActiveConnections.Dec()
 			}
 			h.mu.Unlock()
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_disconnected")
