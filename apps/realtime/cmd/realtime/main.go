@@ -8,12 +8,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/hub"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
 func main() {
@@ -28,16 +30,21 @@ func main() {
 	h := hub.New(&cfg, store, broadcaster)
 	go h.Run()
 
+	// Aktif bağlantı sayısını periyodik Prometheus'a yaz
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		for range ticker.C {
+			metrics.WsActiveConnections.Set(float64(h.ActiveCount()))
+		}
+	}()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws/location", h.ServeWS)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"ok":true,"connections":` + intStr(h.ActiveCount()) + `}`))
 	})
-	mux.HandleFunc("/metrics", func(w http.ResponseWriter, _ *http.Request) {
-		// TODO(sprint6): Prometheus metrics
-		_, _ = w.Write([]byte("# Prometheus metrics coming Sprint 6\n"))
-	})
+	mux.Handle("/metrics", promhttp.Handler())
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,

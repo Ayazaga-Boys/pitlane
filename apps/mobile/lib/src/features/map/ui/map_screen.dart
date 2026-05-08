@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
 import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/map_pins_provider.dart';
 import 'location_permission_screen.dart';
 import 'map_filter_sheet.dart';
 import 'sos_pulse_widget.dart';
@@ -123,11 +124,12 @@ class _MapScreenState extends ConsumerState<MapScreen>
 
   @override
   Widget build(BuildContext context) {
-    final heatmap    = ref.watch(heatmapProvider);
-    final isGhost    = ref.watch(ghostModeProvider);
+    final heatmap     = ref.watch(heatmapProvider);
+    final isGhost     = ref.watch(ghostModeProvider);
     final currentCell = ref.watch(locationProvider).valueOrNull;
-    final filters    = ref.watch(mapFiltersProvider);
-    final hasFilter  = !filters.isDefault;
+    final filters     = ref.watch(mapFiltersProvider);
+    final hasFilter   = !filters.isDefault;
+    final pins        = ref.watch(mapPinsProvider(filters));
 
     return Scaffold(
       backgroundColor: AppColors.surface0,
@@ -145,6 +147,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
             polygons: heatmap.valueOrNull != null
                 ? _buildHeatmap(heatmap.valueOrNull!)
                 : {},
+            markers: pins,
           ),
 
           // ── Üst bar ─────────────────────────────────────────────────────

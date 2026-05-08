@@ -10,6 +10,7 @@ import (
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/auth"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
 var upgrader = websocket.Upgrader{
@@ -50,6 +51,7 @@ func (h *Hub) Run() {
 			h.mu.Lock()
 			h.clients[c.userID] = c
 			h.mu.Unlock()
+			metrics.WsConnectionsTotal.Inc()
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_connected")
 
 		case c := <-h.unregister:
