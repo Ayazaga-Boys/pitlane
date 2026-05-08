@@ -9,12 +9,6 @@ class CommunityMember {
     this.avatarUrl,
   });
 
-  final String id;
-  final String username;
-  final String displayName;
-  final String role;
-  final String? avatarUrl;
-
   factory CommunityMember.fromJson(Map<String, dynamic> json) {
     return CommunityMember(
       id: json['id'] as String? ?? json['user_id'] as String? ?? '',
@@ -25,6 +19,12 @@ class CommunityMember {
       avatarUrl: json['avatar_url'] as String?,
     );
   }
+
+  final String id;
+  final String username;
+  final String displayName;
+  final String role;
+  final String? avatarUrl;
 }
 
 class CommunityFlarePreview {
@@ -35,11 +35,6 @@ class CommunityFlarePreview {
     required this.rsvpCount,
   });
 
-  final String id;
-  final String title;
-  final String startsAtLabel;
-  final int rsvpCount;
-
   factory CommunityFlarePreview.fromJson(Map<String, dynamic> json) {
     return CommunityFlarePreview(
       id: json['id'] as String? ?? '',
@@ -48,6 +43,11 @@ class CommunityFlarePreview {
       rsvpCount: json['rsvp_count'] as int? ?? 0,
     );
   }
+
+  final String id;
+  final String title;
+  final String startsAtLabel;
+  final int rsvpCount;
 }
 
 class CommunityDetail {
@@ -57,6 +57,24 @@ class CommunityDetail {
     required this.flares,
     this.isJoined = false,
   });
+
+  factory CommunityDetail.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json;
+    return CommunityDetail(
+      community: Community.fromJson(data),
+      members: (data['members'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(CommunityMember.fromJson)
+          .toList(growable: false),
+      flares: (data['flares'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(CommunityFlarePreview.fromJson)
+          .toList(growable: false),
+      isJoined: data['is_joined'] as bool? ?? false,
+    );
+  }
 
   final Community community;
   final List<CommunityMember> members;
@@ -74,24 +92,6 @@ class CommunityDetail {
       members: members ?? this.members,
       flares: flares ?? this.flares,
       isJoined: isJoined ?? this.isJoined,
-    );
-  }
-
-  factory CommunityDetail.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] is Map<String, dynamic>
-        ? json['data'] as Map<String, dynamic>
-        : json;
-    return CommunityDetail(
-      community: Community.fromJson(data),
-      members: (data['members'] as List<dynamic>? ?? const [])
-          .whereType<Map<String, dynamic>>()
-          .map(CommunityMember.fromJson)
-          .toList(growable: false),
-      flares: (data['flares'] as List<dynamic>? ?? const [])
-          .whereType<Map<String, dynamic>>()
-          .map(CommunityFlarePreview.fromJson)
-          .toList(growable: false),
-      isJoined: data['is_joined'] as bool? ?? false,
     );
   }
 }

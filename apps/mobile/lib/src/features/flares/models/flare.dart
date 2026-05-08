@@ -25,12 +25,6 @@ class FlareAttendee {
     this.avatarUrl,
   });
 
-  final String id;
-  final String displayName;
-  final FlareRsvpStatus rsvpStatus;
-  final String? username;
-  final String? avatarUrl;
-
   factory FlareAttendee.fromJson(Map<String, dynamic> json) {
     return FlareAttendee(
       id: json['id'] as String? ?? json['user_id'] as String? ?? '',
@@ -43,6 +37,12 @@ class FlareAttendee {
               FlareRsvpStatus.going,
     );
   }
+
+  final String id;
+  final String displayName;
+  final FlareRsvpStatus rsvpStatus;
+  final String? username;
+  final String? avatarUrl;
 }
 
 class Flare {
@@ -62,21 +62,6 @@ class Flare {
     this.notGoingCount = 0,
     this.attendees = const [],
   });
-
-  final String id;
-  final String title;
-  final String? description;
-  final String h3Cell;
-  final DateTime startsAt;
-  final DateTime? endsAt;
-  final String? communityId;
-  final String? communityName;
-  final String? coverUrl;
-  final FlareRsvpStatus? currentRsvpStatus;
-  final int goingCount;
-  final int maybeCount;
-  final int notGoingCount;
-  final List<FlareAttendee> attendees;
 
   factory Flare.fromJson(Map<String, dynamic> json) {
     final data = json['data'] is Map<String, dynamic>
@@ -105,6 +90,21 @@ class Flare {
           .toList(growable: false),
     );
   }
+
+  final String id;
+  final String title;
+  final String? description;
+  final String h3Cell;
+  final DateTime startsAt;
+  final DateTime? endsAt;
+  final String? communityId;
+  final String? communityName;
+  final String? coverUrl;
+  final FlareRsvpStatus? currentRsvpStatus;
+  final int goingCount;
+  final int maybeCount;
+  final int notGoingCount;
+  final List<FlareAttendee> attendees;
 
   bool get hasEnded {
     final end = endsAt ?? startsAt.add(const Duration(hours: 2));

@@ -71,8 +71,9 @@ final filteredPinsProvider =
     if (f.pin == PinFilter.all) return true;
     if (f.pin == PinFilter.flare && pin.type == MapPinType.flare) return true;
     if (f.pin == PinFilter.help && pin.type == MapPinType.help) return true;
-    if (f.pin == PinFilter.business && pin.type == MapPinType.business)
+    if (f.pin == PinFilter.business && pin.type == MapPinType.business) {
       return true;
+    }
     return false;
   }).toList();
 });

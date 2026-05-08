@@ -49,18 +49,6 @@ class Community {
     this.lastActivityLabel,
   });
 
-  final String id;
-  final String name;
-  final String slug;
-  final String? description;
-  final CommunityType type;
-  final CommunityVehicleType vehicleType;
-  final String? city;
-  final String? coverUrl;
-  final int memberCount;
-  final bool isVerified;
-  final String? lastActivityLabel;
-
   factory Community.fromJson(Map<String, dynamic> json) {
     return Community(
       id: json['id'] as String? ?? json['slug'] as String? ?? '',
@@ -80,6 +68,18 @@ class Community {
       lastActivityLabel: json['last_activity_label'] as String?,
     );
   }
+
+  final String id;
+  final String name;
+  final String slug;
+  final String? description;
+  final CommunityType type;
+  final CommunityVehicleType vehicleType;
+  final String? city;
+  final String? coverUrl;
+  final int memberCount;
+  final bool isVerified;
+  final String? lastActivityLabel;
 }
 
 class CommunityFilters {
