@@ -26,6 +26,13 @@ class MapFilters {
   }
 
   bool get isDefault => vehicle == VehicleFilter.all && pin == PinFilter.all;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MapFilters && other.vehicle == vehicle && other.pin == pin;
+
+  @override
+  int get hashCode => Object.hash(vehicle, pin);
 }
 
 // ─── Provider ───────────────────────────────────────────────────────────────
