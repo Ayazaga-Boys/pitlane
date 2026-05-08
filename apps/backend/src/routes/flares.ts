@@ -14,7 +14,7 @@ import type { AppEnv } from '../types/hono.js';
 export const flareRoutes = new Hono<AppEnv>();
 
 const FLARE_SELECT =
-  'id,creator_id,community_id,title,description,h3_cell,cover_url,starts_at,ends_at,rsvp_count,status,created_at,updated_at,profiles(username,display_name,avatar_url,is_verified)';
+  'id,creator_id,community_id,title,description,h3_cell,cover_url,starts_at,ends_at,rsvp_count,status,created_at,updated_at,creator:profiles!flares_creator_id_fkey(username,display_name,avatar_url,is_verified)';
 
 function cellsForQuery(h3cell: string | undefined, k: number): string[] | null {
   if (!h3cell) return [];
