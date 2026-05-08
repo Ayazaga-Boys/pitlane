@@ -8,6 +8,7 @@ import 'src/features/auth/ui/invite_code_screen.dart';
 import 'src/features/auth/ui/login_screen.dart';
 import 'src/features/auth/ui/otp_screen.dart';
 import 'src/features/auth/ui/waiting_list_screen.dart';
+import 'src/features/business/ui/business_pin_detail_screen.dart';
 import 'src/features/communities/ui/community_create_screen.dart';
 import 'src/features/communities/ui/community_detail_screen.dart';
 import 'src/features/communities/ui/communities_screen.dart';
@@ -108,8 +109,9 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/pins/:id',
-            builder: (_, state) =>
-                _PlaceholderScreen('İşletme — ${state.pathParameters['id']}'),
+            builder: (_, state) => BusinessPinDetailScreen(
+              id: state.pathParameters['id']!,
+            ),
           ),
           GoRoute(
             path: '/flares/create',
