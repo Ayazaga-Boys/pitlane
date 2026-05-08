@@ -26,11 +26,10 @@ func main() {
 		Logger()
 
 	cfg := config.Load()
-	store := location.NewStore()
+	hubCtx, hubCancel := context.WithCancel(context.Background())
+	store := location.NewStoreWithContext(hubCtx) // evict goroutine hub ile birlikte durur
 	broadcaster := location.NewBroadcaster(store)
 	h := hub.New(&cfg, store, broadcaster)
-
-	hubCtx, hubCancel := context.WithCancel(context.Background())
 	go h.Run(hubCtx)
 
 	// Aktif bağlantı sayısını periyodik Prometheus'a yaz

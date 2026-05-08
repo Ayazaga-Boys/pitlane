@@ -21,8 +21,12 @@ type Store struct {
 }
 
 func NewStore() *Store {
+	return NewStoreWithContext(context.Background())
+}
+
+func NewStoreWithContext(ctx context.Context) *Store {
 	s := &Store{data: make(map[string]cellEntry)}
-	go s.evict()
+	go s.evict(ctx)
 	return s
 }
 
@@ -75,18 +79,24 @@ func (s *Store) GetCellCounts(_ context.Context) map[string]int {
 	return counts
 }
 
-// evict — süresi dolmuş kayıtları periyodik temizler
-func (s *Store) evict() {
+// evict — süresi dolmuş kayıtları periyodik temizler; ctx cancel ile durur
+func (s *Store) evict(ctx context.Context) {
 	ticker := time.NewTicker(locationTTL)
-	for range ticker.C {
-		s.mu.Lock()
-		now := time.Now()
-		for uid, entry := range s.data {
-			if now.After(entry.expires) {
-				delete(s.data, uid)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			s.mu.Lock()
+			now := time.Now()
+			for uid, entry := range s.data {
+				if now.After(entry.expires) {
+					delete(s.data, uid)
+				}
 			}
+			s.mu.Unlock()
 		}
-		s.mu.Unlock()
 	}
 }
 

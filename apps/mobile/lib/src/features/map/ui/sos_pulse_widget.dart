@@ -52,7 +52,8 @@ class _SosPulseWidgetState extends State<SosPulseWidget>
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.error.withAlpha((_opacity.value * 255).toInt()),
+                color:
+                    AppColors.error.withAlpha((_opacity.value * 255).toInt()),
               ),
             ),
           ),

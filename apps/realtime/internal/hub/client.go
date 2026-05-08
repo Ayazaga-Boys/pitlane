@@ -133,12 +133,14 @@ func (c *Client) writePump() {
 				return
 			}
 			if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				log.Warn().Err(err).Str("userID", c.userID).Msg("ws_write_error")
 				return
 			}
 
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Warn().Err(err).Str("userID", c.userID).Msg("ws_ping_error")
 				return
 			}
 		}

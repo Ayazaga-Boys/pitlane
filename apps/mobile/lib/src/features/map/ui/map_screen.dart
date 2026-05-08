@@ -100,9 +100,11 @@ class _MapScreenState extends ConsumerState<MapScreen>
 
   Color _heatColor(double intensity) {
     if (intensity < 0.5) {
-      return Color.lerp(const Color(0xFF0096C7), const Color(0xFFFFB703), intensity * 2)!;
+      return Color.lerp(
+          const Color(0xFF0096C7), const Color(0xFFFFB703), intensity * 2)!;
     }
-    return Color.lerp(const Color(0xFFFFB703), AppColors.pitRed, (intensity - 0.5) * 2)!;
+    return Color.lerp(
+        const Color(0xFFFFB703), AppColors.pitRed, (intensity - 0.5) * 2)!;
   }
 
   Future<void> _goToMyLocation() async {
@@ -124,13 +126,13 @@ class _MapScreenState extends ConsumerState<MapScreen>
 
   @override
   Widget build(BuildContext context) {
-    final heatmap     = ref.watch(heatmapProvider);
-    final isGhost     = ref.watch(ghostModeProvider);
+    final heatmap = ref.watch(heatmapProvider);
+    final isGhost = ref.watch(ghostModeProvider);
     final currentCell = ref.watch(locationProvider).valueOrNull;
-    final filters     = ref.watch(mapFiltersProvider);
-    final hasFilter   = !filters.isDefault;
-    final pinData     = ref.watch(filteredPinsProvider(filters));
-    final pins        = pinData.map((p) => _toMarker(context, p)).toSet();
+    final filters = ref.watch(mapFiltersProvider);
+    final hasFilter = !filters.isDefault;
+    final pinData = ref.watch(filteredPinsProvider(filters));
+    final pins = pinData.map((p) => _toMarker(context, p)).toSet();
 
     return Scaffold(
       backgroundColor: AppColors.surface0,
@@ -259,15 +261,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
 // ── Pin → Marker (GoRouter navigation) ───────────────────────────────────────
 
 Marker _toMarker(BuildContext context, MapPin pin) => Marker(
-  markerId: MarkerId(pin.id),
-  position: pin.position,
-  icon: BitmapDescriptor.defaultMarkerWithHue(pinHue(pin.type)),
-  infoWindow: InfoWindow(
-    title: pin.title,
-    snippet: pin.subtitle,
-    onTap: () => _navigateToPin(context, pin),
-  ),
-);
+      markerId: MarkerId(pin.id),
+      position: pin.position,
+      icon: BitmapDescriptor.defaultMarkerWithHue(pinHue(pin.type)),
+      infoWindow: InfoWindow(
+        title: pin.title,
+        snippet: pin.subtitle,
+        onTap: () => _navigateToPin(context, pin),
+      ),
+    );
 
 void _navigateToPin(BuildContext context, MapPin pin) {
   switch (pin.type) {
@@ -319,7 +321,8 @@ class _TopBarChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16,
+            Icon(icon,
+                size: 16,
                 color: active ? Colors.white : AppColors.textSecondary),
             const SizedBox(width: AppSpacing.xs),
             Text(
@@ -359,8 +362,9 @@ class _MapFab extends StatelessWidget {
       label: label,
       child: FloatingActionButton.small(
         heroTag: label,
-        backgroundColor:
-            onPressed == null ? AppColors.surface3 : (color ?? AppColors.pitRed),
+        backgroundColor: onPressed == null
+            ? AppColors.surface3
+            : (color ?? AppColors.pitRed),
         foregroundColor: Colors.white,
         onPressed: onPressed,
         child: Icon(icon),

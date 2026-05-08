@@ -65,18 +65,20 @@ const _mockPins = [
 
 // ─── Provider — filtered data only, marker building happens in MapScreen ─────
 
-final filteredPinsProvider = Provider.family<List<MapPin>, MapFilters>((ref, f) {
+final filteredPinsProvider =
+    Provider.family<List<MapPin>, MapFilters>((ref, f) {
   return _mockPins.where((pin) {
     if (f.pin == PinFilter.all) return true;
-    if (f.pin == PinFilter.flare    && pin.type == MapPinType.flare)    return true;
-    if (f.pin == PinFilter.help     && pin.type == MapPinType.help)     return true;
-    if (f.pin == PinFilter.business && pin.type == MapPinType.business) return true;
+    if (f.pin == PinFilter.flare && pin.type == MapPinType.flare) return true;
+    if (f.pin == PinFilter.help && pin.type == MapPinType.help) return true;
+    if (f.pin == PinFilter.business && pin.type == MapPinType.business)
+      return true;
     return false;
   }).toList();
 });
 
 double pinHue(MapPinType type) => switch (type) {
-  MapPinType.flare    => BitmapDescriptor.hueOrange,
-  MapPinType.help     => BitmapDescriptor.hueRed,
-  MapPinType.business => BitmapDescriptor.hueAzure,
-};
+      MapPinType.flare => BitmapDescriptor.hueOrange,
+      MapPinType.help => BitmapDescriptor.hueRed,
+      MapPinType.business => BitmapDescriptor.hueAzure,
+    };

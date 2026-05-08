@@ -7,17 +7,23 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../core/constants/app_constants.dart';
 
+// Reconnect backoff: 3s → 6s → 12s → … max 60s
+const _backoffBase = Duration(seconds: 3);
+const _backoffMax = Duration(seconds: 60);
+
 class WsService {
   WebSocketChannel? _channel;
   StreamSubscription? _sub;
   Timer? _reconnectTimer;
   String? _token;
+  int _reconnectAttempts = 0;
 
   final _heatmapController = StreamController<Map<String, int>>.broadcast();
   Stream<Map<String, int>> get heatmapStream => _heatmapController.stream;
 
   void connect(String jwtToken) {
     _token = jwtToken;
+    _reconnectAttempts = 0; // başarılı bağlantı — backoff sıfırla
     _channel = WebSocketChannel.connect(
       Uri.parse('${AppConstants.wsBaseUrl}/ws/location?token=$jwtToken'),
     );
@@ -56,9 +62,17 @@ class WsService {
 
   void _scheduleReconnect() {
     _reconnectTimer?.cancel();
-    _reconnectTimer = Timer(const Duration(seconds: 3), () {
+    _reconnectAttempts++;
+    final delay = _backoffDelay(_reconnectAttempts);
+    _reconnectTimer = Timer(delay, () {
       if (_token != null) connect(_token!);
     });
+  }
+
+  /// Exponential backoff: 3s × 2^(attempt-1), max 60s
+  static Duration _backoffDelay(int attempt) {
+    final seconds = _backoffBase.inSeconds * (1 << (attempt - 1).clamp(0, 4));
+    return Duration(seconds: seconds.clamp(0, _backoffMax.inSeconds));
   }
 
   void _send(Map<String, dynamic> payload) {
