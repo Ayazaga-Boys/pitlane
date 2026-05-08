@@ -125,7 +125,7 @@ flutter run \
 - [ ] Yardım talebi formu (sorun tipi seç — UF-03)
 - [ ] Yardım bekleme ekranı (pulse animasyonu)
 - [ ] "Yardım edeceğim" → 1-1 sohbet açılır
-- [ ] İşletme pin kartı detay
+- [x] İşletme pin kartı detay
 
 ### Sprint 6 — Kamera & Ayarlar (Hafta 11-12)
 - [ ] Snap kamera ekranı (UF-06) — foto + 15sn video

@@ -18,6 +18,7 @@ class MapPin {
     required this.title,
     required this.position,
     this.subtitle,
+    this.peerId,
   });
 
   final String id;
@@ -25,6 +26,7 @@ class MapPin {
   final String title;
   final LatLng position;
   final String? subtitle;
+  final String? peerId;
 }
 
 // ─── HTTP client ─────────────────────────────────────────────────────────────
@@ -120,6 +122,7 @@ Future<List<MapPin>> _fetchHelpPins(Dio dio) async {
       title: _issueTypeLabel(issueType),
       subtitle: item['description'] as String?,
       position: _h3ToLatLng(h3Cell),
+      peerId: item['requester_id'] as String?,
     );
   }).toList();
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -96,7 +97,13 @@ class _HelpDetailSheet extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           PitlaneButton(
             label: 'Mesaj Gönder',
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: pin.peerId == null
+                ? null
+                : () {
+                    final peerId = pin.peerId!;
+                    Navigator.of(context).pop();
+                    context.push('/messages/$peerId');
+                  },
           ),
           const SizedBox(height: AppSpacing.sm),
           SizedBox(
