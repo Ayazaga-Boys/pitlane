@@ -28,7 +28,7 @@ func main() {
 	cfg := config.Load()
 	hubCtx, hubCancel := context.WithCancel(context.Background())
 
-	var store location.LocationStore
+	var store location.CellStore
 	if cfg.ValkeyAddr != "" {
 		vs, err := location.NewValkeyStore(cfg.ValkeyAddr)
 		if err != nil {

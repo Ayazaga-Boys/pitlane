@@ -16,7 +16,8 @@ Future<void> main() async {
       anonKey: AppConstants.supabaseAnonKey,
       debug: AppConstants.isDev,
       authOptions: const FlutterAuthClientOptions(
-        authFlowType: AuthFlowType.implicit, // PKCE yerine implicit — numeric OTP alır
+        authFlowType:
+            AuthFlowType.implicit, // PKCE yerine implicit — numeric OTP alır
       ),
     );
   }
