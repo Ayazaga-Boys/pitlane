@@ -131,9 +131,9 @@ flutter run \
 - [ ] Snap kamera ekranı (UF-06) — foto + 15sn video
 - [ ] "Sürerken kullanma" kilidi (>10 km/h)
 - [ ] Otomotif filtreler (hız overlay, vites)
-- [ ] Ayarlar ekranı — tüm toggle'lar (UF-10)
-- [ ] Hesap silme akışı (2 adımlı onay)
-- [ ] Veri dışa aktarma butonu
+- [x] Ayarlar ekranı — tüm toggle'lar (UF-10)
+- [x] Hesap silme akışı (2 adımlı onay)
+- [x] Veri dışa aktarma butonu
 - [ ] Semantics etiketleri eksiksiz (26. doküman checklist)
 - [ ] Patrol E2E testleri (E2E-01..05)
 
