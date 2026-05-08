@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
-import 'map_filter_sheet.dart';
+import '../ui/map_filter_sheet.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
 
@@ -66,19 +66,14 @@ const _mockPins = [
 
 // ─── Provider ───────────────────────────────────────────────────────────────
 
-final mapPinsProvider = Provider.family<Set<Marker>, MapFilters>((ref, filters) {
+final mapPinsProvider = Provider.family<Set<Marker>, MapFilters>((ref, f) {
+  final filters = f;
   final filtered = _mockPins.where((pin) {
-    // Pin tipi filtresi
-    if (filters.pin != PinFilter.all) {
-      final match = switch (filters.pin) {
-        PinFilter.flare    => pin.type == MapPinType.flare,
-        PinFilter.help     => pin.type == MapPinType.help,
-        PinFilter.business => pin.type == MapPinType.business,
-        PinFilter.all      => true,
-      };
-      if (!match) return false;
-    }
-    return true;
+    if (filters.pin == PinFilter.all) return true;
+    if (filters.pin == PinFilter.flare    && pin.type == MapPinType.flare)    return true;
+    if (filters.pin == PinFilter.help     && pin.type == MapPinType.help)     return true;
+    if (filters.pin == PinFilter.business && pin.type == MapPinType.business) return true;
+    return false;
   });
 
   return filtered.map((pin) => _buildMarker(pin)).toSet();
