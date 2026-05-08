@@ -128,9 +128,9 @@ flutter run \
 - [x] İşletme pin kartı detay
 
 ### Sprint 6 — Kamera & Ayarlar (Hafta 11-12)
-- [ ] Snap kamera ekranı (UF-06) — foto + 15sn video
-- [ ] "Sürerken kullanma" kilidi (>10 km/h)
-- [ ] Otomotif filtreler (hız overlay, vites)
+- [x] Snap kamera ekranı (UF-06) — foto + 15sn video
+- [x] "Sürerken kullanma" kilidi (>10 km/h)
+- [x] Otomotif filtreler (hız overlay, vites)
 - [x] Ayarlar ekranı — tüm toggle'lar (UF-10)
 - [x] Hesap silme akışı (2 adımlı onay)
 - [x] Veri dışa aktarma butonu
