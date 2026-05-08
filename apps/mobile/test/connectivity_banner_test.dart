@@ -56,8 +56,7 @@ void main() {
       for (final entry in expected.entries) {
         final attempt = entry.key;
         final want = entry.value;
-        final seconds =
-            (base * (1 << (attempt - 1).clamp(0, 4))).clamp(0, 60);
+        final seconds = (base * (1 << (attempt - 1).clamp(0, 4))).clamp(0, 60);
         expect(seconds, want, reason: 'attempt $attempt');
       }
     });
@@ -71,8 +70,7 @@ void main() {
     test('never exceeds 60s', () {
       const base = 3;
       for (var attempt = 1; attempt <= 20; attempt++) {
-        final seconds =
-            (base * (1 << (attempt - 1).clamp(0, 4))).clamp(0, 60);
+        final seconds = (base * (1 << (attempt - 1).clamp(0, 4))).clamp(0, 60);
         expect(seconds, lessThanOrEqualTo(60), reason: 'attempt $attempt');
       }
     });
