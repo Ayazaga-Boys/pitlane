@@ -21,7 +21,8 @@ class MapScreen extends ConsumerStatefulWidget {
   ConsumerState<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends ConsumerState<MapScreen> {
+class _MapScreenState extends ConsumerState<MapScreen>
+    with WidgetsBindingObserver {
   GoogleMapController? _mapController;
   bool _showPermissionRationale = false;
 
@@ -33,13 +34,42 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAndStartLocation();
+    WidgetsBinding.instance.addObserver(this);
+    // Direkt tracking başlat — geolocator kendi izin dialogunu gösterir
+    Future.microtask(() {
+      if (mounted) ref.read(locationProvider.notifier).startTracking();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _showPermissionRationale) {
+      _checkAndStartLocation();
+    }
   }
 
   Future<void> _checkAndStartLocation() async {
-    final status = await Permission.locationWhenInUse.status;
+    var status = await Permission.locationWhenInUse.status;
     if (!mounted) return;
+
     if (status.isGranted || status.isLimited) {
+      setState(() => _showPermissionRationale = false);
+      ref.read(locationProvider.notifier).startTracking();
+      return;
+    }
+
+    // Direkt sistem dialogunu göster
+    status = await Permission.locationWhenInUse.request();
+    if (!mounted) return;
+
+    if (status.isGranted || status.isLimited) {
+      setState(() => _showPermissionRationale = false);
       ref.read(locationProvider.notifier).startTracking();
     } else {
       setState(() => _showPermissionRationale = true);
