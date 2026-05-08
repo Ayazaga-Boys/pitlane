@@ -116,8 +116,8 @@ flutter run \
 - [x] Flare sohbet odası
 - [x] Şikayet et + Engelle UI (UF-09)
 - [ ] firebase_messaging foreground/background/terminated handler (UF-13)
-- [ ] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
-- [ ] Cihaz token kayıt — `POST /v1/notifications/devices`
+- [x] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
+- [x] Cihaz token kayıt — `POST /v1/notifications/devices`
 - [x] Bildirim listesi ekranı
 - [x] Bildirim ayarları (kategori toggle'ları)
 

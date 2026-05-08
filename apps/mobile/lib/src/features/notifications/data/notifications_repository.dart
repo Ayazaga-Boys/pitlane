@@ -76,8 +76,14 @@ class NotificationsRepository {
 
   Map<String, String> _authHeaders() {
     final token = _supabase.auth.currentSession?.accessToken;
-    if (token == null) throw const UnauthorizedException();
-    return {'Authorization': 'Bearer $token'};
+    if (token != null) return {'Authorization': 'Bearer $token'};
+    if (AppConstants.isDev) {
+      return {
+        'x-dev-user-id': 'c87820f3-a0af-4fe0-b848-6593ef413846',
+        'x-dev-user-email': 'dev@pitlane.test',
+      };
+    }
+    throw const UnauthorizedException();
   }
 
   static const _mockNotifications = [
@@ -105,6 +111,14 @@ class NotificationsRepository {
       deepLink: '/communities/istanbul-riders/messages',
       createdAtLabel: 'Dün',
       isRead: true,
+    ),
+    PitlaneNotification(
+      id: 'help-nearby',
+      type: PitlaneNotificationType.helpNearby,
+      title: 'Yakında yardım gerekiyor',
+      body: '100 m mesafede bir sürücü acil yardım istiyor.',
+      deepLink: '/help/local-help',
+      createdAtLabel: 'Şimdi',
     ),
   ];
 }
