@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../features/help/providers/help_request_provider.dart';
 import '../../../shared/widgets/pitlane_button.dart';
 import '../providers/map_pins_provider.dart';
 
@@ -17,12 +19,15 @@ void showHelpDetailSheet(BuildContext context, MapPin pin) {
   );
 }
 
-class _HelpDetailSheet extends StatelessWidget {
+class _HelpDetailSheet extends ConsumerWidget {
   const _HelpDetailSheet({required this.pin});
   final MapPin pin;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final detail = ref.watch(helpDetailProvider(pin.id));
+    final isLoading = detail.isLoading;
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
@@ -96,7 +101,26 @@ class _HelpDetailSheet extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
           PitlaneButton(
+            label: 'Yardım Edeceğim',
+            icon: Icons.volunteer_activism_outlined,
+            isLoading: isLoading,
+            onPressed: pin.peerId == null
+                ? null
+                : () async {
+                    final peerId = pin.peerId!;
+                    await ref
+                        .read(helpDetailProvider(pin.id).notifier)
+                        .respond();
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop();
+                    context.push('/messages/$peerId');
+                  },
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          PitlaneButton(
             label: 'Mesaj Gönder',
+            icon: Icons.chat_bubble_outline,
+            variant: PitlaneButtonVariant.secondary,
             onPressed: pin.peerId == null
                 ? null
                 : () {

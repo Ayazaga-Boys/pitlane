@@ -39,3 +39,23 @@ final helpRequestProvider =
     AsyncNotifierProvider<HelpRequestNotifier, HelpRequest?>(
   HelpRequestNotifier.new,
 );
+
+class HelpDetailNotifier extends FamilyAsyncNotifier<HelpRequest, String> {
+  @override
+  Future<HelpRequest> build(String arg) {
+    return ref.read(helpRepositoryProvider).getHelpRequestDetail(arg);
+  }
+
+  Future<HelpRequest?> respond() async {
+    final result = await AsyncValue.guard(
+      () => ref.read(helpRepositoryProvider).respondToHelpRequest(arg),
+    );
+    state = result;
+    return result.valueOrNull;
+  }
+}
+
+final helpDetailProvider =
+    AsyncNotifierProvider.family<HelpDetailNotifier, HelpRequest, String>(
+  HelpDetailNotifier.new,
+);
