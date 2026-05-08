@@ -7,6 +7,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
+
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
 const (
@@ -68,6 +70,7 @@ func (c *Client) readPump() {
 		if err := json.Unmarshal(raw, &msg); err != nil {
 			continue
 		}
+		metrics.WsMessagesTotal.WithLabelValues(msg.Type).Inc()
 		c.handleMessage(msg)
 	}
 }

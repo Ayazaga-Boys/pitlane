@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -66,6 +67,7 @@ const _mockPins = [
 
 // ─── Provider ───────────────────────────────────────────────────────────────
 
+// onTap callback'i dışarıdan alan provider
 final mapPinsProvider = Provider.family<Set<Marker>, MapFilters>((ref, f) {
   final filters = f;
   final filtered = _mockPins.where((pin) {
@@ -79,7 +81,7 @@ final mapPinsProvider = Provider.family<Set<Marker>, MapFilters>((ref, f) {
   return filtered.map((pin) => _buildMarker(pin)).toSet();
 });
 
-Marker _buildMarker(MapPin pin) {
+Marker _buildMarker(MapPin pin, {VoidCallback? onTap}) {
   final hue = switch (pin.type) {
     MapPinType.flare    => BitmapDescriptor.hueOrange,
     MapPinType.help     => BitmapDescriptor.hueRed,
@@ -93,6 +95,26 @@ Marker _buildMarker(MapPin pin) {
     infoWindow: InfoWindow(
       title: pin.title,
       snippet: pin.subtitle,
+      onTap: onTap,
     ),
+    onTap: () {
+      // İlk tap info window'u gösterir, ikinci tap detaya gider
+    },
   );
+}
+
+// Pin tıklama handler — MapScreen'den çağrılır
+void handlePinTap(BuildContext context, MapPin pin) {
+  switch (pin.type) {
+    case MapPinType.flare:
+      // FlareDetailScreen'e git
+      Navigator.of(context).pushNamed('/flares/${pin.id}');
+      break;
+    case MapPinType.help:
+      // Yardım detay
+      break;
+    case MapPinType.business:
+      // İşletme detay
+      break;
+  }
 }

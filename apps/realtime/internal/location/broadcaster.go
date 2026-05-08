@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 
 	"github.com/rs/zerolog/log"
+
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
 // Sender — hub'ın metodlarını soyutlar (döngüsel import önlemek için)
@@ -25,6 +27,7 @@ func NewBroadcaster(store *Store) *Broadcaster {
 
 // OnCellUpdate — kullanıcı konum güncelleyince çağrılır
 func (b *Broadcaster) OnCellUpdate(_ context.Context, userID, h3Cell string, sender Sender) {
+	metrics.LocationUpdatesTotal.Inc()
 	counts := b.store.GetCellCounts(context.Background())
 
 	payload := map[string]any{
@@ -39,6 +42,7 @@ func (b *Broadcaster) OnCellUpdate(_ context.Context, userID, h3Cell string, sen
 	}
 
 	// Tüm bağlı kullanıcılara yayınla
+	metrics.HeatmapBroadcastsTotal.Inc()
 	sender.SendToAll(msg)
 	log.Debug().
 		Str("userID", userID).
