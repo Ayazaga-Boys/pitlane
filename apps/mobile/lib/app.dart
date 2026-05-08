@@ -19,8 +19,11 @@ import 'src/features/messages/ui/chat_screen.dart';
 import 'src/features/messages/ui/messages_screen.dart';
 import 'src/features/messages/ui/room_chat_screen.dart';
 import 'src/features/messages/models/message_room.dart';
+import 'src/features/notifications/ui/notification_settings_screen.dart';
+import 'src/features/notifications/ui/notifications_screen.dart';
 import 'src/features/profile/ui/profile_completion_screen.dart';
 import 'src/features/profile/ui/profile_screen.dart';
+import 'src/features/settings/ui/settings_screen.dart';
 import 'src/shared/widgets/main_shell.dart';
 
 // ─── Placeholder screens (Sprint 3-4 gelince replace edilir) ────────────────
@@ -143,7 +146,15 @@ final _routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
           GoRoute(
             path: '/settings',
-            builder: (_, __) => const _PlaceholderScreen('Ayarlar'),
+            builder: (_, __) => const SettingsScreen(),
+          ),
+          GoRoute(
+            path: '/settings/notifications',
+            builder: (_, __) => const NotificationSettingsScreen(),
+          ),
+          GoRoute(
+            path: '/notifications',
+            builder: (_, __) => const NotificationsScreen(),
           ),
           GoRoute(
             path: '/help',
