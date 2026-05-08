@@ -17,12 +17,15 @@ type valkeyStore struct {
 
 // NewValkeyStore — Valkey bağlantısı kurar; bağlantı başarısız olursa hata döner.
 func NewValkeyStore(addr string) (*valkeyStore, error) {
-	client := redis.NewClient(&redis.Options{
-		Addr:         addr,
-		DialTimeout:  5 * time.Second,
-		ReadTimeout:  3 * time.Second,
-		WriteTimeout: 3 * time.Second,
-	})
+	opts, err := redis.ParseURL(addr)
+	if err != nil {
+		return nil, fmt.Errorf("valkey parse url failed: %w", err)
+	}
+	opts.DialTimeout = 5 * time.Second
+	opts.ReadTimeout = 3 * time.Second
+	opts.WriteTimeout = 3 * time.Second
+
+	client := redis.NewClient(opts)
 	if err := client.Ping(context.Background()).Err(); err != nil {
 		return nil, fmt.Errorf("valkey ping failed: %w", err)
 	}

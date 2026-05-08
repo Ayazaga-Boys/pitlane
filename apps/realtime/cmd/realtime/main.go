@@ -27,7 +27,21 @@ func main() {
 
 	cfg := config.Load()
 	hubCtx, hubCancel := context.WithCancel(context.Background())
-	store := location.NewStoreWithContext(hubCtx) // evict goroutine hub ile birlikte durur
+
+	var store location.LocationStore
+	if cfg.ValkeyAddr != "" {
+		vs, err := location.NewValkeyStore(cfg.ValkeyAddr)
+		if err != nil {
+			log.Warn().Err(err).Msg("valkey_unavailable_fallback_memory")
+			store = location.NewStoreWithContext(hubCtx)
+		} else {
+			log.Info().Str("addr", cfg.ValkeyAddr).Msg("valkey_connected")
+			store = vs
+		}
+	} else {
+		store = location.NewStoreWithContext(hubCtx)
+	}
+
 	broadcaster := location.NewBroadcaster(store)
 	h := hub.New(&cfg, store, broadcaster)
 	go h.Run(hubCtx)
