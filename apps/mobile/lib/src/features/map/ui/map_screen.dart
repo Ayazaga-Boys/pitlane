@@ -135,13 +135,19 @@ class _MapScreenState extends ConsumerState<MapScreen>
     // allPinsProvider'ı direkt izle — async tamamlanınca harita yeniden çizilir
     final allPins = ref.watch(allPinsProvider).valueOrNull ?? [];
     final pinData = allPins.where((pin) {
-      if (filters.pin == PinFilter.all) return true;
-      if (filters.pin == PinFilter.flare && pin.type == MapPinType.flare)
+      if (filters.pin == PinFilter.all) {
         return true;
-      if (filters.pin == PinFilter.help && pin.type == MapPinType.help)
+      }
+      if (filters.pin == PinFilter.flare && pin.type == MapPinType.flare) {
         return true;
-      if (filters.pin == PinFilter.business && pin.type == MapPinType.business)
+      }
+      if (filters.pin == PinFilter.help && pin.type == MapPinType.help) {
         return true;
+      }
+      if (filters.pin == PinFilter.business &&
+          pin.type == MapPinType.business) {
+        return true;
+      }
       return false;
     }).toList();
     final pins = pinData.map((p) => _toMarker(context, p)).toSet();
