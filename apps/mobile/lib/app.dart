@@ -9,6 +9,7 @@ import 'src/features/auth/ui/login_screen.dart';
 import 'src/features/auth/ui/otp_screen.dart';
 import 'src/features/auth/ui/waiting_list_screen.dart';
 import 'src/features/business/ui/business_pin_detail_screen.dart';
+import 'src/features/camera/ui/snap_camera_screen.dart';
 import 'src/features/communities/ui/community_create_screen.dart';
 import 'src/features/communities/ui/community_detail_screen.dart';
 import 'src/features/communities/ui/communities_screen.dart';
@@ -27,23 +28,6 @@ import 'src/features/profile/ui/profile_completion_screen.dart';
 import 'src/features/profile/ui/profile_screen.dart';
 import 'src/features/settings/ui/settings_screen.dart';
 import 'src/shared/widgets/main_shell.dart';
-
-// ─── Placeholder screens (Sprint 3-4 gelince replace edilir) ────────────────
-
-class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen(this.title);
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-      ),
-    );
-  }
-}
 
 // ─── Router ─────────────────────────────────────────────────────────────────
 
@@ -169,7 +153,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/camera',
-            builder: (_, __) => const _PlaceholderScreen('Snap Kamera'),
+            builder: (_, __) => const SnapCameraScreen(),
           ),
         ],
       ),
