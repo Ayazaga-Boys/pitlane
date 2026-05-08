@@ -15,6 +15,7 @@ import 'src/features/communities/ui/community_detail_screen.dart';
 import 'src/features/communities/ui/communities_screen.dart';
 import 'src/features/flares/ui/flare_create_screen.dart';
 import 'src/features/flares/ui/flare_detail_screen.dart';
+import 'src/features/help/ui/help_detail_screen.dart';
 import 'src/features/help/ui/help_waiting_screen.dart';
 import 'src/features/map/providers/ws_connection_provider.dart';
 import 'src/features/map/ui/map_screen.dart';
@@ -150,7 +151,9 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/help/:id',
-            builder: (_, __) => const HelpWaitingScreen(),
+            builder: (_, state) => HelpDetailScreen(
+              id: state.pathParameters['id']!,
+            ),
           ),
           GoRoute(
             path: '/camera',

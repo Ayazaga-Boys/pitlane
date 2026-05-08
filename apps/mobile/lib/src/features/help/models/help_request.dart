@@ -68,6 +68,7 @@ enum HelpIssueType {
 
 enum HelpRequestStatus {
   open('open', 'Yardım bekleniyor'),
+  helperFound('helper_found', 'Yardım yolda'),
   accepted('accepted', 'Yardım yolda'),
   cancelled('cancelled', 'İptal edildi'),
   expired('expired', 'Süresi doldu'),
