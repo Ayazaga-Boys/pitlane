@@ -268,7 +268,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
                 _MapFab(
                   icon: Icons.camera_alt_outlined,
                   label: 'Snap',
-                  onPressed: () => _showCameraSheet(context),
+                  onPressed: () => context.push('/camera'),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 SosPulseWidget(
@@ -312,44 +312,6 @@ Marker _toMarker(BuildContext context, MapPin pin) => Marker(
         onTap: () => _navigateToPin(context, pin),
       ),
     );
-
-void _showCameraSheet(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: const Color(0xFF1a1a2e),
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (_) => Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                  color: const Color(0xFF2a2a4a),
-                  borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 20),
-          const Icon(Icons.camera_alt_outlined,
-              size: 48, color: Color(0xFFE63946)),
-          const SizedBox(height: 12),
-          const Text('Snap Kamera',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white)),
-          const SizedBox(height: 8),
-          const Text('Yakında geliyor — harita üzerinde an paylaş',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF888888), fontSize: 14)),
-          const SizedBox(height: 24),
-        ],
-      ),
-    ),
-  );
-}
 
 void _navigateToPin(BuildContext context, MapPin pin) {
   switch (pin.type) {
