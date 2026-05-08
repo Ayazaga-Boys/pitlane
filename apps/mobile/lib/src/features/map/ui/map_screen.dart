@@ -13,6 +13,7 @@ import '../providers/location_provider.dart';
 import '../providers/map_pins_provider.dart';
 import 'location_permission_screen.dart';
 import 'map_filter_sheet.dart';
+// PinFilter import için
 import 'sos_pulse_widget.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -131,7 +132,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final currentCell = ref.watch(locationProvider).valueOrNull;
     final filters = ref.watch(mapFiltersProvider);
     final hasFilter = !filters.isDefault;
-    final pinData = ref.watch(filteredPinsProvider(filters));
+    // allPinsProvider'ı direkt izle — async tamamlanınca harita yeniden çizilir
+    final allPins = ref.watch(allPinsProvider).valueOrNull ?? [];
+    final pinData = allPins.where((pin) {
+      if (filters.pin == PinFilter.all) return true;
+      if (filters.pin == PinFilter.flare && pin.type == MapPinType.flare) return true;
+      if (filters.pin == PinFilter.help && pin.type == MapPinType.help) return true;
+      if (filters.pin == PinFilter.business && pin.type == MapPinType.business) return true;
+      return false;
+    }).toList();
     final pins = pinData.map((p) => _toMarker(context, p)).toSet();
 
     return Scaffold(
