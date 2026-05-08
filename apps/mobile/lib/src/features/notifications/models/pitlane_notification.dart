@@ -31,12 +31,18 @@ class PitlaneNotification {
   });
 
   factory PitlaneNotification.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+    final deepLinkFromData = data is Map<String, dynamic>
+        ? data['deep_link'] as String? ??
+            _deepLinkFromNotificationData(json['type'] as String?, data)
+        : null;
+
     return PitlaneNotification(
       id: json['id'] as String? ?? '',
       type: PitlaneNotificationType.fromApiValue(json['type'] as String?),
       title: json['title'] as String? ?? '',
       body: json['body'] as String? ?? '',
-      deepLink: json['deep_link'] as String?,
+      deepLink: json['deep_link'] as String? ?? deepLinkFromData,
       createdAtLabel: json['created_at_label'] as String? ??
           json['created_at'] as String? ??
           '',
@@ -62,6 +68,25 @@ class PitlaneNotification {
       createdAtLabel: createdAtLabel,
       isRead: isRead ?? this.isRead,
     );
+  }
+
+  static String? _deepLinkFromNotificationData(
+    String? type,
+    Map<String, dynamic> data,
+  ) {
+    return switch (PitlaneNotificationType.fromApiValue(type)) {
+      PitlaneNotificationType.helpNearby =>
+        data['help_id'] == null ? null : '/help/${data['help_id']}',
+      PitlaneNotificationType.flareInvite ||
+      PitlaneNotificationType.flareStarting =>
+        data['flare_id'] == null ? null : '/flares/${data['flare_id']}',
+      PitlaneNotificationType.dmNew =>
+        data['peer_id'] == null ? null : '/messages/${data['peer_id']}',
+      PitlaneNotificationType.communityMessage => data['community_id'] == null
+          ? null
+          : '/communities/${data['community_id']}/messages',
+      PitlaneNotificationType.system => null,
+    };
   }
 }
 

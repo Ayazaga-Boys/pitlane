@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../models/pitlane_notification.dart';
 import '../providers/notifications_provider.dart';
+import '../providers/push_notifications_provider.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -85,7 +86,13 @@ class _NotificationTile extends ConsumerWidget {
           if (!context.mounted) return;
           final deepLink = notification.deepLink;
           if (deepLink != null && deepLink.isNotEmpty) {
-            context.push(deepLink);
+            final safeDeepLink = ref
+                .read(pushDeepLinkResolverProvider)
+                .resolveMap({
+              'type': notification.type.apiValue,
+              'deep_link': deepLink
+            });
+            if (safeDeepLink != null) context.push(safeDeepLink);
           }
         },
       ),

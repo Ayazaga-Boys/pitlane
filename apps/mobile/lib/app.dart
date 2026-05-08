@@ -22,6 +22,7 @@ import 'src/features/messages/ui/chat_screen.dart';
 import 'src/features/messages/ui/messages_screen.dart';
 import 'src/features/messages/ui/room_chat_screen.dart';
 import 'src/features/messages/models/message_room.dart';
+import 'src/features/notifications/providers/push_notifications_provider.dart';
 import 'src/features/notifications/ui/notification_settings_screen.dart';
 import 'src/features/notifications/ui/notifications_screen.dart';
 import 'src/features/profile/ui/profile_completion_screen.dart';
@@ -174,6 +175,7 @@ class PitlaneApp extends ConsumerWidget {
     final router = ref.watch(_routerProvider);
     // Supabase oturumu açılınca WS'e otomatik bağlan
     ref.watch(wsConnectionProvider);
+    ref.watch(pushNotificationControllerProvider);
 
     return MaterialApp.router(
       title: 'Pitlane',
