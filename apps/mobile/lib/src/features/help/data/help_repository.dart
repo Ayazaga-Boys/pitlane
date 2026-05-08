@@ -66,6 +66,44 @@ class HelpRepository {
     }
   }
 
+  Future<HelpRequest> getHelpRequestDetail(String id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/help/$id',
+        options: Options(headers: _authHeaders()),
+      );
+
+      final data = response.data?['data'];
+      if (data is Map<String, dynamic>) return HelpRequest.fromJson(data);
+      return _mockOpenHelpRequest(id);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
+      return _mockOpenHelpRequest(id);
+    }
+  }
+
+  Future<HelpRequest> respondToHelpRequest(String id) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/v1/help/$id/respond',
+        options: Options(headers: _authHeaders()),
+      );
+
+      final data = response.data?['data'];
+      if (data is Map<String, dynamic>) return HelpRequest.fromJson(data);
+      return _mockRespondedHelpRequest(id);
+    } on DioException catch (error) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode == 401) throw const UnauthorizedException();
+      if (statusCode == 409 || statusCode == 422) {
+        throw ValidationException(_extractErrorMessage(error.response?.data));
+      }
+      return _mockRespondedHelpRequest(id);
+    }
+  }
+
   Future<HelpRequest> cancelHelpRequest(HelpRequest request) async {
     try {
       final response = await _dio.delete<Map<String, dynamic>>(
@@ -118,6 +156,35 @@ class HelpRepository {
       status: HelpRequestStatus.open,
       expiresAt: now.add(const Duration(minutes: 30)),
       createdAt: now,
+    );
+  }
+
+  HelpRequest _mockOpenHelpRequest(String id) {
+    final now = DateTime.now();
+    return HelpRequest(
+      id: id,
+      requesterId: 'dev-help-requester',
+      h3Cell: '89283082803ffff',
+      issueType: HelpIssueType.breakdown,
+      description: 'Yakındaki sürücünün yardıma ihtiyacı var.',
+      status: HelpRequestStatus.open,
+      expiresAt: now.add(const Duration(minutes: 26)),
+      createdAt: now.subtract(const Duration(minutes: 4)),
+    );
+  }
+
+  HelpRequest _mockRespondedHelpRequest(String id) {
+    final now = DateTime.now();
+    return HelpRequest(
+      id: id,
+      requesterId: 'dev-help-requester',
+      h3Cell: '89283082803ffff',
+      issueType: HelpIssueType.breakdown,
+      description: 'Yakındaki sürücünün yardıma ihtiyacı var.',
+      status: HelpRequestStatus.helperFound,
+      helperId: 'dev-current-user',
+      expiresAt: now.add(const Duration(minutes: 26)),
+      createdAt: now.subtract(const Duration(minutes: 4)),
     );
   }
 
