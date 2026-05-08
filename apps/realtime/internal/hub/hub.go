@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"context"
 	"net/http"
 	"sync"
 
@@ -56,9 +57,18 @@ func New(cfg *config.Config, store *location.Store, bc *location.Broadcaster) *H
 	}
 }
 
-func (h *Hub) Run() {
+func (h *Hub) Run(ctx context.Context) {
 	for {
 		select {
+		case <-ctx.Done():
+			h.mu.Lock()
+			for _, c := range h.clients {
+				close(c.send)
+			}
+			h.mu.Unlock()
+			log.Info().Msg("hub_shutdown")
+			return
+
 		case c := <-h.register:
 			h.mu.Lock()
 			h.clients[c.userID] = c

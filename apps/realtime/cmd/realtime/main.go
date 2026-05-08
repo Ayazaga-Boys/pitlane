@@ -29,7 +29,9 @@ func main() {
 	store := location.NewStore()
 	broadcaster := location.NewBroadcaster(store)
 	h := hub.New(&cfg, store, broadcaster)
-	go h.Run()
+
+	hubCtx, hubCancel := context.WithCancel(context.Background())
+	go h.Run(hubCtx)
 
 	// Aktif bağlantı sayısını periyodik Prometheus'a yaz
 	go func() {
@@ -66,9 +68,10 @@ func main() {
 	<-quit
 
 	log.Info().Msg("graceful_shutdown_started")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	hubCancel() // hub goroutine'ini durdur, tüm client send kanallarını kapat
+	shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutCancel()
+	if err := srv.Shutdown(shutCtx); err != nil {
 		log.Error().Err(err).Msg("shutdown_error")
 	}
 	log.Info().Msg("graceful_shutdown_complete")

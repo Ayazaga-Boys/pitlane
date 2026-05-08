@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -60,7 +61,7 @@ func newTestClient(h *Hub, userID string) *Client {
 
 func TestHubRegisterIncrementsCount(t *testing.T) {
 	h := newTestHub()
-	go h.Run()
+	go h.Run(context.Background())
 
 	c := newTestClient(h, "user-1")
 	h.register <- c
@@ -75,7 +76,7 @@ func TestHubRegisterIncrementsCount(t *testing.T) {
 
 func TestHubUnregisterDecrementsCount(t *testing.T) {
 	h := newTestHub()
-	go h.Run()
+	go h.Run(context.Background())
 
 	c := newTestClient(h, "user-2")
 	h.register <- c
@@ -91,7 +92,7 @@ func TestHubUnregisterDecrementsCount(t *testing.T) {
 
 func TestSendToRegisteredUser(t *testing.T) {
 	h := newTestHub()
-	go h.Run()
+	go h.Run(context.Background())
 
 	c := newTestClient(h, "user-3")
 	h.register <- c
@@ -112,7 +113,7 @@ func TestSendToRegisteredUser(t *testing.T) {
 
 func TestSendToAllDeliversToAll(t *testing.T) {
 	h := newTestHub()
-	go h.Run()
+	go h.Run(context.Background())
 
 	c1 := newTestClient(h, "user-4a")
 	c2 := newTestClient(h, "user-4b")
@@ -131,6 +132,51 @@ func TestSendToAllDeliversToAll(t *testing.T) {
 			}
 		case <-time.After(100 * time.Millisecond):
 			t.Errorf("client %s did not receive broadcast", c.userID)
+		}
+	}
+}
+
+func TestHubShutdownOnContextCancel(t *testing.T) {
+	h := newTestHub()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	c := newTestClient(h, "user-shutdown")
+	h.register <- c
+	done := make(chan struct{})
+	go func() {
+		h.Run(ctx)
+		close(done)
+	}()
+	time.Sleep(10 * time.Millisecond)
+
+	cancel()
+
+	select {
+	case <-done:
+		// Run() returned — hub kapandı ✓
+	case <-time.After(200 * time.Millisecond):
+		t.Error("hub did not shut down after context cancel")
+	}
+}
+
+func TestIsValidH3Cell(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{"89283082803ffff", true},            // geçerli res-9
+		{"8928308280fffff", true},            // geçerli res-8
+		{"", false},                          // boş
+		{"89283082803fff", false},            // 14 char — kısa
+		{"89283082803fffff", false},          // 16 char — uzun
+		{"89283082803FFFF", false},           // büyük harf
+		{"89283082803gfff", false},           // geçersiz hex char
+		{"89283082803 fff", false},           // boşluk içeriyor
+	}
+	for _, tt := range tests {
+		got := isValidH3Cell(tt.input)
+		if got != tt.want {
+			t.Errorf("isValidH3Cell(%q) = %v, want %v", tt.input, got, tt.want)
 		}
 	}
 }
