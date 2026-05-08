@@ -1,20 +1,13 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../features/help/models/help_request.dart';
+import '../../../features/help/providers/help_request_provider.dart';
 import '../../../shared/widgets/pitlane_button.dart';
 import '../providers/location_provider.dart';
-
-const _issueTypes = [
-  ('breakdown', '🔧', 'Arıza'),
-  ('flat_tire', '🛞', 'Lastik Patladı'),
-  ('fuel', '⛽', 'Yakıt Bitti'),
-  ('accident', '⚠️', 'Kaza'),
-  ('other', '🆘', 'Diğer'),
-];
 
 Future<void> showSosSheet(BuildContext context, WidgetRef ref) {
   return showModalBottomSheet(
@@ -37,9 +30,8 @@ class _SosSheet extends ConsumerStatefulWidget {
 }
 
 class _SosSheetState extends ConsumerState<_SosSheet> {
-  String _selectedType = 'breakdown';
+  HelpIssueType _selectedType = HelpIssueType.breakdown;
   final _descController = TextEditingController();
-  bool _loading = false;
   String? _error;
 
   @override
@@ -55,49 +47,33 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
       return;
     }
 
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() => _error = null);
 
-    try {
-      final dio = Dio(BaseOptions(
-        baseUrl: '${AppConstants.apiBaseUrl}/v1',
-        headers: {
-          'Content-Type': 'application/json',
-          if (AppConstants.isDev)
-            'x-dev-user-id': 'c87820f3-a0af-4fe0-b848-6593ef413846',
-        },
-      ));
-
-      await dio.post<void>('/help-requests', data: {
-        'h3_cell': h3Cell,
-        'issue_type': _selectedType,
-        if (_descController.text.trim().isNotEmpty)
-          'description': _descController.text.trim(),
-      });
-
-      if (mounted) Navigator.of(context).pop();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('Yardım isteği gönderildi — yakındaki sürücüler görüyor'),
-            backgroundColor: AppColors.error,
+    final request = await ref.read(helpRequestProvider.notifier).create(
+          CreateHelpRequestDraft(
+            h3Cell: h3Cell,
+            issueType: _selectedType,
+            description: _descController.text.trim().isEmpty
+                ? null
+                : _descController.text.trim(),
           ),
         );
-      }
-    } on DioException catch (e) {
-      final msg =
-          (e.response?.data as Map?)?['error'] as String? ?? 'Bir hata oluştu';
-      setState(() => _error = msg);
-    } finally {
-      if (mounted) setState(() => _loading = false);
+
+    final error = ref.read(helpRequestProvider).error;
+    if (!mounted) return;
+    if (request == null) {
+      setState(() => _error = error?.toString() ?? 'Bir hata oluştu');
+      return;
     }
+
+    Navigator.of(context).pop();
+    context.push('/help');
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(helpRequestProvider).isLoading;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.xl,
@@ -135,10 +111,10 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: _issueTypes.map((t) {
-              final selected = _selectedType == t.$1;
+            children: HelpIssueType.values.map((type) {
+              final selected = _selectedType == type;
               return GestureDetector(
-                onTap: () => setState(() => _selectedType = t.$1),
+                onTap: () => setState(() => _selectedType = type),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   padding: const EdgeInsets.symmetric(
@@ -147,7 +123,7 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
                     color: selected ? AppColors.error : AppColors.surface3,
                     borderRadius: BorderRadius.circular(AppSpacing.xl),
                   ),
-                  child: Text('${t.$2} ${t.$3}',
+                  child: Text('${type.emoji} ${type.label}',
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 13,
@@ -181,8 +157,8 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
           const SizedBox(height: AppSpacing.lg),
           PitlaneButton(
             label: 'Yardım İste',
-            onPressed: _loading ? null : _send,
-            isLoading: _loading,
+            onPressed: isLoading ? null : _send,
+            isLoading: isLoading,
           ),
         ],
       ),

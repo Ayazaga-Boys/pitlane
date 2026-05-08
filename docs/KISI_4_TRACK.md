@@ -122,8 +122,8 @@ flutter run \
 - [x] Bildirim ayarları (kategori toggle'ları)
 
 ### Sprint 5 — Yardım UI (Hafta 9-10)
-- [ ] Yardım talebi formu (sorun tipi seç — UF-03)
-- [ ] Yardım bekleme ekranı (pulse animasyonu)
+- [x] Yardım talebi formu (sorun tipi seç — UF-03)
+- [x] Yardım bekleme ekranı (pulse animasyonu)
 - [ ] "Yardım edeceğim" → 1-1 sohbet açılır
 - [x] İşletme pin kartı detay
 
