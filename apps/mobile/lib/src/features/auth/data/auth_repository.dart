@@ -12,11 +12,11 @@ class AuthRepository {
   Future<({bool valid, int remainingUses})> validateInviteCode(
       String code) async {
     try {
-      final res = await _dio.post(
+      final res = await _dio.post<Map<String, dynamic>>(
         '${AppConstants.apiBaseUrl}/v1/auth/invite-codes/validate',
         data: {'code': code.trim().toUpperCase()},
       );
-      final data = res.data['data'] as Map<String, dynamic>;
+      final data = res.data?['data'] as Map<String, dynamic>;
       return (
         valid: data['valid'] as bool,
         remainingUses: data['remaining_uses'] as int,

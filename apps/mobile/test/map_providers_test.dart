@@ -51,7 +51,7 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final f = const MapFilters(pin: PinFilter.flare);
+      const f = MapFilters(pin: PinFilter.flare);
       final pins1 = container.read(filteredPinsProvider(f));
       final pins2 = container.read(filteredPinsProvider(f));
       expect(identical(pins1, pins2), isTrue);

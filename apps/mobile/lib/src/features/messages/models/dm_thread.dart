@@ -10,15 +10,6 @@ class DmThread {
     this.isOnline = false,
   });
 
-  final String peerId;
-  final String displayName;
-  final String? username;
-  final String? avatarUrl;
-  final String lastMessagePreview;
-  final String lastMessageAtLabel;
-  final int unreadCount;
-  final bool isOnline;
-
   factory DmThread.fromJson(Map<String, dynamic> json) {
     return DmThread(
       peerId: json['peer_id'] as String? ?? json['id'] as String? ?? '',
@@ -36,4 +27,13 @@ class DmThread {
       isOnline: json['is_online'] as bool? ?? false,
     );
   }
+
+  final String peerId;
+  final String displayName;
+  final String? username;
+  final String? avatarUrl;
+  final String lastMessagePreview;
+  final String lastMessageAtLabel;
+  final int unreadCount;
+  final bool isOnline;
 }
