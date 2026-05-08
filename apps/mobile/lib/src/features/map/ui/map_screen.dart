@@ -136,9 +136,12 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final allPins = ref.watch(allPinsProvider).valueOrNull ?? [];
     final pinData = allPins.where((pin) {
       if (filters.pin == PinFilter.all) return true;
-      if (filters.pin == PinFilter.flare && pin.type == MapPinType.flare) return true;
-      if (filters.pin == PinFilter.help && pin.type == MapPinType.help) return true;
-      if (filters.pin == PinFilter.business && pin.type == MapPinType.business) return true;
+      if (filters.pin == PinFilter.flare && pin.type == MapPinType.flare)
+        return true;
+      if (filters.pin == PinFilter.help && pin.type == MapPinType.help)
+        return true;
+      if (filters.pin == PinFilter.business && pin.type == MapPinType.business)
+        return true;
       return false;
     }).toList();
     final pins = pinData.map((p) => _toMarker(context, p)).toSet();

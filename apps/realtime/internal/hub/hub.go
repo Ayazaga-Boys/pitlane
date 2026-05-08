@@ -37,7 +37,7 @@ func newUpgrader(cfg *config.Config) websocket.Upgrader {
 type Hub struct {
 	cfg         *config.Config
 	upgrader    websocket.Upgrader
-	store       location.LocationStore
+	store       location.CellStore
 	broadcaster *location.Broadcaster
 	clients     map[string]*Client // userID → Client
 	mu          sync.RWMutex
@@ -45,7 +45,7 @@ type Hub struct {
 	unregister  chan *Client
 }
 
-func New(cfg *config.Config, store location.LocationStore, bc *location.Broadcaster) *Hub {
+func New(cfg *config.Config, store location.CellStore, bc *location.Broadcaster) *Hub {
 	return &Hub{
 		cfg:         cfg,
 		upgrader:    newUpgrader(cfg),

@@ -2,9 +2,9 @@ package location
 
 import "context"
 
-// LocationStore — konum store'unun ortak arayüzü.
+// CellStore — konum store'unun ortak arayüzü.
 // In-memory (Store) ve Valkey (valkeyStore) bu interface'i implement eder.
-type LocationStore interface {
+type CellStore interface {
 	SetUserCell(ctx context.Context, userID, h3Cell string) error
 	GetUserCell(ctx context.Context, userID string) (string, error)
 	DeleteUserCell(ctx context.Context, userID string) error
