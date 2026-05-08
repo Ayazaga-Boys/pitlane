@@ -27,9 +27,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _verify() async {
     final token = _otpController.text.trim();
-    if (token.length != 6) {
+    if (token.length != 8) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('6 haneli kodu gir')),
+        const SnackBar(content: Text('8 haneli kodu gir')),
       );
       return;
     }
@@ -84,7 +84,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                '${widget.email} adresine 6 haneli kod gönderdik.',
+                '${widget.email} adresine 8 haneli kod gönderdik.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -94,7 +94,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 controller: _otpController,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
-                maxLength: 6,
+                maxLength: 8,
                 autofocus: true,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(

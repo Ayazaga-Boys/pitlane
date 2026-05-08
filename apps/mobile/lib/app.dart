@@ -52,13 +52,13 @@ final _routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/auth/invite-code',
     redirect: (context, state) {
-      // DEV: Auth bypass — Erol Supabase'i hazırlayınca restore edilecek:
-      // final session = ref.read(authStateProvider).valueOrNull?.session;
-      // if (!state.matchedLocation.startsWith('/auth') && session == null)
-      //   return '/auth/login';
-      // if (state.matchedLocation.startsWith('/auth') && session != null)
-      //   return '/map';
-      return '/map';
+      final session = ref.read(authStateProvider).valueOrNull?.session;
+      final isLoggedIn = session != null;
+      final isAuthRoute = state.matchedLocation.startsWith('/auth');
+
+      if (!isLoggedIn && !isAuthRoute) return '/auth/invite-code';
+      if (isLoggedIn && isAuthRoute) return '/map';
+      return null;
     },
     routes: [
       // ── Auth ──────────────────────────────────────────────────────────────
