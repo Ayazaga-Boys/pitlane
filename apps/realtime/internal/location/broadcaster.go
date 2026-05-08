@@ -18,10 +18,10 @@ type Sender interface {
 
 // Broadcaster — hücre güncellemelerini abonelere yayınlar
 type Broadcaster struct {
-	store *Store
+	store LocationStore
 }
 
-func NewBroadcaster(store *Store) *Broadcaster {
+func NewBroadcaster(store LocationStore) *Broadcaster {
 	return &Broadcaster{store: store}
 }
 
