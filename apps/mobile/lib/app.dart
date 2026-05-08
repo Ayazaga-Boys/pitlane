@@ -107,6 +107,11 @@ final _routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: '/pins/:id',
+            builder: (_, state) =>
+                _PlaceholderScreen('İşletme — ${state.pathParameters['id']}'),
+          ),
+          GoRoute(
             path: '/flares/create',
             builder: (_, state) => FlareCreateScreen(
               initialH3Cell: state.uri.queryParameters['h3cell'],

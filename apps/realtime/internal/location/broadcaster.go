@@ -3,11 +3,15 @@ package location
 import (
 	"context"
 	"encoding/json"
+	"sync"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
+
+const broadcastMinInterval = 5 * time.Second
 
 // Sender — hub'ın metodlarını soyutlar (döngüsel import önlemek için)
 type Sender interface {
@@ -16,9 +20,11 @@ type Sender interface {
 	ActiveCount() int
 }
 
-// Broadcaster — hücre güncellemelerini abonelere yayınlar
+// Broadcaster — hücre güncellemelerini abonelere yayınlar; max 5 saniyede bir broadcast
 type Broadcaster struct {
-	store CellStore
+	store       CellStore
+	mu          sync.Mutex
+	lastBroadAt time.Time
 }
 
 func NewBroadcaster(store CellStore) *Broadcaster {
@@ -28,6 +34,15 @@ func NewBroadcaster(store CellStore) *Broadcaster {
 // OnCellUpdate — kullanıcı konum güncelleyince çağrılır
 func (b *Broadcaster) OnCellUpdate(_ context.Context, userID, h3Cell string, sender Sender) {
 	metrics.LocationUpdatesTotal.Inc()
+
+	b.mu.Lock()
+	if time.Since(b.lastBroadAt) < broadcastMinInterval {
+		b.mu.Unlock()
+		return // throttle — çok yakın zamanda broadcast yapıldı
+	}
+	b.lastBroadAt = time.Now()
+	b.mu.Unlock()
+
 	counts := b.store.GetCellCounts(context.Background())
 
 	payload := map[string]any{
@@ -41,7 +56,6 @@ func (b *Broadcaster) OnCellUpdate(_ context.Context, userID, h3Cell string, sen
 		return
 	}
 
-	// Tüm bağlı kullanıcılara yayınla
 	metrics.HeatmapBroadcastsTotal.Inc()
 	sender.SendToAll(msg)
 	log.Debug().

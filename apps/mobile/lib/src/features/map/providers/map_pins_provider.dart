@@ -106,6 +106,32 @@ String? _formatDate(String? iso) {
   }
 }
 
+Future<List<MapPin>> _fetchHelpPins(Dio dio) async {
+  final res = await dio.get<Map<String, dynamic>>('/map/help',
+      queryParameters: {'h3cell': '89283082803ffff', 'k': '5'});
+  final items = (res.data?['data'] as List<dynamic>?) ?? [];
+  return items.map((dynamic raw) {
+    final item = raw as Map<String, dynamic>;
+    final h3Cell = item['h3_cell'] as String? ?? '';
+    final issueType = item['issue_type'] as String? ?? 'other';
+    return MapPin(
+      id: item['id'] as String,
+      type: MapPinType.help,
+      title: _issueTypeLabel(issueType),
+      subtitle: item['description'] as String?,
+      position: _h3ToLatLng(h3Cell),
+    );
+  }).toList();
+}
+
+String _issueTypeLabel(String type) => switch (type) {
+      'breakdown' => '🔧 Arıza',
+      'flat_tire' => '🛞 Lastik Patladı',
+      'fuel' => '⛽ Yakıt Bitti',
+      'accident' => '⚠️ Kaza',
+      _ => '🆘 Yardım',
+    };
+
 Future<List<MapPin>> _fetchFlarePins(Dio dio) async {
   final res = await dio.get<Map<String, dynamic>>('/flares');
   final items = (res.data?['data'] as List<dynamic>?) ?? [];
@@ -137,7 +163,14 @@ final allPinsProvider = FutureProvider<List<MapPin>>((ref) async {
     } catch (e) {
       debugPrint('[MapPins] flares error: $e');
     }
-    return [...pins, ...flares];
+    List<MapPin> helpPins = [];
+    try {
+      helpPins = await _fetchHelpPins(dio);
+      debugPrint('[MapPins] help loaded: ${helpPins.length}');
+    } catch (e) {
+      debugPrint('[MapPins] help error: $e');
+    }
+    return [...pins, ...flares, ...helpPins];
   } catch (e) {
     debugPrint('[MapPins] API error: $e');
     return [];

@@ -37,7 +37,7 @@ mapRoutes.get('/flares', async (c) => {
   const { data, error } = await supabase
     .from('flares')
     .select(
-      'id,creator_id,community_id,title,description,h3_cell,cover_url,starts_at,ends_at,rsvp_count,status,created_at,profiles(username,display_name,avatar_url,is_verified)',
+      'id,creator_id,community_id,title,description,h3_cell,cover_url,starts_at,ends_at,rsvp_count,status,created_at,creator:profiles!flares_creator_id_fkey(username,display_name,avatar_url,is_verified)',
     )
     .in('h3_cell', cells)
     .eq('status', 'active')

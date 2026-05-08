@@ -25,6 +25,7 @@ func main() {
 		Str("service", "pitlane-realtime").
 		Logger()
 
+	startTime := time.Now()
 	cfg := config.Load()
 	hubCtx, hubCancel := context.WithCancel(context.Background())
 
@@ -58,7 +59,8 @@ func main() {
 	mux.HandleFunc("/ws/location", h.ServeWS)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = fmt.Fprintf(w, `{"ok":true,"connections":%d}`, h.ActiveCount())
+		_, _ = fmt.Fprintf(w, `{"ok":true,"connections":%d,"uptime_s":%d}`,
+			h.ActiveCount(), int(time.Since(startTime).Seconds()))
 	})
 	mux.Handle("/metrics", promhttp.Handler())
 
