@@ -42,8 +42,8 @@ func h3CellToParent(h3Cell string, parentRes int) (string, error) {
 	// Set digits (parentRes+1)..currentRes to INVALID_DIGIT (7 = 0b111).
 	// Digit n (1-indexed) occupies bits (45-n*3+2):(45-n*3), i.e. shift = 45-n*3.
 	for r := parentRes + 1; r <= currentRes; r++ {
-		shift := uint(45 - r*3)
-		idx |= h3InvalidDigit << shift // OR with 7 sets all 3 bits
+		shift := uint(45 - r*3) //nolint:gosec // r is bounded 1-15, 45-r*3 ≥ 0, safe uint
+		idx |= h3InvalidDigit << shift
 	}
 
 	return fmt.Sprintf("%015x", idx), nil
