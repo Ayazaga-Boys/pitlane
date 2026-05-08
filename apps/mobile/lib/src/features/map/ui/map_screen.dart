@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
@@ -129,7 +129,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final currentCell = ref.watch(locationProvider).valueOrNull;
     final filters     = ref.watch(mapFiltersProvider);
     final hasFilter   = !filters.isDefault;
-    final pins        = ref.watch(mapPinsProvider(filters));
+    final pinData     = ref.watch(filteredPinsProvider(filters));
+    final pins        = pinData.map((p) => _toMarker(context, p)).toSet();
 
     return Scaffold(
       backgroundColor: AppColors.surface0,
@@ -255,6 +256,32 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 }
 
+// ── Pin → Marker (GoRouter navigation) ───────────────────────────────────────
+
+Marker _toMarker(BuildContext context, MapPin pin) => Marker(
+  markerId: MarkerId(pin.id),
+  position: pin.position,
+  icon: BitmapDescriptor.defaultMarkerWithHue(pinHue(pin.type)),
+  infoWindow: InfoWindow(
+    title: pin.title,
+    snippet: pin.subtitle,
+    onTap: () => _navigateToPin(context, pin),
+  ),
+);
+
+void _navigateToPin(BuildContext context, MapPin pin) {
+  switch (pin.type) {
+    case MapPinType.flare:
+      context.push('/flares/${pin.id}');
+    case MapPinType.help:
+      // TODO(kisi1): yardım detay ekranı Sprint 3
+      break;
+    case MapPinType.business:
+      // TODO(kisi1): işletme detay ekranı Sprint 3
+      break;
+  }
+}
+
 // ── Üst bar chip ─────────────────────────────────────────────────────────────
 
 class _TopBarChip extends StatelessWidget {
@@ -337,27 +364,6 @@ class _MapFab extends StatelessWidget {
         foregroundColor: Colors.white,
         onPressed: onPressed,
         child: Icon(icon),
-      ),
-    );
-  }
-}
-
-// ── No API Key ────────────────────────────────────────────────────────────────
-
-class _NoApiKeyPlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.map_outlined, size: 64, color: AppColors.pitRed),
-          const SizedBox(height: AppSpacing.md),
-          Text('GOOGLE_MAPS_API_KEY lazım',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textTertiary,
-                  )),
-        ],
       ),
     );
   }

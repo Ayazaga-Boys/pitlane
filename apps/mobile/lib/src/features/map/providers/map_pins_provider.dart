@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../ui/map_filter_sheet.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
@@ -65,56 +63,20 @@ const _mockPins = [
   ),
 ];
 
-// ─── Provider ───────────────────────────────────────────────────────────────
+// ─── Provider — filtered data only, marker building happens in MapScreen ─────
 
-// onTap callback'i dışarıdan alan provider
-final mapPinsProvider = Provider.family<Set<Marker>, MapFilters>((ref, f) {
-  final filters = f;
-  final filtered = _mockPins.where((pin) {
-    if (filters.pin == PinFilter.all) return true;
-    if (filters.pin == PinFilter.flare    && pin.type == MapPinType.flare)    return true;
-    if (filters.pin == PinFilter.help     && pin.type == MapPinType.help)     return true;
-    if (filters.pin == PinFilter.business && pin.type == MapPinType.business) return true;
+final filteredPinsProvider = Provider.family<List<MapPin>, MapFilters>((ref, f) {
+  return _mockPins.where((pin) {
+    if (f.pin == PinFilter.all) return true;
+    if (f.pin == PinFilter.flare    && pin.type == MapPinType.flare)    return true;
+    if (f.pin == PinFilter.help     && pin.type == MapPinType.help)     return true;
+    if (f.pin == PinFilter.business && pin.type == MapPinType.business) return true;
     return false;
-  });
-
-  return filtered.map((pin) => _buildMarker(pin)).toSet();
+  }).toList();
 });
 
-Marker _buildMarker(MapPin pin, {VoidCallback? onTap}) {
-  final hue = switch (pin.type) {
-    MapPinType.flare    => BitmapDescriptor.hueOrange,
-    MapPinType.help     => BitmapDescriptor.hueRed,
-    MapPinType.business => BitmapDescriptor.hueAzure,
-  };
-
-  return Marker(
-    markerId: MarkerId(pin.id),
-    position: pin.position,
-    icon: BitmapDescriptor.defaultMarkerWithHue(hue),
-    infoWindow: InfoWindow(
-      title: pin.title,
-      snippet: pin.subtitle,
-      onTap: onTap,
-    ),
-    onTap: () {
-      // İlk tap info window'u gösterir, ikinci tap detaya gider
-    },
-  );
-}
-
-// Pin tıklama handler — MapScreen'den çağrılır
-void handlePinTap(BuildContext context, MapPin pin) {
-  switch (pin.type) {
-    case MapPinType.flare:
-      // FlareDetailScreen'e git
-      Navigator.of(context).pushNamed('/flares/${pin.id}');
-      break;
-    case MapPinType.help:
-      // Yardım detay
-      break;
-    case MapPinType.business:
-      // İşletme detay
-      break;
-  }
-}
+double pinHue(MapPinType type) => switch (type) {
+  MapPinType.flare    => BitmapDescriptor.hueOrange,
+  MapPinType.help     => BitmapDescriptor.hueRed,
+  MapPinType.business => BitmapDescriptor.hueAzure,
+};
