@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,7 +43,7 @@ func main() {
 	mux.HandleFunc("/ws/location", h.ServeWS)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"ok":true,"connections":` + intStr(h.ActiveCount()) + `}`))
+		_, _ = fmt.Fprintf(w, `{"ok":true,"connections":%d}`, h.ActiveCount())
 	})
 	mux.Handle("/metrics", promhttp.Handler())
 
@@ -73,14 +74,3 @@ func main() {
 	log.Info().Msg("graceful_shutdown_complete")
 }
 
-func intStr(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	b := make([]byte, 0, 4)
-	for n > 0 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-		n /= 10
-	}
-	return string(b)
-}
