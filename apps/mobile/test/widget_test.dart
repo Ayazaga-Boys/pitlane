@@ -1,14 +1,21 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:pitlane/app.dart';
+import 'package:pitlane/src/features/map/providers/map_pins_provider.dart';
 
 // Auth bypass aktif olduğundan uygulama direkt MapScreen'e yönlenir.
-// Bu test sadece uygulamanın crash yapmadan başladığını doğrular.
+// allPinsProvider → HTTP çağrısı yapar; test ortamında override ile engellenir.
 void main() {
   testWidgets('app starts without crashing', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: PitlaneApp()));
-    await tester.pump(); // ilk frame
-    // Hata yoksa test geçer
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          allPinsProvider.overrideWith((ref) async => []),
+        ],
+        child: const PitlaneApp(),
+      ),
+    );
+    await tester.pump();
     expect(tester.takeException(), isNull);
   });
 }
