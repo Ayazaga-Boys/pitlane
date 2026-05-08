@@ -8,10 +8,30 @@ class MainShell extends StatelessWidget {
   final Widget child;
 
   static const _tabs = [
-    (icon: Icons.map_outlined,        activeIcon: Icons.map,          label: 'Harita',      path: '/map'),
-    (icon: Icons.group_outlined,      activeIcon: Icons.group,        label: 'Topluluklar', path: '/communities'),
-    (icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble,  label: 'Mesajlar',    path: '/messages'),
-    (icon: Icons.person_outline,      activeIcon: Icons.person,       label: 'Profil',      path: '/profile'),
+    (
+      icon: Icons.map_outlined,
+      activeIcon: Icons.map,
+      label: 'Harita',
+      path: '/map'
+    ),
+    (
+      icon: Icons.group_outlined,
+      activeIcon: Icons.group,
+      label: 'Topluluklar',
+      path: '/communities'
+    ),
+    (
+      icon: Icons.chat_bubble_outline,
+      activeIcon: Icons.chat_bubble,
+      label: 'Mesajlar',
+      path: '/messages'
+    ),
+    (
+      icon: Icons.person_outline,
+      activeIcon: Icons.person,
+      label: 'Profil',
+      path: '/profile'
+    ),
   ];
 
   int _currentIndex(BuildContext context) {

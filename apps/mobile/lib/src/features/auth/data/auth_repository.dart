@@ -9,7 +9,8 @@ class AuthRepository {
   final Dio _dio;
 
   /// POST /v1/auth/invite-codes/validate
-  Future<({bool valid, int remainingUses})> validateInviteCode(String code) async {
+  Future<({bool valid, int remainingUses})> validateInviteCode(
+      String code) async {
     try {
       final res = await _dio.post(
         '${AppConstants.apiBaseUrl}/v1/auth/invite-codes/validate',

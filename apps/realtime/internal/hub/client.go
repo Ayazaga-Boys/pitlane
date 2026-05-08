@@ -7,7 +7,25 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
+
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
+
+// h3CellLen — geçerli H3 hücre string uzunluğu (15 hex char = 60 bit)
+const h3CellLen = 15
+
+// isValidH3Cell — gelen h3_cell değerinin format kontrolü (güvenlik sınırı)
+func isValidH3Cell(s string) bool {
+	if len(s) != h3CellLen {
+		return false
+	}
+	for _, c := range s {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+			return false
+		}
+	}
+	return true
+}
 
 const (
 	writeWait      = 10 * time.Second
@@ -68,6 +86,7 @@ func (c *Client) readPump() {
 		if err := json.Unmarshal(raw, &msg); err != nil {
 			continue
 		}
+		metrics.WsMessagesTotal.WithLabelValues(msg.Type).Inc()
 		c.handleMessage(msg)
 	}
 }
@@ -76,8 +95,8 @@ func (c *Client) handleMessage(msg InboundMessage) {
 	ctx := context.Background()
 	switch msg.Type {
 	case TypeLocation:
-		if msg.H3Cell == "" {
-			c.sendError("BAD_PAYLOAD", "h3_cell missing")
+		if !isValidH3Cell(msg.H3Cell) {
+			c.sendError("BAD_PAYLOAD", "h3_cell invalid")
 			return
 		}
 		if err := c.hub.store.SetUserCell(ctx, c.userID, msg.H3Cell); err != nil {
@@ -114,12 +133,14 @@ func (c *Client) writePump() {
 				return
 			}
 			if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				log.Warn().Err(err).Str("userID", c.userID).Msg("ws_write_error")
 				return
 			}
 
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Warn().Err(err).Str("userID", c.userID).Msg("ws_ping_error")
 				return
 			}
 		}

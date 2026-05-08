@@ -21,8 +21,12 @@ type Store struct {
 }
 
 func NewStore() *Store {
+	return NewStoreWithContext(context.Background())
+}
+
+func NewStoreWithContext(ctx context.Context) *Store {
 	s := &Store{data: make(map[string]cellEntry)}
-	go s.evict()
+	go s.evict(ctx)
 	return s
 }
 
@@ -53,6 +57,9 @@ func (s *Store) DeleteUserCell(_ context.Context, userID string) error {
 	return nil
 }
 
+// heatmapResolution — heatmap için H3 parent çözünürlüğü (res-8)
+const heatmapResolution = 8
+
 // GetCellCounts — H3 res-8 hücre bazında kullanıcı sayıları (heatmap için)
 func (s *Store) GetCellCounts(_ context.Context) map[string]int {
 	s.mu.RLock()
@@ -62,10 +69,9 @@ func (s *Store) GetCellCounts(_ context.Context) map[string]int {
 	counts := make(map[string]int)
 	for _, entry := range s.data {
 		if now.Before(entry.expires) {
-			// Basit yaklaşım: res-9 hücreyi res-8'e dönüştürmek için ilk 15 char (Sprint 2'de h3 lib ile)
-			parent := entry.h3Cell
-			if len(parent) > 12 {
-				parent = parent[:12] // approximation only — Sprint 2'de uber/h3-go ile düzgün yapılacak
+			parent, err := h3CellToParent(entry.h3Cell, heatmapResolution)
+			if err != nil {
+				continue // geçersiz H3 hücresi — atla
 			}
 			counts[parent]++
 		}
@@ -73,18 +79,24 @@ func (s *Store) GetCellCounts(_ context.Context) map[string]int {
 	return counts
 }
 
-// evict — süresi dolmuş kayıtları periyodik temizler
-func (s *Store) evict() {
+// evict — süresi dolmuş kayıtları periyodik temizler; ctx cancel ile durur
+func (s *Store) evict(ctx context.Context) {
 	ticker := time.NewTicker(locationTTL)
-	for range ticker.C {
-		s.mu.Lock()
-		now := time.Now()
-		for uid, entry := range s.data {
-			if now.After(entry.expires) {
-				delete(s.data, uid)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			s.mu.Lock()
+			now := time.Now()
+			for uid, entry := range s.data {
+				if now.After(entry.expires) {
+					delete(s.data, uid)
+				}
 			}
+			s.mu.Unlock()
 		}
-		s.mu.Unlock()
 	}
 }
 

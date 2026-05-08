@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"context"
 	"net/http"
 	"sync"
 
@@ -10,20 +11,32 @@ import (
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/auth"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// TODO(prod): origin whitelist ekle
-		return true
-	},
+func newUpgrader(cfg *config.Config) websocket.Upgrader {
+	return websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			if cfg.IsDev {
+				return true // Geliştirme ortamında her origin kabul
+			}
+			origin := r.Header.Get("Origin")
+			for _, allowed := range cfg.AllowedOrigins {
+				if allowed == origin {
+					return true
+				}
+			}
+			return false
+		},
+	}
 }
 
 // Hub — tüm aktif WS bağlantılarını yönetir
 type Hub struct {
 	cfg         *config.Config
+	upgrader    websocket.Upgrader
 	store       *location.Store
 	broadcaster *location.Broadcaster
 	clients     map[string]*Client // userID → Client
@@ -35,6 +48,7 @@ type Hub struct {
 func New(cfg *config.Config, store *location.Store, bc *location.Broadcaster) *Hub {
 	return &Hub{
 		cfg:         cfg,
+		upgrader:    newUpgrader(cfg),
 		store:       store,
 		broadcaster: bc,
 		clients:     make(map[string]*Client),
@@ -43,13 +57,24 @@ func New(cfg *config.Config, store *location.Store, bc *location.Broadcaster) *H
 	}
 }
 
-func (h *Hub) Run() {
+func (h *Hub) Run(ctx context.Context) {
 	for {
 		select {
+		case <-ctx.Done():
+			h.mu.Lock()
+			for _, c := range h.clients {
+				close(c.send)
+			}
+			h.mu.Unlock()
+			log.Info().Msg("hub_shutdown")
+			return
+
 		case c := <-h.register:
 			h.mu.Lock()
 			h.clients[c.userID] = c
 			h.mu.Unlock()
+			metrics.WsConnectionsTotal.Inc()
+			metrics.WsActiveConnections.Inc()
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_connected")
 
 		case c := <-h.unregister:
@@ -58,6 +83,7 @@ func (h *Hub) Run() {
 				delete(h.clients, c.userID)
 				close(c.send)
 				_ = h.store.DeleteUserCell(nil, c.userID)
+				metrics.WsActiveConnections.Dec()
 			}
 			h.mu.Unlock()
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_disconnected")
@@ -75,7 +101,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("ws_upgrade_failed")
 		return

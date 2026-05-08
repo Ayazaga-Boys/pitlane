@@ -2,18 +2,21 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/hub"
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
 func main() {
@@ -23,21 +26,27 @@ func main() {
 		Logger()
 
 	cfg := config.Load()
-	store := location.NewStore()
+	hubCtx, hubCancel := context.WithCancel(context.Background())
+	store := location.NewStoreWithContext(hubCtx) // evict goroutine hub ile birlikte durur
 	broadcaster := location.NewBroadcaster(store)
 	h := hub.New(&cfg, store, broadcaster)
-	go h.Run()
+	go h.Run(hubCtx)
+
+	// Aktif bağlantı sayısını periyodik Prometheus'a yaz
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		for range ticker.C {
+			metrics.WsActiveConnections.Set(float64(h.ActiveCount()))
+		}
+	}()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws/location", h.ServeWS)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"ok":true,"connections":` + intStr(h.ActiveCount()) + `}`))
+		_, _ = fmt.Fprintf(w, `{"ok":true,"connections":%d}`, h.ActiveCount())
 	})
-	mux.HandleFunc("/metrics", func(w http.ResponseWriter, _ *http.Request) {
-		// TODO(sprint6): Prometheus metrics
-		_, _ = w.Write([]byte("# Prometheus metrics coming Sprint 6\n"))
-	})
+	mux.Handle("/metrics", promhttp.Handler())
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
@@ -58,22 +67,12 @@ func main() {
 	<-quit
 
 	log.Info().Msg("graceful_shutdown_started")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	hubCancel() // hub goroutine'ini durdur, tüm client send kanallarını kapat
+	shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutCancel()
+	if err := srv.Shutdown(shutCtx); err != nil {
 		log.Error().Err(err).Msg("shutdown_error")
 	}
 	log.Info().Msg("graceful_shutdown_complete")
 }
 
-func intStr(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	b := make([]byte, 0, 4)
-	for n > 0 {
-		b = append([]byte{byte('0' + n%10)}, b...)
-		n /= 10
-	}
-	return string(b)
-}

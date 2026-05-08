@@ -40,19 +40,19 @@ class _PlaceholderScreen extends StatelessWidget {
 // ─── Router ─────────────────────────────────────────────────────────────────
 
 final _routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  // authStateProvider'ı izle ki oturum değişince router yeniden build edilsin
+  ref.watch(authStateProvider);
 
   return GoRouter(
-    // Akış: invite-code → login → otp → /map
     initialLocation: '/auth/invite-code',
     redirect: (context, state) {
-      final session = authState.valueOrNull?.session;
-      final isLoggedIn = session != null;
-      final isAuthRoute = state.matchedLocation.startsWith('/auth');
-
-      if (!isLoggedIn && !isAuthRoute) return '/auth/invite-code';
-      if (isLoggedIn && isAuthRoute) return '/map';
-      return null;
+      // DEV: Auth bypass — Erol Supabase'i hazırlayınca restore edilecek:
+      // final session = ref.read(authStateProvider).valueOrNull?.session;
+      // if (!state.matchedLocation.startsWith('/auth') && session == null)
+      //   return '/auth/login';
+      // if (state.matchedLocation.startsWith('/auth') && session != null)
+      //   return '/map';
+      return '/map';
     },
     routes: [
       // ── Auth ──────────────────────────────────────────────────────────────

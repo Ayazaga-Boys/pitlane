@@ -7,6 +7,7 @@ import '../../../shared/widgets/pitlane_button.dart';
 // ─── Model ──────────────────────────────────────────────────────────────────
 
 enum VehicleFilter { all, car, motorcycle }
+
 enum PinFilter { all, flare, business, help }
 
 class MapFilters {
@@ -26,6 +27,13 @@ class MapFilters {
   }
 
   bool get isDefault => vehicle == VehicleFilter.all && pin == PinFilter.all;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MapFilters && other.vehicle == vehicle && other.pin == pin;
+
+  @override
+  int get hashCode => Object.hash(vehicle, pin);
 }
 
 // ─── Provider ───────────────────────────────────────────────────────────────
@@ -85,7 +93,11 @@ class _MapFilterSheet extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             Row(
               children: [
-                Text('Filtrele', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                Text('Filtrele',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700)),
                 const Spacer(),
                 if (!filters.isDefault)
                   TextButton(
@@ -97,34 +109,64 @@ class _MapFilterSheet extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
 
             // Araç tipi
-            Text('Araç Tipi', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.textSecondary)),
+            Text('Araç Tipi',
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: AppSpacing.sm),
             SegmentedButton<VehicleFilter>(
               segments: const [
-                ButtonSegment(value: VehicleFilter.all,        label: Text('Hepsi')),
-                ButtonSegment(value: VehicleFilter.car,        label: Text('Araç 🚗')),
-                ButtonSegment(value: VehicleFilter.motorcycle, label: Text('Moto 🏍️')),
+                ButtonSegment(value: VehicleFilter.all, label: Text('Hepsi')),
+                ButtonSegment(value: VehicleFilter.car, label: Text('Araç 🚗')),
+                ButtonSegment(
+                    value: VehicleFilter.motorcycle, label: Text('Moto 🏍️')),
               ],
               selected: {filters.vehicle},
               onSelectionChanged: (s) => notifier.setVehicle(s.first),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.resolveWith(
-                  (s) => s.contains(WidgetState.selected) ? AppColors.pitRed : AppColors.surface3,
+                  (s) => s.contains(WidgetState.selected)
+                      ? AppColors.pitRed
+                      : AppColors.surface3,
                 ),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
 
             // Pin tipi
-            Text('Göster', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.textSecondary)),
+            Text('Göster',
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
               children: [
-                _PinChip(label: 'Hepsi',     value: PinFilter.all,      current: filters.pin, onTap: notifier.setPin),
-                _PinChip(label: 'Etkinlik',  value: PinFilter.flare,    current: filters.pin, onTap: notifier.setPin, icon: Icons.local_fire_department_outlined),
-                _PinChip(label: 'İşletme',   value: PinFilter.business, current: filters.pin, onTap: notifier.setPin, icon: Icons.store_outlined),
-                _PinChip(label: 'Yardım',    value: PinFilter.help,     current: filters.pin, onTap: notifier.setPin, icon: Icons.sos_outlined),
+                _PinChip(
+                    label: 'Hepsi',
+                    value: PinFilter.all,
+                    current: filters.pin,
+                    onTap: notifier.setPin),
+                _PinChip(
+                    label: 'Etkinlik',
+                    value: PinFilter.flare,
+                    current: filters.pin,
+                    onTap: notifier.setPin,
+                    icon: Icons.local_fire_department_outlined),
+                _PinChip(
+                    label: 'İşletme',
+                    value: PinFilter.business,
+                    current: filters.pin,
+                    onTap: notifier.setPin,
+                    icon: Icons.store_outlined),
+                _PinChip(
+                    label: 'Yardım',
+                    value: PinFilter.help,
+                    current: filters.pin,
+                    onTap: notifier.setPin,
+                    icon: Icons.sos_outlined),
               ],
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -162,17 +204,26 @@ class _PinChip extends StatelessWidget {
       onTap: () => onTap(value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: selected ? AppColors.pitRed : AppColors.surface3,
           borderRadius: BorderRadius.circular(AppSpacing.xl),
-          border: Border.all(color: selected ? AppColors.pitRed : AppColors.surface3),
+          border: Border.all(
+              color: selected ? AppColors.pitRed : AppColors.surface3),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[Icon(icon, size: 14, color: Colors.white), const SizedBox(width: 4)],
-            Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: Colors.white),
+              const SizedBox(width: 4)
+            ],
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       ),

@@ -8,11 +8,8 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Google Maps API key — dart-define ile enjekte edilir
-    let mapsKey = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_MAPS_API_KEY") as? String ?? ""
-    if !mapsKey.isEmpty {
-      GMSServices.provideAPIKey(mapsKey)
-    }
+    // Google Maps — dev key (prod'da CI secret'tan gelecek)
+    GMSServices.provideAPIKey("AIzaSyDaUs-HI-7tVVMmYFR3g4KKL7ANqnlwNxw")
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
