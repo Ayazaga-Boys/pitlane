@@ -111,7 +111,7 @@ flutter run \
 
 ### Sprint 4 — Mesajlaşma & Bildirimler (Hafta 7-8)
 - [x] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
-- [ ] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
+- [x] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
 - [ ] Topluluk mesaj odası
 - [ ] Flare sohbet odası
 - [ ] Şikayet et + Engelle UI (UF-09)

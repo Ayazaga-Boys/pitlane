@@ -15,6 +15,7 @@ import 'src/features/flares/ui/flare_create_screen.dart';
 import 'src/features/flares/ui/flare_detail_screen.dart';
 import 'src/features/map/providers/ws_connection_provider.dart';
 import 'src/features/map/ui/map_screen.dart';
+import 'src/features/messages/ui/chat_screen.dart';
 import 'src/features/messages/ui/messages_screen.dart';
 import 'src/features/profile/ui/profile_completion_screen.dart';
 import 'src/features/profile/ui/profile_screen.dart';
@@ -115,8 +116,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/messages/:peerId',
-            builder: (_, state) => _PlaceholderScreen(
-              'Sohbet · ${state.pathParameters['peerId']}',
+            builder: (_, state) => ChatScreen(
+              peerId: state.pathParameters['peerId']!,
             ),
           ),
           GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
