@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -124,6 +125,12 @@ class _FlareDetailContent extends ConsumerWidget {
           ),
         const SizedBox(height: AppSpacing.lg),
         _RsvpCounts(flare: flare),
+        const SizedBox(height: AppSpacing.md),
+        PitlaneButton(
+          label: 'Flare sohbeti',
+          variant: PitlaneButtonVariant.secondary,
+          onPressed: () => context.push('/flares/${flare.id}/chat'),
+        ),
         const SizedBox(height: AppSpacing.xl2),
         Text('Katılımcılar', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: AppSpacing.md),

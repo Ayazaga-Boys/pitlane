@@ -110,16 +110,16 @@ flutter run \
 - [ ] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
 
 ### Sprint 4 — Mesajlaşma & Bildirimler (Hafta 7-8)
-- [ ] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
-- [ ] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
-- [ ] Topluluk mesaj odası
-- [ ] Flare sohbet odası
-- [ ] Şikayet et + Engelle UI (UF-09)
+- [x] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
+- [x] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
+- [x] Topluluk mesaj odası
+- [x] Flare sohbet odası
+- [x] Şikayet et + Engelle UI (UF-09)
 - [ ] firebase_messaging foreground/background/terminated handler (UF-13)
 - [ ] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
 - [ ] Cihaz token kayıt — `POST /v1/notifications/devices`
-- [ ] Bildirim listesi ekranı
-- [ ] Bildirim ayarları (kategori toggle'ları)
+- [x] Bildirim listesi ekranı
+- [x] Bildirim ayarları (kategori toggle'ları)
 
 ### Sprint 5 — Yardım UI (Hafta 9-10)
 - [ ] Yardım talebi formu (sorun tipi seç — UF-03)

@@ -45,9 +45,12 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
   }
 
   String? _validateEmail(String email) {
-    if (email.isEmpty) return 'E-posta gir';
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email))
+    if (email.isEmpty) {
+      return 'E-posta gir';
+    }
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
       return 'Geçerli e-posta gir';
+    }
     return null;
   }
 
@@ -85,8 +88,9 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(waitingListProvider).isLoading;
 
-    if (_submitted)
+    if (_submitted) {
       return _SuccessView(onBack: () => context.go('/auth/invite-code'));
+    }
 
     return Scaffold(
       appBar: AppBar(

@@ -28,15 +28,6 @@ class Vehicle {
     this.isPrimary = false,
   });
 
-  final String id;
-  final VehicleType type;
-  final String make;
-  final String model;
-  final int? year;
-  final String? color;
-  final String? photoUrl;
-  final bool isPrimary;
-
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     return Vehicle(
       id: json['id'] as String,
@@ -50,4 +41,13 @@ class Vehicle {
       isPrimary: json['is_primary'] as bool? ?? false,
     );
   }
+
+  final String id;
+  final VehicleType type;
+  final String make;
+  final String model;
+  final int? year;
+  final String? color;
+  final String? photoUrl;
+  final bool isPrimary;
 }
