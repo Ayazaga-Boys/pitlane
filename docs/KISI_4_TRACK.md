@@ -112,8 +112,8 @@ flutter run \
 ### Sprint 4 — Mesajlaşma & Bildirimler (Hafta 7-8)
 - [x] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
 - [x] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
-- [ ] Topluluk mesaj odası
-- [ ] Flare sohbet odası
+- [x] Topluluk mesaj odası
+- [x] Flare sohbet odası
 - [ ] Şikayet et + Engelle UI (UF-09)
 - [ ] firebase_messaging foreground/background/terminated handler (UF-13)
 - [ ] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)

@@ -7,6 +7,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../shared/providers/supabase_provider.dart';
 import '../models/dm_message.dart';
 import '../models/dm_thread.dart';
+import '../models/message_room.dart';
 
 final messagesRepositoryProvider = Provider<MessagesRepository>((ref) {
   return MessagesRepository(ref.watch(supabaseClientProvider));
@@ -94,6 +95,51 @@ class MessagesRepository {
     }
   }
 
+  Future<List<DmMessage>> listRoomMessages(MessageRoom room) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        room.endpoint,
+        options: Options(headers: _authHeaders()),
+      );
+
+      final items = response.data?['data'] as List<dynamic>? ?? const [];
+      return items
+          .whereType<Map<String, dynamic>>()
+          .map(DmMessage.fromJson)
+          .toList(growable: false);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
+      return _mockRoomMessages(room);
+    }
+  }
+
+  Future<DmMessage> sendRoomMessage(
+    MessageRoom room,
+    SendDmMessageDraft draft,
+  ) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        room.endpoint,
+        data: draft.toJson(),
+        options: Options(headers: _authHeaders()),
+      );
+
+      final data = response.data?['data'];
+      if (data is Map<String, dynamic>) return DmMessage.fromJson(data);
+      return _messageFromDraft(draft);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
+      if (error.response?.statusCode == 403) {
+        throw const ValidationException('Bu odada mesaj gönderemiyorsun.');
+      }
+      return _messageFromDraft(draft);
+    }
+  }
+
   RealtimeChannel subscribeToDmMessages(
     String peerId,
     void Function(DmMessage message) onMessage,
@@ -107,6 +153,27 @@ class MessagesRepository {
           callback: (payload) {
             final message = DmMessage.fromJson(payload.newRecord);
             if (_messageBelongsToPeer(payload.newRecord, peerId)) {
+              onMessage(message);
+            }
+          },
+        )
+        .subscribe();
+    return channel;
+  }
+
+  RealtimeChannel subscribeToRoomMessages(
+    MessageRoom room,
+    void Function(DmMessage message) onMessage,
+  ) {
+    final channel = _supabase.channel(room.realtimeTopic);
+    channel
+        .onPostgresChanges(
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'messages',
+          callback: (payload) {
+            final message = DmMessage.fromJson(payload.newRecord);
+            if (_messageBelongsToRoom(payload.newRecord, room)) {
               onMessage(message);
             }
           },
@@ -179,6 +246,39 @@ class MessagesRepository {
     ];
   }
 
+  static List<DmMessage> _mockRoomMessages(MessageRoom room) {
+    final now = DateTime.now();
+    final isFlare = room.type == MessageRoomType.flare;
+    return [
+      DmMessage(
+        id: '${room.realtimeTopic}-1',
+        body: isFlare
+            ? 'Buluşma öncesi son durumları buradan konuşalım.'
+            : 'Bu hafta sonu rota önerilerini buraya atalım.',
+        createdAt: now.subtract(const Duration(hours: 3)),
+        isMine: false,
+        senderName: 'mert_cb650r',
+      ),
+      DmMessage(
+        id: '${room.realtimeTopic}-2',
+        body: isFlare
+            ? 'Ben 10 dakika erken geliyorum.'
+            : 'Sahil hattı sakin görünüyorsa oradan döneriz.',
+        createdAt: now.subtract(const Duration(hours: 2, minutes: 20)),
+        isMine: true,
+      ),
+      DmMessage(
+        id: '${room.realtimeTopic}-3',
+        body: isFlare
+            ? 'Konum güncellenirse flare detayına bakarım.'
+            : 'Tamam, alternatif rota da hazır olsun.',
+        createdAt: now.subtract(const Duration(minutes: 34)),
+        isMine: false,
+        senderName: 'selin_e30',
+      ),
+    ];
+  }
+
   DmMessage _messageFromDraft(SendDmMessageDraft draft) {
     return DmMessage(
       id: 'local-${DateTime.now().microsecondsSinceEpoch}',
@@ -193,5 +293,12 @@ class MessagesRepository {
         json['sender_id'] == peerId ||
         json['recipient_id'] == peerId ||
         json['conversation_peer_id'] == peerId;
+  }
+
+  bool _messageBelongsToRoom(Map<String, dynamic> json, MessageRoom room) {
+    return (json['room_type'] == room.type.apiValue &&
+            json['room_id'] == room.id) ||
+        json['community_id'] == room.id ||
+        json['flare_id'] == room.id;
   }
 }

@@ -62,6 +62,13 @@ class _CommunityDetailContent extends ConsumerWidget {
                   .read(communityDetailProvider(community.slug).notifier)
                   .toggleMembership(),
         ),
+        const SizedBox(height: AppSpacing.md),
+        PitlaneButton(
+          label: 'Topluluk sohbeti',
+          variant: PitlaneButtonVariant.secondary,
+          onPressed: () =>
+              context.push('/communities/${community.id}/messages'),
+        ),
         const SizedBox(height: AppSpacing.xl2),
         _SectionHeader(
           title: 'Flares',
