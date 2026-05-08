@@ -64,17 +64,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Text(
                 'Pitlane',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: AppColors.pitRed,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.5,
-                ),
+                      color: AppColors.pitRed,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                    ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Asfaltta yalnız değilsin.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: AppSpacing.xl3),
               PitlaneTextField(
@@ -99,8 +99,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   'Devam ederek Topluluk Kurallarını kabul etmiş olursun.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
+                        color: AppColors.textTertiary,
+                      ),
                 ),
               ),
             ],

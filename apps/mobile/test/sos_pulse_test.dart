@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pitlane/src/features/map/ui/sos_pulse_widget.dart';
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: Center(child: child)));
+Widget _wrap(Widget child) =>
+    MaterialApp(home: Scaffold(body: Center(child: child)));
 
 void main() {
   group('SosPulseWidget', () {
@@ -16,7 +17,8 @@ void main() {
       expect(find.byKey(const Key('sos-icon')), findsOneWidget);
     });
 
-    testWidgets('contains AnimatedBuilder inside SosPulseWidget', (tester) async {
+    testWidgets('contains AnimatedBuilder inside SosPulseWidget',
+        (tester) async {
       await tester.pumpWidget(_wrap(
         const SosPulseWidget(child: Icon(Icons.sos)),
       ));
@@ -41,17 +43,17 @@ void main() {
         matching: find.byType(Container),
       );
 
-      final colorBefore =
-          (tester.widget<Container>(pulseContainers.first).decoration
-              as BoxDecoration)
-              .color!;
+      final colorBefore = (tester
+              .widget<Container>(pulseContainers.first)
+              .decoration as BoxDecoration)
+          .color!;
 
       await tester.pump(const Duration(milliseconds: 700)); // yarı periyot
 
-      final colorAfter =
-          (tester.widget<Container>(pulseContainers.first).decoration
-              as BoxDecoration)
-              .color!;
+      final colorAfter = (tester
+              .widget<Container>(pulseContainers.first)
+              .decoration as BoxDecoration)
+          .color!;
 
       // opacity değeri değişmiş olmalı (animasyon ilerliyor)
       expect(colorBefore.a, isNot(equals(colorAfter.a)));

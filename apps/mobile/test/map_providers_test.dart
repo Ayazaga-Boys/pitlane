@@ -81,8 +81,11 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      container.read(mapFiltersProvider.notifier).setVehicle(VehicleFilter.motorcycle);
-      expect(container.read(mapFiltersProvider).vehicle, VehicleFilter.motorcycle);
+      container
+          .read(mapFiltersProvider.notifier)
+          .setVehicle(VehicleFilter.motorcycle);
+      expect(
+          container.read(mapFiltersProvider).vehicle, VehicleFilter.motorcycle);
     });
 
     test('reset restores defaults', () {

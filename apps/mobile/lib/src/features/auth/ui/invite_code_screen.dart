@@ -72,17 +72,17 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
               Text(
                 'Pitlane',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: AppColors.pitRed,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.5,
-                ),
+                      color: AppColors.pitRed,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                    ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Asfaltta yalnız değilsin.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
 
               const SizedBox(height: AppSpacing.xl3),
@@ -118,8 +118,8 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
                     Text(
                       'Davet kodun yok mu?',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                            color: AppColors.textSecondary,
+                          ),
                     ),
                     TextButton(
                       onPressed: () => context.push('/auth/waiting-list'),
