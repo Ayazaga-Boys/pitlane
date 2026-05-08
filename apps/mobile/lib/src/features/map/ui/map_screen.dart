@@ -13,8 +13,9 @@ import '../providers/location_provider.dart';
 import '../providers/map_pins_provider.dart';
 import 'location_permission_screen.dart';
 import 'map_filter_sheet.dart';
-// PinFilter import için
+import 'help_detail_sheet.dart';
 import 'sos_pulse_widget.dart';
+import 'sos_sheet.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -38,8 +39,16 @@ class _MapScreenState extends ConsumerState<MapScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     // Direkt tracking başlat — geolocator kendi izin dialogunu gösterir
-    Future.microtask(() {
-      if (mounted) ref.read(locationProvider.notifier).startTracking();
+    Future.microtask(() async {
+      if (!mounted) return;
+      ref.read(locationProvider.notifier).startTracking();
+      // GPS hazır olunca haritayı oraya odakla
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      final cell = ref.read(locationProvider).valueOrNull;
+      if (cell != null && _mapController != null) {
+        _goToMyLocation();
+      }
     });
   }
 
@@ -133,7 +142,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final filters = ref.watch(mapFiltersProvider);
     final hasFilter = !filters.isDefault;
     // allPinsProvider'ı direkt izle — async tamamlanınca harita yeniden çizilir
-    final allPins = ref.watch(allPinsProvider).valueOrNull ?? [];
+    final pinsAsync = ref.watch(allPinsProvider);
+    final allPins = pinsAsync.valueOrNull ?? [];
+    final pinsLoading = pinsAsync.isLoading;
     final pinData = allPins.where((pin) {
       if (filters.pin == PinFilter.all) {
         return true;
@@ -170,6 +181,19 @@ class _MapScreenState extends ConsumerState<MapScreen>
                 : {},
             markers: pins,
           ),
+
+          // ── Pin yükleniyor göstergesi ────────────────────────────────────
+          if (pinsLoading)
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(
+                minHeight: 2,
+                backgroundColor: Colors.transparent,
+                color: AppColors.pitRed,
+              ),
+            ),
 
           // ── Üst bar ─────────────────────────────────────────────────────
           Positioned(
@@ -244,7 +268,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
                 _MapFab(
                   icon: Icons.camera_alt_outlined,
                   label: 'Snap',
-                  onPressed: () {},
+                  onPressed: () => _showCameraSheet(context),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 SosPulseWidget(
@@ -252,7 +276,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
                     icon: Icons.sos,
                     label: 'SOS',
                     color: AppColors.error,
-                    onPressed: () {},
+                    onPressed: () => showSosSheet(context, ref),
                   ),
                 ),
               ],
@@ -289,16 +313,52 @@ Marker _toMarker(BuildContext context, MapPin pin) => Marker(
       ),
     );
 
+void _showCameraSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: const Color(0xFF1a1a2e),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (_) => Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: const Color(0xFF2a2a4a),
+                  borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 20),
+          const Icon(Icons.camera_alt_outlined,
+              size: 48, color: Color(0xFFE63946)),
+          const SizedBox(height: 12),
+          const Text('Snap Kamera',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
+          const SizedBox(height: 8),
+          const Text('Yakında geliyor — harita üzerinde an paylaş',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF888888), fontSize: 14)),
+          const SizedBox(height: 24),
+        ],
+      ),
+    ),
+  );
+}
+
 void _navigateToPin(BuildContext context, MapPin pin) {
   switch (pin.type) {
     case MapPinType.flare:
       context.push('/flares/${pin.id}');
     case MapPinType.help:
-      // TODO(kisi1): yardım detay ekranı Sprint 3
-      break;
+      showHelpDetailSheet(context, pin);
     case MapPinType.business:
-      // TODO(kisi1): işletme detay ekranı Sprint 3
-      break;
+      context.push('/pins/${pin.id}');
   }
 }
 

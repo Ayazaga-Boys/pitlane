@@ -17,5 +17,7 @@ void main() {
     );
     await tester.pump();
     expect(tester.takeException(), isNull);
+    // initState'teki delayed timer'ın bitmesini bekle
+    await tester.pump(const Duration(seconds: 3));
   });
 }
