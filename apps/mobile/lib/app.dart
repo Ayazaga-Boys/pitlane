@@ -17,6 +17,8 @@ import 'src/features/map/providers/ws_connection_provider.dart';
 import 'src/features/map/ui/map_screen.dart';
 import 'src/features/messages/ui/chat_screen.dart';
 import 'src/features/messages/ui/messages_screen.dart';
+import 'src/features/messages/ui/room_chat_screen.dart';
+import 'src/features/messages/models/message_room.dart';
 import 'src/features/profile/ui/profile_completion_screen.dart';
 import 'src/features/profile/ui/profile_screen.dart';
 import 'src/shared/widgets/main_shell.dart';
@@ -92,6 +94,15 @@ final _routerProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const CommunityCreateScreen(),
           ),
           GoRoute(
+            path: '/communities/:id/messages',
+            builder: (_, state) => RoomChatScreen(
+              room: MessageRoom(
+                type: MessageRoomType.community,
+                id: state.pathParameters['id']!,
+              ),
+            ),
+          ),
+          GoRoute(
             path: '/communities/:slug',
             builder: (_, state) => CommunityDetailScreen(
               slug: state.pathParameters['slug']!,
@@ -108,6 +119,15 @@ final _routerProvider = Provider<GoRouter>((ref) {
             path: '/flares/:id',
             builder: (_, state) => FlareDetailScreen(
               id: state.pathParameters['id']!,
+            ),
+          ),
+          GoRoute(
+            path: '/flares/:id/chat',
+            builder: (_, state) => RoomChatScreen(
+              room: MessageRoom(
+                type: MessageRoomType.flare,
+                id: state.pathParameters['id']!,
+              ),
             ),
           ),
           GoRoute(
