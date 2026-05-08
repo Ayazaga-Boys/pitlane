@@ -13,18 +13,29 @@ import (
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// TODO(prod): origin whitelist ekle
-		return true
-	},
+func newUpgrader(cfg *config.Config) websocket.Upgrader {
+	return websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			if cfg.IsDev {
+				return true // Geliştirme ortamında her origin kabul
+			}
+			origin := r.Header.Get("Origin")
+			for _, allowed := range cfg.AllowedOrigins {
+				if allowed == origin {
+					return true
+				}
+			}
+			return false
+		},
+	}
 }
 
 // Hub — tüm aktif WS bağlantılarını yönetir
 type Hub struct {
 	cfg         *config.Config
+	upgrader    websocket.Upgrader
 	store       *location.Store
 	broadcaster *location.Broadcaster
 	clients     map[string]*Client // userID → Client
@@ -36,6 +47,7 @@ type Hub struct {
 func New(cfg *config.Config, store *location.Store, bc *location.Broadcaster) *Hub {
 	return &Hub{
 		cfg:         cfg,
+		upgrader:    newUpgrader(cfg),
 		store:       store,
 		broadcaster: bc,
 		clients:     make(map[string]*Client),
@@ -77,7 +89,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := h.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("ws_upgrade_failed")
 		return
