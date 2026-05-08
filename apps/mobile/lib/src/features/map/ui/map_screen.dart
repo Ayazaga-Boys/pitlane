@@ -106,11 +106,19 @@ class _MapScreenState extends ConsumerState<MapScreen>
 
   Future<void> _goToMyLocation() async {
     try {
-      final pos = await Geolocator.getCurrentPosition();
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
       _mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(LatLng(pos.latitude, pos.longitude), 15),
       );
-    } catch (_) {}
+    } catch (_) {
+      // Konum alınamazsa İstanbul'a git
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(const LatLng(41.0082, 28.9784), 13),
+      );
+    }
   }
 
   @override
