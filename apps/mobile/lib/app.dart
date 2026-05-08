@@ -52,13 +52,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/auth/invite-code',
     redirect: (context, state) {
-      final session = ref.read(authStateProvider).valueOrNull?.session;
-      final isLoggedIn = session != null;
-      final isAuthRoute = state.matchedLocation.startsWith('/auth');
-
-      if (!isLoggedIn && !isAuthRoute) return '/auth/invite-code';
-      if (isLoggedIn && isAuthRoute) return '/map';
-      return null;
+      // AUTH BYPASS — domain + Resend kurulunca kaldır
+      return '/map';
     },
     routes: [
       // ── Auth ──────────────────────────────────────────────────────────────
