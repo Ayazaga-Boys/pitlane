@@ -11,6 +11,22 @@ import (
 	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
 )
 
+// h3CellLen — geçerli H3 hücre string uzunluğu (15 hex char = 60 bit)
+const h3CellLen = 15
+
+// isValidH3Cell — gelen h3_cell değerinin format kontrolü (güvenlik sınırı)
+func isValidH3Cell(s string) bool {
+	if len(s) != h3CellLen {
+		return false
+	}
+	for _, c := range s {
+		if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+			return false
+		}
+	}
+	return true
+}
+
 const (
 	writeWait      = 10 * time.Second
 	pongWait       = 60 * time.Second
@@ -79,8 +95,8 @@ func (c *Client) handleMessage(msg InboundMessage) {
 	ctx := context.Background()
 	switch msg.Type {
 	case TypeLocation:
-		if msg.H3Cell == "" {
-			c.sendError("BAD_PAYLOAD", "h3_cell missing")
+		if !isValidH3Cell(msg.H3Cell) {
+			c.sendError("BAD_PAYLOAD", "h3_cell invalid")
 			return
 		}
 		if err := c.hub.store.SetUserCell(ctx, c.userID, msg.H3Cell); err != nil {
