@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../moderation/models/moderation.dart';
+import '../../moderation/ui/moderation_sheet.dart';
 import '../models/dm_message.dart';
 import '../providers/dm_chat_provider.dart';
 
@@ -48,8 +50,28 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
     });
 
+    final target = ModerationTarget(
+      contentType: ReportContentType.profile,
+      contentId: widget.peerId,
+      userId: widget.peerId,
+      label: '@${widget.peerId}',
+    );
+
     return Scaffold(
-      appBar: AppBar(title: Text('@${widget.peerId}')),
+      appBar: AppBar(
+        title: Text('@${widget.peerId}'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Güvenlik seçenekleri',
+            onPressed: () => showModerationSheet(
+              context,
+              ref: ref,
+              target: target,
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
