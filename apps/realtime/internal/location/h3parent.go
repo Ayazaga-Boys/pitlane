@@ -31,7 +31,7 @@ func h3CellToParent(h3Cell string, parentRes int) (string, error) {
 		return "", fmt.Errorf("invalid h3 cell %q: %w", h3Cell, err)
 	}
 
-	currentRes := int((idx >> h3ResOffset) & 0xF)
+	currentRes := int((idx >> h3ResOffset) & 0xF) //nolint:gosec // result is always 0-15, fits safely in int
 	if parentRes >= currentRes || parentRes < 0 || parentRes > 15 {
 		return h3Cell, nil
 	}
