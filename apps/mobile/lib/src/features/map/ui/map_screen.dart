@@ -38,9 +38,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   Future<void> _checkAndStartLocation() async {
     final status = await Permission.locationWhenInUse.status;
-    if (status.isGranted) {
+    if (!mounted) return;
+    if (status.isGranted || status.isLimited) {
       ref.read(locationProvider.notifier).startTracking();
-    } else if (status.isDenied) {
+    } else {
       setState(() => _showPermissionRationale = true);
     }
   }

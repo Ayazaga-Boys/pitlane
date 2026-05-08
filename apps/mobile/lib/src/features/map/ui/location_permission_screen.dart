@@ -12,11 +12,21 @@ class LocationPermissionScreen extends StatelessWidget {
   final VoidCallback onDismiss;
 
   Future<void> _requestPermission(BuildContext context) async {
-    final status = await Permission.locationWhenInUse.request();
-    if (status.isGranted) {
+    var status = await Permission.locationWhenInUse.status;
+    if (status.isGranted || status.isLimited) {
+      onGranted();
+      return;
+    }
+    status = await Permission.locationWhenInUse.request();
+    if (!context.mounted) return;
+    if (status.isGranted || status.isLimited) {
       onGranted();
     } else if (status.isPermanentlyDenied) {
       await openAppSettings();
+      // Ayarlardan döndükten sonra tekrar kontrol et
+      if (!context.mounted) return;
+      final newStatus = await Permission.locationWhenInUse.status;
+      if (newStatus.isGranted || newStatus.isLimited) onGranted();
     }
   }
 

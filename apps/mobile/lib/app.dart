@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'src/core/constants/app_constants.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/providers/auth_provider.dart';
 import 'src/features/auth/ui/invite_code_screen.dart';
@@ -48,12 +49,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = session != null;
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
 
-      // Supabase yokken (dev) direkt haritaya git
-      if (AppConstants.supabaseUrl.isEmpty) return '/map';
-
-      if (!isLoggedIn && !isAuthRoute) return '/auth/invite-code';
-      if (isLoggedIn && isAuthRoute) return '/map';
-      return null;
+      // DEV: Auth bypass — Erol Supabase'i hazırlayınca kaldır
+      return '/map';
     },
     routes: [
       // ── Auth ──────────────────────────────────────────────────────────────
