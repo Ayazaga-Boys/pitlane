@@ -126,20 +126,18 @@ class _MapScreenState extends ConsumerState<MapScreen>
       body: Stack(
         children: [
           // ── Google Maps ──────────────────────────────────────────────────
-          AppConstants.googleMapsApiKey.isEmpty
-              ? _NoApiKeyPlaceholder()
-              : GoogleMap(
-                  initialCameraPosition: _istanbul,
-                  onMapCreated: (c) => _mapController = c,
-                  myLocationEnabled: !isGhost,
-                  myLocationButtonEnabled: false,
-                  zoomControlsEnabled: false,
-                  mapToolbarEnabled: false,
-                  style: _darkMapStyle,
-                  polygons: heatmap.valueOrNull != null
-                      ? _buildHeatmap(heatmap.valueOrNull!)
-                      : {},
-                ),
+          GoogleMap(
+            initialCameraPosition: _istanbul,
+            onMapCreated: (c) => _mapController = c,
+            myLocationEnabled: !isGhost,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
+            style: _darkMapStyle,
+            polygons: heatmap.valueOrNull != null
+                ? _buildHeatmap(heatmap.valueOrNull!)
+                : {},
+          ),
 
           // ── Üst bar ─────────────────────────────────────────────────────
           Positioned(
@@ -229,23 +227,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
             ),
           ),
 
-          // ── Heatmap yükleniyor ───────────────────────────────────────────
-          if (heatmap.isLoading)
-            const Positioned(
-              top: 60,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.pitRed,
-                  ),
-                ),
-              ),
-            ),
+          // Heatmap spinner kaldırıldı — WS yokken gereksiz dönüyor
 
           // ── Konum izni rationale ────────────────────────────────────────
           if (_showPermissionRationale)
