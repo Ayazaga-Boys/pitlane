@@ -110,7 +110,7 @@ flutter run \
 - [ ] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
 
 ### Sprint 4 — Mesajlaşma & Bildirimler (Hafta 7-8)
-- [ ] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
+- [x] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
 - [ ] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
 - [ ] Topluluk mesaj odası
 - [ ] Flare sohbet odası
