@@ -118,8 +118,8 @@ flutter run \
 - [ ] firebase_messaging foreground/background/terminated handler (UF-13)
 - [ ] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
 - [ ] Cihaz token kayıt — `POST /v1/notifications/devices`
-- [ ] Bildirim listesi ekranı
-- [ ] Bildirim ayarları (kategori toggle'ları)
+- [x] Bildirim listesi ekranı
+- [x] Bildirim ayarları (kategori toggle'ları)
 
 ### Sprint 5 — Yardım UI (Hafta 9-10)
 - [ ] Yardım talebi formu (sorun tipi seç — UF-03)
