@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/location_utils.dart';
+import '../providers/location_provider.dart';
 import '../ui/map_filter_sheet.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
@@ -51,9 +52,21 @@ final _dioProvider = Provider<Dio>((ref) {
 // Simulator'da h3_ffi yüklenemiyor — bilinen hücreler için sabit koordinat.
 // Gerçek cihazda h3CellCenter() kullanılır.
 const _knownCells = <String, LatLng>{
-  '8928308280fffff': LatLng(41.0369, 28.9850), // Taksim (test)
+  // Avrupa Yakası
   '89283082803ffff': LatLng(41.0369, 28.9850), // Taksim
+  '8928308280fffff': LatLng(41.0785, 28.9784), // Maslak
+  '892830828c3ffff': LatLng(41.0082, 28.9784), // Sultanahmet
+  '8928308283bffff': LatLng(41.0600, 29.0000), // Şişli
+  '89283082817ffff': LatLng(41.0150, 28.9500), // Beşiktaş
+  '8928308281fffff': LatLng(41.0550, 28.9700), // Mecidiyeköy
+  '89283082807ffff': LatLng(40.9800, 28.8700), // Bağcılar
+  '8928308282fffff': LatLng(41.0300, 28.9100), // Eyüp
+  // Anadolu Yakası
   '8928308280bffff': LatLng(40.9900, 29.0230), // Kadıköy
+  '89283082883ffff': LatLng(40.9700, 29.1000), // Maltepe
+  '89283082887ffff': LatLng(40.9400, 29.0900), // Kartal
+  '8928308288bffff': LatLng(41.0200, 29.1300), // Üsküdar
+  '89283082893ffff': LatLng(41.1000, 29.0500), // Beykoz
 };
 
 LatLng _h3ToLatLng(String h3Cell) {
@@ -108,9 +121,11 @@ String? _formatDate(String? iso) {
   }
 }
 
-Future<List<MapPin>> _fetchHelpPins(Dio dio) async {
+Future<List<MapPin>> _fetchHelpPins(Dio dio, String? userH3Cell) async {
+  // Kullanıcının konumu yoksa genel İstanbul hücresi ile fallback
+  final h3cell = userH3Cell ?? '89283082803ffff';
   final res = await dio.get<Map<String, dynamic>>('/map/help',
-      queryParameters: {'h3cell': '89283082803ffff', 'k': '5'});
+      queryParameters: {'h3cell': h3cell, 'k': '5'});
   final items = (res.data?['data'] as List<dynamic>?) ?? [];
   return items.map((dynamic raw) {
     final item = raw as Map<String, dynamic>;
@@ -156,6 +171,8 @@ Future<List<MapPin>> _fetchFlarePins(Dio dio) async {
 final allPinsProvider = FutureProvider<List<MapPin>>((ref) async {
   debugPrint('[MapPins] fetching from API: ${AppConstants.apiBaseUrl}');
   final dio = ref.read(_dioProvider);
+  // Kullanıcının anlık h3 hücresi — help pinleri buna göre filtrele
+  final userH3Cell = ref.watch(locationProvider).valueOrNull;
   try {
     final pins = await _fetchBusinessPins(dio);
     debugPrint('[MapPins] pins loaded: ${pins.length}');
@@ -168,7 +185,7 @@ final allPinsProvider = FutureProvider<List<MapPin>>((ref) async {
     }
     List<MapPin> helpPins = [];
     try {
-      helpPins = await _fetchHelpPins(dio);
+      helpPins = await _fetchHelpPins(dio, userH3Cell);
       debugPrint('[MapPins] help loaded: ${helpPins.length}');
     } catch (e) {
       debugPrint('[MapPins] help error: $e');
