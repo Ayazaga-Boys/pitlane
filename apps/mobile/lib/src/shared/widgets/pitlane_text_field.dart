@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_spacing.dart';
 
 class PitlaneTextField extends StatelessWidget {
   const PitlaneTextField({
@@ -34,20 +35,25 @@ class PitlaneTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: Theme.of(context).textTheme.labelMedium),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          onChanged: onChanged,
-          onSubmitted: onSubmitted,
-          autofocus: autofocus,
-          obscureText: obscureText,
-          maxLength: maxLength,
-          decoration: InputDecoration(
-            hintText: hint,
-            errorText: errorText,
-            counterText: '',
+        const SizedBox(height: AppSpacing.sm),
+        Semantics(
+          textField: true,
+          label: label,
+          hint: errorText ?? hint,
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            onChanged: onChanged,
+            onSubmitted: onSubmitted,
+            autofocus: autofocus,
+            obscureText: obscureText,
+            maxLength: maxLength,
+            decoration: InputDecoration(
+              hintText: hint,
+              errorText: errorText,
+              counterText: '',
+            ),
           ),
         ),
       ],

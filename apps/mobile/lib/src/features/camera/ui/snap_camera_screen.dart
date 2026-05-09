@@ -48,12 +48,16 @@ class _SnapCameraScreenState extends ConsumerState<SnapCameraScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Snap Kamera')),
       body: SafeArea(
-        child: camera.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text(error.toString())),
-          data: (state) => _SnapCameraContent(
-            state: state,
-            captionController: _captionController,
+        child: Semantics(
+          explicitChildNodes: true,
+          label: 'Snap kamera ekranı',
+          child: camera.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => Center(child: Text(error.toString())),
+            data: (state) => _SnapCameraContent(
+              state: state,
+              captionController: _captionController,
+            ),
           ),
         ),
       ),
@@ -90,12 +94,17 @@ class _SnapCameraContent extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
           _TargetSelector(state: state),
           const SizedBox(height: AppSpacing.lg),
-          TextField(
-            controller: captionController,
-            maxLength: 140,
-            decoration: const InputDecoration(
-              labelText: 'Kısa not',
-              hintText: 'Rota, araç veya an bilgisi',
+          Semantics(
+            textField: true,
+            label: 'Snap kısa not',
+            hint: 'Rota, araç veya an bilgisi',
+            child: TextField(
+              controller: captionController,
+              maxLength: 140,
+              decoration: const InputDecoration(
+                labelText: 'Kısa not',
+                hintText: 'Rota, araç veya an bilgisi',
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -141,24 +150,28 @@ class _ModeSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SegmentedButton<SnapMode>(
-      selected: {state.mode},
-      showSelectedIcon: false,
-      onSelectionChanged: (selection) {
-        ref.read(snapCameraProvider.notifier).setMode(selection.first);
-      },
-      segments: const [
-        ButtonSegment(
-          value: SnapMode.photo,
-          icon: Icon(Icons.photo_camera_outlined),
-          label: Text('Foto'),
-        ),
-        ButtonSegment(
-          value: SnapMode.video,
-          icon: Icon(Icons.videocam_outlined),
-          label: Text('Video'),
-        ),
-      ],
+    return Semantics(
+      label: 'Snap modu',
+      hint: 'Fotoğraf veya video seç',
+      child: SegmentedButton<SnapMode>(
+        selected: {state.mode},
+        showSelectedIcon: false,
+        onSelectionChanged: (selection) {
+          ref.read(snapCameraProvider.notifier).setMode(selection.first);
+        },
+        segments: const [
+          ButtonSegment(
+            value: SnapMode.photo,
+            icon: Icon(Icons.photo_camera_outlined),
+            label: Text('Foto'),
+          ),
+          ButtonSegment(
+            value: SnapMode.video,
+            icon: Icon(Icons.videocam_outlined),
+            label: Text('Video'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -172,92 +185,97 @@ class _CameraStage extends StatelessWidget {
   Widget build(BuildContext context) {
     final preview = state.preview;
 
-    return AspectRatio(
-      aspectRatio: 9 / 16,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: AppColors.surface2,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.surface3),
-        ),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppColors.surface3,
-                      AppColors.surface1,
-                      AppColors.surface0,
-                    ],
+    return Semantics(
+      image: true,
+      label:
+          'Snap önizleme. ${state.mode.label}, ${state.filter.label} filtre, hız ${state.speedKmh.toStringAsFixed(0)} kilometre saat.',
+      child: AspectRatio(
+        aspectRatio: 9 / 16,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.surface2,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: AppColors.surface3),
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        AppColors.surface3,
+                        AppColors.surface1,
+                        AppColors.surface0,
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              top: AppSpacing.lg,
-              left: AppSpacing.lg,
-              child: _OverlayPill(
-                icon: state.mode == SnapMode.photo
-                    ? Icons.photo_camera_outlined
-                    : Icons.videocam_outlined,
-                label: state.mode.label,
+              Positioned(
+                top: AppSpacing.lg,
+                left: AppSpacing.lg,
+                child: _OverlayPill(
+                  icon: state.mode == SnapMode.photo
+                      ? Icons.photo_camera_outlined
+                      : Icons.videocam_outlined,
+                  label: state.mode.label,
+                ),
               ),
-            ),
-            Positioned(
-              top: AppSpacing.lg,
-              right: AppSpacing.lg,
-              child: _OverlayPill(
-                icon: Icons.speed_outlined,
-                label: '${state.speedKmh.toStringAsFixed(0)} km/h',
+              Positioned(
+                top: AppSpacing.lg,
+                right: AppSpacing.lg,
+                child: _OverlayPill(
+                  icon: Icons.speed_outlined,
+                  label: '${state.speedKmh.toStringAsFixed(0)} km/h',
+                ),
               ),
-            ),
-            Center(
-              child: Icon(
-                preview == null
-                    ? Icons.camera_alt_outlined
-                    : Icons.check_circle_outline,
-                color: preview == null
-                    ? AppColors.textTertiary
-                    : AppColors.success,
-                size: 72,
+              Center(
+                child: Icon(
+                  preview == null
+                      ? Icons.camera_alt_outlined
+                      : Icons.check_circle_outline,
+                  color: preview == null
+                      ? AppColors.textTertiary
+                      : AppColors.success,
+                  size: 72,
+                ),
               ),
-            ),
-            Positioned(
-              left: AppSpacing.lg,
-              right: AppSpacing.lg,
-              bottom: AppSpacing.lg,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _OverlayPill(
-                    icon: Icons.filter_alt_outlined,
-                    label: state.filter.label,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  if (preview?.draft.caption != null)
-                    Text(
-                      preview!.draft.caption!,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    )
-                  else
-                    Text(
-                      'Çekim önizlemesi',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+              Positioned(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                bottom: AppSpacing.lg,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _OverlayPill(
+                      icon: Icons.filter_alt_outlined,
+                      label: state.filter.label,
                     ),
-                ],
+                    const SizedBox(height: AppSpacing.sm),
+                    if (preview?.draft.caption != null)
+                      Text(
+                        preview!.draft.caption!,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      )
+                    else
+                      Text(
+                        'Çekim önizlemesi',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -275,6 +293,7 @@ class _FilterSelector extends ConsumerWidget {
       title: 'Filtre',
       children: SnapFilter.values.map((filter) {
         return ChoiceChip(
+          tooltip: '${filter.label} filtresi',
           selected: state.filter == filter,
           label: Text(filter.label),
           onSelected: (_) =>
@@ -296,6 +315,7 @@ class _TargetSelector extends ConsumerWidget {
       title: 'Paylaşım hedefi',
       children: SnapTarget.values.map((target) {
         return ChoiceChip(
+          tooltip: '${target.label} hedefi',
           selected: state.target == target,
           label: Text(target.label),
           onSelected: (_) =>
@@ -320,7 +340,11 @@ class _PreviewActions extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (uploadProgress > 0) ...[
-          LinearProgressIndicator(value: uploadProgress),
+          Semantics(
+            label: 'Snap yükleme ilerlemesi',
+            value: '${(uploadProgress * 100).round()} yüzde',
+            child: LinearProgressIndicator(value: uploadProgress),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             uploadProgress >= 1
@@ -393,25 +417,30 @@ class _SafetyBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.warning.withAlpha(24),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.warning.withAlpha(90)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Row(
-          children: [
-            const Icon(Icons.warning_amber_outlined, color: AppColors.warning),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                '10 km/s üzerindeyken video kaydı kilitlenir.',
-                style: Theme.of(context).textTheme.bodyMedium,
+    return Semantics(
+      liveRegion: true,
+      label: 'Sürerken kullanma kilidi uyarısı',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.warning.withAlpha(24),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: AppColors.warning.withAlpha(90)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_outlined,
+                  color: AppColors.warning),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  '10 km/s üzerindeyken video kaydı kilitlenir.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

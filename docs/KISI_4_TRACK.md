@@ -134,7 +134,7 @@ flutter run \
 - [x] Ayarlar ekranı — tüm toggle'lar (UF-10)
 - [x] Hesap silme akışı (2 adımlı onay)
 - [x] Veri dışa aktarma butonu
-- [ ] Semantics etiketleri eksiksiz (26. doküman checklist)
+- [x] Semantics etiketleri eksiksiz (26. doküman checklist)
 - [ ] Patrol E2E testleri (E2E-01..05)
 
 ---

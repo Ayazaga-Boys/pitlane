@@ -32,10 +32,14 @@ class HelpDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Yardım Detayı')),
       body: SafeArea(
-        child: detail.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _HelpDetailError(message: error.toString()),
-          data: (request) => _HelpDetailContent(request: request),
+        child: Semantics(
+          explicitChildNodes: true,
+          label: 'Yardım detayı ekranı',
+          child: detail.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => _HelpDetailError(message: error.toString()),
+            data: (request) => _HelpDetailContent(request: request),
+          ),
         ),
       ),
     );
@@ -56,37 +60,41 @@ class _HelpDetailContent extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.error.withAlpha(28),
-                borderRadius: BorderRadius.circular(AppRadius.md),
+        Semantics(
+          header: true,
+          label: '${request.status.label}. ${request.issueType.label}',
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withAlpha(28),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: const Icon(Icons.sos, color: AppColors.error, size: 32),
               ),
-              child: const Icon(Icons.sos, color: AppColors.error, size: 32),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    request.status.label,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  Text(
-                    '${request.issueType.emoji} ${request.issueType.label}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                  ),
-                ],
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.status.label,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    Text(
+                      '${request.issueType.emoji} ${request.issueType.label}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: AppSpacing.xl),
         if (request.description != null && request.description!.isNotEmpty)

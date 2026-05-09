@@ -74,93 +74,107 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(helpRequestProvider).isLoading;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.lg,
-        AppSpacing.xl,
-        AppSpacing.xl + MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.surface3,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('Acil Yardım',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.error,
-                  )),
-          const SizedBox(height: AppSpacing.xs),
-          Text('Sorun türünü seç, yakındaki Pitlane üyeleri görsün.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: AppColors.textSecondary)),
-          const SizedBox(height: AppSpacing.lg),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: HelpIssueType.values.map((type) {
-              final selected = _selectedType == type;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedType = type),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: selected ? AppColors.error : AppColors.surface3,
-                    borderRadius: BorderRadius.circular(AppSpacing.xl),
-                  ),
-                  child: Text('${type.emoji} ${type.label}',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500)),
+    return Semantics(
+      explicitChildNodes: true,
+      label: 'Acil yardım formu',
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.lg,
+          AppSpacing.xl,
+          AppSpacing.xl + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.surface3,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          TextField(
-            controller: _descController,
-            maxLength: 300,
-            maxLines: 2,
-            decoration: InputDecoration(
-              hintText: 'Kısa açıklama (isteğe bağlı)',
-              hintStyle: const TextStyle(color: AppColors.textTertiary),
-              filled: true,
-              fillColor: AppColors.surface3,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.md),
-                borderSide: BorderSide.none,
               ),
-              counterStyle: const TextStyle(color: AppColors.textTertiary),
             ),
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Text(_error!,
-                style: const TextStyle(color: AppColors.error, fontSize: 13)),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Acil Yardım',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.error,
+                    )),
+            const SizedBox(height: AppSpacing.xs),
+            Text('Sorun türünü seç, yakındaki Pitlane üyeleri görsün.',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppColors.textSecondary)),
+            const SizedBox(height: AppSpacing.lg),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: HelpIssueType.values.map((type) {
+                final selected = _selectedType == type;
+                return Semantics(
+                  button: true,
+                  selected: selected,
+                  label: '${type.label} yardım tipi',
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedType = type),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: selected ? AppColors.error : AppColors.surface3,
+                        borderRadius: BorderRadius.circular(AppSpacing.xl),
+                      ),
+                      child: Text('${type.emoji} ${type.label}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Semantics(
+              textField: true,
+              label: 'Yardım açıklaması',
+              hint: 'Kısa açıklama isteğe bağlı',
+              child: TextField(
+                controller: _descController,
+                maxLength: 300,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'Kısa açıklama (isteğe bağlı)',
+                  hintStyle: const TextStyle(color: AppColors.textTertiary),
+                  filled: true,
+                  fillColor: AppColors.surface3,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.md),
+                    borderSide: BorderSide.none,
+                  ),
+                  counterStyle: const TextStyle(color: AppColors.textTertiary),
+                ),
+              ),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(_error!,
+                  style: const TextStyle(color: AppColors.error, fontSize: 13)),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            PitlaneButton(
+              label: 'Yardım İste',
+              onPressed: isLoading ? null : _send,
+              isLoading: isLoading,
+            ),
           ],
-          const SizedBox(height: AppSpacing.lg),
-          PitlaneButton(
-            label: 'Yardım İste',
-            onPressed: isLoading ? null : _send,
-            isLoading: isLoading,
-          ),
-        ],
+        ),
       ),
     );
   }
