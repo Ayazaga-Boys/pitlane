@@ -66,6 +66,62 @@ helpRequestRoutes.get('/mine', async (c) => {
   return c.json({ data });
 });
 
+// POST /v1/help-requests/:id/respond — yardım etmek istiyorum
+helpRequestRoutes.post('/:id/respond', async (c) => {
+  const id = c.req.param('id');
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  // İsteğin açık olduğunu ve requester'ın kendisi olmadığını kontrol et
+  const { data: existing, error: fetchError } = await supabase
+    .from('help_requests')
+    .select('id,status,requester_id,helper_id')
+    .eq('id', id)
+    .eq('status', 'open')
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle();
+
+  if (fetchError) return c.json({ code: 'INTERNAL_ERROR', error: fetchError.message }, 500);
+  if (!existing) return c.json({ code: 'NOT_FOUND', error: 'Open help request not found' }, 404);
+  if (existing.requester_id === userId) {
+    return c.json({ code: 'FORBIDDEN', error: 'Kendi isteğine yardım edemezsin' }, 403);
+  }
+  if (existing.helper_id) {
+    return c.json({ code: 'CONFLICT', error: 'Bu isteğe zaten yardım eden var' }, 409);
+  }
+
+  const { data, error } = await supabase
+    .from('help_requests')
+    .update({ status: 'helper_found', helper_id: userId })
+    .eq('id', id)
+    .select(HR_SELECT)
+    .single();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  return c.json({ data });
+});
+
+// POST /v1/help-requests/:id/resolve — çözüldü olarak işaretle
+helpRequestRoutes.post('/:id/resolve', async (c) => {
+  const id = c.req.param('id');
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data, error } = await supabase
+    .from('help_requests')
+    .update({ status: 'resolved', resolved_at: new Date().toISOString() })
+    .eq('id', id)
+    .or(`requester_id.eq.${userId},helper_id.eq.${userId}`)
+    .select(HR_SELECT)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Help request not found' }, 404);
+  return c.json({ data });
+});
+
 // DELETE /v1/help-requests/:id — isteği iptal et
 helpRequestRoutes.delete('/:id', async (c) => {
   const id = c.req.param('id');
