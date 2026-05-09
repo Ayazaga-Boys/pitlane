@@ -20,28 +20,32 @@ class HelpWaitingScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Yardım Durumu')),
       body: SafeArea(
-        child: request.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _HelpStateMessage(
-            icon: Icons.error_outline,
-            title: 'Yardım durumu alınamadı',
-            message: error.toString(),
-            actionLabel: 'Tekrar dene',
-            onAction: () => ref.read(helpRequestProvider.notifier).refresh(),
+        child: Semantics(
+          explicitChildNodes: true,
+          label: 'Yardım durumu ekranı',
+          child: request.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => _HelpStateMessage(
+              icon: Icons.error_outline,
+              title: 'Yardım durumu alınamadı',
+              message: error.toString(),
+              actionLabel: 'Tekrar dene',
+              onAction: () => ref.read(helpRequestProvider.notifier).refresh(),
+            ),
+            data: (item) {
+              if (item == null) {
+                return _HelpStateMessage(
+                  icon: Icons.sos_outlined,
+                  title: 'Açık yardım isteğin yok',
+                  message:
+                      'Haritadaki SOS butonundan yeni bir istek açabilirsin.',
+                  actionLabel: 'Haritaya dön',
+                  onAction: () => context.go('/map'),
+                );
+              }
+              return _HelpWaitingContent(request: item);
+            },
           ),
-          data: (item) {
-            if (item == null) {
-              return _HelpStateMessage(
-                icon: Icons.sos_outlined,
-                title: 'Açık yardım isteğin yok',
-                message:
-                    'Haritadaki SOS butonundan yeni bir istek açabilirsin.',
-                actionLabel: 'Haritaya dön',
-                onAction: () => context.go('/map'),
-              );
-            }
-            return _HelpWaitingContent(request: item);
-          },
         ),
       ),
     );
@@ -75,15 +79,20 @@ class _HelpWaitingContent extends ConsumerWidget {
         children: [
           const SizedBox(height: AppSpacing.xl),
           Center(
-            child: SosPulseWidget(
-              child: Container(
-                width: 76,
-                height: 76,
-                decoration: const BoxDecoration(
-                  color: AppColors.error,
-                  shape: BoxShape.circle,
+            child: Semantics(
+              image: true,
+              liveRegion: true,
+              label: 'Yardım isteği aktif, yakındaki üyeler bilgilendiriliyor',
+              child: SosPulseWidget(
+                child: Container(
+                  width: 76,
+                  height: 76,
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.sos, color: Colors.white, size: 36),
                 ),
-                child: const Icon(Icons.sos, color: Colors.white, size: 36),
               ),
             ),
           ),
