@@ -107,7 +107,7 @@ flutter run \
 - [x] Topluluk oluşturma formu (ad, slug, tip, araç tipi, şehir)
 - [x] Flare oluşturma ekranı (F4.1) — H3 hücre ile oluşturma, harita route param desteği
 - [x] Flare detay ekranı — RSVP butonu (going/maybe/not_going)
-- [ ] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
+- [x] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
 
 ### Sprint 4 — Mesajlaşma & Bildirimler (Hafta 7-8)
 - [x] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
