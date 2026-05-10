@@ -5,6 +5,7 @@ import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/sc
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
+import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
 import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 
@@ -180,5 +181,24 @@ describe('moderation schemas', () => {
   it('validates block user params', () => {
     expect(UserIdParamSchema.safeParse({ userId: '00000000-0000-4000-8000-000000000001' }).success).toBe(true);
     expect(UserIdParamSchema.safeParse({ userId: 'bad-id' }).success).toBe(false);
+  });
+});
+
+describe('notification schemas', () => {
+  it('accepts valid push device registration', () => {
+    const parsed = RegisterDeviceSchema.parse({
+      platform: 'ios',
+      token: 'pitlane-dev-device-token-ios',
+      app_build: 'dev',
+    });
+
+    expect(parsed.platform).toBe('ios');
+  });
+
+  it('rejects short push tokens', () => {
+    expect(RegisterDeviceSchema.safeParse({
+      platform: 'android',
+      token: 'short',
+    }).success).toBe(false);
   });
 });
