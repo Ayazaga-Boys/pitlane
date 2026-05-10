@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { JoinWaitingListSchema, ValidateInviteCodeSchema } from '../src/schemas/auth.schema.js';
+import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/community.schema.js';
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
+import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
+import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
+import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
 import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 
@@ -114,6 +118,87 @@ describe('pin schemas', () => {
     expect(StartCampaignSchema.safeParse({
       campaign_text: 'Bugun fren bakımında indirim',
       campaign_ends_at: tooLateEnd,
+    }).success).toBe(false);
+  });
+});
+
+describe('help schemas', () => {
+  it('accepts a valid help request', () => {
+    const parsed = CreateHelpSchema.parse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'flat_tire',
+      description: 'Lastik patladı',
+    });
+
+    expect(parsed.issue_type).toBe('flat_tire');
+  });
+
+  it('rejects long help descriptions', () => {
+    expect(CreateHelpSchema.safeParse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'fuel',
+      description: 'x'.repeat(301),
+    }).success).toBe(false);
+  });
+});
+
+describe('community schemas', () => {
+  it('accepts a valid community draft', () => {
+    const parsed = CreateCommunitySchema.parse({
+      name: 'Istanbul Riders',
+      slug: 'istanbul-riders',
+      vehicle_type: 'motorcycle',
+      city: 'Istanbul',
+    });
+
+    expect(parsed.type).toBe('public');
+    expect(parsed.vehicle_type).toBe('motorcycle');
+  });
+
+  it('rejects invalid slugs', () => {
+    expect(CreateCommunitySchema.safeParse({
+      name: 'Bad Slug',
+      slug: 'Bad Slug',
+    }).success).toBe(false);
+  });
+
+  it('requires community update payloads to include a field', () => {
+    expect(UpdateCommunitySchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('moderation schemas', () => {
+  it('accepts a valid report', () => {
+    const parsed = CreateReportSchema.parse({
+      content_type: 'profile',
+      content_id: '00000000-0000-4000-8000-000000000001',
+      reason: 'spam',
+    });
+
+    expect(parsed.reason).toBe('spam');
+  });
+
+  it('validates block user params', () => {
+    expect(UserIdParamSchema.safeParse({ userId: '00000000-0000-4000-8000-000000000001' }).success).toBe(true);
+    expect(UserIdParamSchema.safeParse({ userId: 'bad-id' }).success).toBe(false);
+  });
+});
+
+describe('notification schemas', () => {
+  it('accepts valid push device registration', () => {
+    const parsed = RegisterDeviceSchema.parse({
+      platform: 'ios',
+      token: 'pitlane-dev-device-token-ios',
+      app_build: 'dev',
+    });
+
+    expect(parsed.platform).toBe('ios');
+  });
+
+  it('rejects short push tokens', () => {
+    expect(RegisterDeviceSchema.safeParse({
+      platform: 'android',
+      token: 'short',
     }).success).toBe(false);
   });
 });
