@@ -11,9 +11,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       <div className="mx-auto grid max-w-[1600px] gap-lg lg:grid-cols-[280px_minmax(0,1fr)]">
         <Sidebar />
 
-        <div className="space-y-lg">
+        <div className="min-w-0 space-y-lg">
           <Header email={identity.email} />
-          <main>{children}</main>
+          <main className="min-w-0">{children}</main>
         </div>
       </div>
     </div>

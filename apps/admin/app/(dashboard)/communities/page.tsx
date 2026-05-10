@@ -10,7 +10,7 @@ export default function CommunitiesPage() {
       title="Topluluklar"
       description="Topluluk listesi ve moderasyon ekranının temel masaüstü tablosu hazır."
     >
-      <MockDataBanner label="Topluluk backend bağımlılığı gelene kadar mock akışta" />
+      <MockDataBanner label="Topluluk liste ve detay akışı şu an örnek veriyle prova ediliyor" />
       <div className="surface-panel p-xl">
         <CommunitiesTable communities={mockCommunities} />
       </div>

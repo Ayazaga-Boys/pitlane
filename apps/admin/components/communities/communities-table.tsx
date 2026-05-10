@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableWrapper, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import type { MockCommunity } from "@/lib/mock-data";
@@ -20,7 +21,12 @@ export function CommunitiesTable({ communities }: { communities: MockCommunity[]
             <TR key={community.id}>
               <TD>
                 <div>
-                  <p className="font-medium text-text-primary">{community.name}</p>
+                  <Link
+                    className="focus-ring rounded-sm font-medium text-text-primary hover:text-pit-red-soft"
+                    href={`/communities/${community.id}`}
+                  >
+                    {community.name}
+                  </Link>
                   <p className="mt-1 text-xs text-text-tertiary">/{community.slug}</p>
                 </div>
               </TD>

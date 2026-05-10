@@ -28,13 +28,13 @@ export function Header({ email }: HeaderProps) {
       </div>
 
       <div className="flex flex-col gap-md md:flex-row md:items-center">
-        <label className="relative block min-w-[280px]">
+        <label className="relative block w-full md:min-w-[280px]">
           <Search aria-hidden="true" className="pointer-events-none absolute left-md top-1/2 size-4 -translate-y-1/2 text-text-tertiary" />
           <span className="sr-only">Panel içi arama</span>
-          <Input className="pl-10" placeholder="Kullanıcı, pin veya şikayet ara" type="search" />
+          <Input aria-label="Panel içinde ara" className="pl-10" placeholder="Kullanıcı, pin veya şikayet ara" type="search" />
         </label>
 
-        <div className="flex items-center gap-sm">
+        <div className="flex flex-wrap items-center gap-sm">
           <button
             aria-label="Bildirimler"
             className="focus-ring inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill border border-surface-3 bg-surface-2 text-text-secondary transition hover:text-text-primary"
@@ -47,7 +47,7 @@ export function Header({ email }: HeaderProps) {
             {email ?? "admin@pitlane.app"}
           </div>
 
-          <Button className="gap-sm" onClick={handleSignOut} variant="ghost">
+          <Button aria-label="Oturumu kapat" className="gap-sm" onClick={handleSignOut} variant="ghost">
             <LogOut aria-hidden="true" className="size-4" />
             Çıkış
           </Button>
