@@ -103,38 +103,38 @@ flutter run \
 
 ### Sprint 3 — Topluluklar & Flares (Hafta 5-6)
 - [x] Topluluk keşif ekranı (`/communities`) — arama + filtre (F3.1)
-- [ ] Topluluk detay ekranı — üyeler, flares, katıl butonu
-- [ ] Topluluk oluşturma formu (ad, slug, tip, araç tipi, şehir)
-- [ ] Flare oluşturma ekranı (F4.1) — haritadan konum seç → H3 hücre
-- [ ] Flare detay ekranı — RSVP butonu (going/maybe/not_going)
-- [ ] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
+- [x] Topluluk detay ekranı — üyeler, flares, katıl butonu
+- [x] Topluluk oluşturma formu (ad, slug, tip, araç tipi, şehir)
+- [x] Flare oluşturma ekranı (F4.1) — H3 hücre ile oluşturma, harita route param desteği
+- [x] Flare detay ekranı — RSVP butonu (going/maybe/not_going)
+- [x] Haritada flare pinleri (Burak'ın MapScreen'ine entegre)
 
 ### Sprint 4 — Mesajlaşma & Bildirimler (Hafta 7-8)
-- [ ] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
-- [ ] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
-- [ ] Topluluk mesaj odası
-- [ ] Flare sohbet odası
-- [ ] Şikayet et + Engelle UI (UF-09)
+- [x] DM listesi ekranı (`/messages`) — son mesajlar (UF-05)
+- [x] Sohbet ekranı (`/messages/:peerId`) — Supabase Realtime subscribe
+- [x] Topluluk mesaj odası
+- [x] Flare sohbet odası
+- [x] Şikayet et + Engelle UI (UF-09)
 - [ ] firebase_messaging foreground/background/terminated handler (UF-13)
-- [ ] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
-- [ ] Cihaz token kayıt — `POST /v1/notifications/devices`
-- [ ] Bildirim listesi ekranı
-- [ ] Bildirim ayarları (kategori toggle'ları)
+- [x] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
+- [x] Cihaz token kayıt — `POST /v1/notifications/devices`
+- [x] Bildirim listesi ekranı
+- [x] Bildirim ayarları (kategori toggle'ları)
 
 ### Sprint 5 — Yardım UI (Hafta 9-10)
-- [ ] Yardım talebi formu (sorun tipi seç — UF-03)
-- [ ] Yardım bekleme ekranı (pulse animasyonu)
-- [ ] "Yardım edeceğim" → 1-1 sohbet açılır
-- [ ] İşletme pin kartı detay
+- [x] Yardım talebi formu (sorun tipi seç — UF-03)
+- [x] Yardım bekleme ekranı (pulse animasyonu)
+- [x] "Yardım edeceğim" → 1-1 sohbet açılır
+- [x] İşletme pin kartı detay
 
 ### Sprint 6 — Kamera & Ayarlar (Hafta 11-12)
-- [ ] Snap kamera ekranı (UF-06) — foto + 15sn video
-- [ ] "Sürerken kullanma" kilidi (>10 km/h)
-- [ ] Otomotif filtreler (hız overlay, vites)
-- [ ] Ayarlar ekranı — tüm toggle'lar (UF-10)
-- [ ] Hesap silme akışı (2 adımlı onay)
-- [ ] Veri dışa aktarma butonu
-- [ ] Semantics etiketleri eksiksiz (26. doküman checklist)
+- [x] Snap kamera ekranı (UF-06) — foto + 15sn video
+- [x] "Sürerken kullanma" kilidi (>10 km/h)
+- [x] Otomotif filtreler (hız overlay, vites)
+- [x] Ayarlar ekranı — tüm toggle'lar (UF-10)
+- [x] Hesap silme akışı (2 adımlı onay)
+- [x] Veri dışa aktarma butonu
+- [x] Semantics etiketleri eksiksiz (26. doküman checklist)
 - [ ] Patrol E2E testleri (E2E-01..05)
 
 ---

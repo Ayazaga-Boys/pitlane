@@ -13,6 +13,8 @@ abstract final class AppConstants {
     defaultValue: 'ws://localhost:8080',
   );
 
+  static const googleMapsApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
+
   static const apiTimeoutSeconds = 8;
 
   static const isDev =

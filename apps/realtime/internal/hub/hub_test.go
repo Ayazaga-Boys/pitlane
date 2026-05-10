@@ -1,0 +1,204 @@
+package hub
+
+import (
+	"context"
+	"encoding/json"
+	"testing"
+	"time"
+
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
+	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
+)
+
+func newTestHub() *Hub {
+	store := location.NewStore()
+	bc := location.NewBroadcaster(store)
+	cfg := &config.Config{Port: "8080"}
+	return New(cfg, store, bc)
+}
+
+func TestHubActiveCountZero(t *testing.T) {
+	h := newTestHub()
+	if h.ActiveCount() != 0 {
+		t.Errorf("expected 0 active clients, got %d", h.ActiveCount())
+	}
+}
+
+func TestSendToNonExistentUser(t *testing.T) {
+	h := newTestHub()
+	// Var olmayan kullanıcıya mesaj göndermek panic yapmamalı
+	h.SendToUser("nonexistent", []byte(`{"type":"pong"}`))
+}
+
+func TestSendToAllEmpty(t *testing.T) {
+	h := newTestHub()
+	// Boş hub'a broadcast panic yapmamalı
+	h.SendToAll([]byte(`{"type":"heatmap_update","cells":{}}`))
+}
+
+func TestMessageMarshal(t *testing.T) {
+	msg := OutboundMessage{
+		Type:  TypeHeatmapUpdate,
+		Cells: map[string]int{"89283082803ffff": 5},
+	}
+	b, err := json.Marshal(msg)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+	if len(b) == 0 {
+		t.Error("expected non-empty JSON")
+	}
+}
+
+func newTestClient(h *Hub, userID string) *Client {
+	return &Client{
+		hub:    h,
+		conn:   nil, // connection gerekmeyen testler için
+		userID: userID,
+		send:   make(chan []byte, sendBufferSize),
+	}
+}
+
+func TestHubRegisterIncrementsCount(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	c := newTestClient(h, "user-1")
+	h.register <- c
+
+	// Run() goroutine'inin işlemesini bekle
+	time.Sleep(10 * time.Millisecond)
+
+	if h.ActiveCount() != 1 {
+		t.Errorf("expected 1 active client, got %d", h.ActiveCount())
+	}
+}
+
+func TestHubUnregisterDecrementsCount(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	c := newTestClient(h, "user-2")
+	h.register <- c
+	time.Sleep(10 * time.Millisecond)
+
+	h.unregister <- c
+	time.Sleep(10 * time.Millisecond)
+
+	if h.ActiveCount() != 0 {
+		t.Errorf("expected 0 active clients after unregister, got %d", h.ActiveCount())
+	}
+}
+
+func TestSendToRegisteredUser(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	c := newTestClient(h, "user-3")
+	h.register <- c
+	time.Sleep(10 * time.Millisecond)
+
+	msg := []byte(`{"type":"pong"}`)
+	h.SendToUser("user-3", msg)
+
+	select {
+	case got := <-c.send:
+		if string(got) != string(msg) {
+			t.Errorf("expected %s, got %s", msg, got)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Error("message not delivered within timeout")
+	}
+}
+
+func TestSendToAllDeliversToAll(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	c1 := newTestClient(h, "user-4a")
+	c2 := newTestClient(h, "user-4b")
+	h.register <- c1
+	h.register <- c2
+	time.Sleep(20 * time.Millisecond)
+
+	msg := []byte(`{"type":"heatmap_update","cells":{}}`)
+	h.SendToAll(msg)
+
+	for _, c := range []*Client{c1, c2} {
+		select {
+		case got := <-c.send:
+			if string(got) != string(msg) {
+				t.Errorf("expected %s, got %s", msg, got)
+			}
+		case <-time.After(100 * time.Millisecond):
+			t.Errorf("client %s did not receive broadcast", c.userID)
+		}
+	}
+}
+
+func TestHubShutdownOnContextCancel(t *testing.T) {
+	h := newTestHub()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	c := newTestClient(h, "user-shutdown")
+	h.register <- c
+	done := make(chan struct{})
+	go func() {
+		h.Run(ctx)
+		close(done)
+	}()
+	time.Sleep(10 * time.Millisecond)
+
+	cancel()
+
+	select {
+	case <-done:
+		// Run() returned — hub kapandı ✓
+	case <-time.After(200 * time.Millisecond):
+		t.Error("hub did not shut down after context cancel")
+	}
+}
+
+func TestIsValidH3Cell(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{"89283082803ffff", true},   // geçerli res-9
+		{"8928308280fffff", true},   // geçerli res-8
+		{"", false},                 // boş
+		{"89283082803fff", false},   // 14 char — kısa
+		{"89283082803fffff", false}, // 16 char — uzun
+		{"89283082803FFFF", false},  // büyük harf
+		{"89283082803gfff", false},  // geçersiz hex char
+		{"89283082803 fff", false},  // boşluk içeriyor
+	}
+	for _, tt := range tests {
+		got := isValidH3Cell(tt.input)
+		if got != tt.want {
+			t.Errorf("isValidH3Cell(%q) = %v, want %v", tt.input, got, tt.want)
+		}
+	}
+}
+
+func TestInboundMessageTypes(t *testing.T) {
+	tests := []struct {
+		raw      string
+		wantType string
+	}{
+		{`{"type":"location","h3_cell":"89283082803ffff"}`, TypeLocation},
+		{`{"type":"ghost_on"}`, TypeGhostOn},
+		{`{"type":"ghost_off"}`, TypeGhostOff},
+	}
+
+	for _, tt := range tests {
+		var msg InboundMessage
+		if err := json.Unmarshal([]byte(tt.raw), &msg); err != nil {
+			t.Errorf("unmarshal failed for %s: %v", tt.raw, err)
+			continue
+		}
+		if msg.Type != tt.wantType {
+			t.Errorf("expected type %s, got %s", tt.wantType, msg.Type)
+		}
+	}
+}

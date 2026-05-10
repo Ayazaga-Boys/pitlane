@@ -22,14 +22,20 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
   bool _submitted = false;
 
   static const _vehicles = [
-    ('car',        'Otomobil 🚗'),
+    ('car', 'Otomobil 🚗'),
     ('motorcycle', 'Motosiklet 🏍️'),
-    ('other',      'Diğer'),
+    ('other', 'Diğer'),
   ];
 
   static const _cities = [
-    'Istanbul', 'Ankara', 'Izmir', 'Bursa',
-    'Antalya', 'Adana', 'Eskisehir', 'Diger',
+    'Istanbul',
+    'Ankara',
+    'Izmir',
+    'Bursa',
+    'Antalya',
+    'Adana',
+    'Eskisehir',
+    'Diger',
   ];
 
   @override
@@ -39,8 +45,12 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
   }
 
   String? _validateEmail(String email) {
-    if (email.isEmpty) return 'E-posta gir';
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) return 'Geçerli e-posta gir';
+    if (email.isEmpty) {
+      return 'E-posta gir';
+    }
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+      return 'Geçerli e-posta gir';
+    }
     return null;
   }
 
@@ -54,17 +64,19 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
     }
 
     await ref.read(waitingListProvider.notifier).join(
-      email: _emailController.text.trim(),
-      vehicleType: _selectedVehicle,
-      city: _selectedCity,
-    );
+          email: _emailController.text.trim(),
+          vehicleType: _selectedVehicle,
+          city: _selectedCity,
+        );
 
     if (!mounted) return;
     final state = ref.read(waitingListProvider);
 
     if (state.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.error.toString()), backgroundColor: AppColors.error),
+        SnackBar(
+            content: Text(state.error.toString()),
+            backgroundColor: AppColors.error),
       );
       return;
     }
@@ -76,7 +88,9 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(waitingListProvider).isLoading;
 
-    if (_submitted) return _SuccessView(onBack: () => context.go('/auth/invite-code'));
+    if (_submitted) {
+      return _SuccessView(onBack: () => context.go('/auth/invite-code'));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -95,15 +109,15 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
               Text(
                 'Pitlane yakında kapılarını açıyor.',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Listeye katıl, davet kodu gelince ilk sen haber al.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: AppSpacing.xl2),
 
@@ -118,17 +132,21 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Araç tipi
-              Text('Araç Tipin', style: Theme.of(context).textTheme.labelMedium),
+              Text('Araç Tipin',
+                  style: Theme.of(context).textTheme.labelMedium),
               const SizedBox(height: AppSpacing.sm),
               SegmentedButton<String>(
                 segments: _vehicles
                     .map((v) => ButtonSegment(value: v.$1, label: Text(v.$2)))
                     .toList(),
                 selected: {_selectedVehicle},
-                onSelectionChanged: (s) => setState(() => _selectedVehicle = s.first),
+                onSelectionChanged: (s) =>
+                    setState(() => _selectedVehicle = s.first),
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith((states) =>
-                    states.contains(WidgetState.selected) ? AppColors.pitRed : AppColors.surface2,
+                  backgroundColor: WidgetStateProperty.resolveWith(
+                    (states) => states.contains(WidgetState.selected)
+                        ? AppColors.pitRed
+                        : AppColors.surface2,
                   ),
                 ),
               ),
@@ -174,21 +192,22 @@ class _SuccessView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check_circle_outline, size: 72, color: AppColors.success),
+              const Icon(Icons.check_circle_outline,
+                  size: 72, color: AppColors.success),
               const SizedBox(height: AppSpacing.lg),
               Text(
                 'Listeye katıldın!',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Davet kodu hazır olunca e-postayla bildireceğiz.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
               const SizedBox(height: AppSpacing.xl2),
               PitlaneButton(

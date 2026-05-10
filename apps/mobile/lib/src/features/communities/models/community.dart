@@ -49,18 +49,6 @@ class Community {
     this.lastActivityLabel,
   });
 
-  final String id;
-  final String name;
-  final String slug;
-  final String? description;
-  final CommunityType type;
-  final CommunityVehicleType vehicleType;
-  final String? city;
-  final String? coverUrl;
-  final int memberCount;
-  final bool isVerified;
-  final String? lastActivityLabel;
-
   factory Community.fromJson(Map<String, dynamic> json) {
     return Community(
       id: json['id'] as String? ?? json['slug'] as String? ?? '',
@@ -80,6 +68,18 @@ class Community {
       lastActivityLabel: json['last_activity_label'] as String?,
     );
   }
+
+  final String id;
+  final String name;
+  final String slug;
+  final String? description;
+  final CommunityType type;
+  final CommunityVehicleType vehicleType;
+  final String? city;
+  final String? coverUrl;
+  final int memberCount;
+  final bool isVerified;
+  final String? lastActivityLabel;
 }
 
 class CommunityFilters {
@@ -103,5 +103,38 @@ class CommunityFilters {
       city: city ?? this.city,
       vehicleType: vehicleType ?? this.vehicleType,
     );
+  }
+}
+
+class CreateCommunityDraft {
+  const CreateCommunityDraft({
+    required this.name,
+    required this.slug,
+    required this.type,
+    required this.vehicleType,
+    this.description,
+    this.city,
+    this.coverUrl,
+  });
+
+  final String name;
+  final String slug;
+  final CommunityType type;
+  final CommunityVehicleType vehicleType;
+  final String? description;
+  final String? city;
+  final String? coverUrl;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'slug': slug,
+      'type': type.apiValue,
+      'vehicle_type': vehicleType.apiValue,
+      if (description != null && description!.isNotEmpty)
+        'description': description,
+      if (city != null && city!.isNotEmpty) 'city': city,
+      if (coverUrl != null && coverUrl!.isNotEmpty) 'cover_url': coverUrl,
+    };
   }
 }
