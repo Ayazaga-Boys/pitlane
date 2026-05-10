@@ -4,6 +4,7 @@ import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/com
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
+import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 
@@ -162,5 +163,22 @@ describe('community schemas', () => {
 
   it('requires community update payloads to include a field', () => {
     expect(UpdateCommunitySchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('moderation schemas', () => {
+  it('accepts a valid report', () => {
+    const parsed = CreateReportSchema.parse({
+      content_type: 'profile',
+      content_id: '00000000-0000-4000-8000-000000000001',
+      reason: 'spam',
+    });
+
+    expect(parsed.reason).toBe('spam');
+  });
+
+  it('validates block user params', () => {
+    expect(UserIdParamSchema.safeParse({ userId: '00000000-0000-4000-8000-000000000001' }).success).toBe(true);
+    expect(UserIdParamSchema.safeParse({ userId: 'bad-id' }).success).toBe(false);
   });
 });

@@ -77,6 +77,17 @@ describe('app routes', () => {
     expect(response.status).toBe(401);
   });
 
+  it('keeps moderation routes protected', async () => {
+    const app = createApp();
+    const [reportsResponse, blocksResponse] = await Promise.all([
+      app.request('/v1/reports/my'),
+      app.request('/v1/blocks'),
+    ]);
+
+    expect(reportsResponse.status).toBe(401);
+    expect(blocksResponse.status).toBe(401);
+  });
+
   it('returns 503 when maintenance mode is enabled', async () => {
     process.env.MAINTENANCE_MODE = 'true';
     const app = createApp();
