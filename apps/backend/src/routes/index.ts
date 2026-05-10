@@ -1,5 +1,6 @@
 import type { Hono } from 'hono';
 import { authRoutes } from './auth.js';
+import { communityRoutes } from './communities.js';
 import { configRoutes } from './config.js';
 import { flareRoutes } from './flares.js';
 import { helpRoutes } from './help.js';
@@ -15,6 +16,7 @@ export function mountPublicRoutes(app: Hono) {
 }
 
 export function mountProtectedRoutes(app: Hono<AppEnv>) {
+  app.route('/communities', communityRoutes);
   app.route('/flares', flareRoutes);
   app.route('/help', helpRoutes);
   app.route('/help-requests', helpRequestRoutes);

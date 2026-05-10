@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { JoinWaitingListSchema, ValidateInviteCodeSchema } from '../src/schemas/auth.schema.js';
+import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/community.schema.js';
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
@@ -136,5 +137,30 @@ describe('help schemas', () => {
       issue_type: 'fuel',
       description: 'x'.repeat(301),
     }).success).toBe(false);
+  });
+});
+
+describe('community schemas', () => {
+  it('accepts a valid community draft', () => {
+    const parsed = CreateCommunitySchema.parse({
+      name: 'Istanbul Riders',
+      slug: 'istanbul-riders',
+      vehicle_type: 'motorcycle',
+      city: 'Istanbul',
+    });
+
+    expect(parsed.type).toBe('public');
+    expect(parsed.vehicle_type).toBe('motorcycle');
+  });
+
+  it('rejects invalid slugs', () => {
+    expect(CreateCommunitySchema.safeParse({
+      name: 'Bad Slug',
+      slug: 'Bad Slug',
+    }).success).toBe(false);
+  });
+
+  it('requires community update payloads to include a field', () => {
+    expect(UpdateCommunitySchema.safeParse({}).success).toBe(false);
   });
 });
