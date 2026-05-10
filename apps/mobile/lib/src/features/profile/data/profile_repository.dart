@@ -115,6 +115,27 @@ class ProfileRepository {
     return Vehicle.fromJson(data);
   }
 
+  Future<void> requestDataExport() async {
+    await _request(
+      () => _dio.get<Map<String, dynamic>>(
+        '/v1/profiles/me/export',
+        options: Options(headers: _authHeaders()),
+      ),
+    );
+  }
+
+  Future<void> requestAccountDeletion({String? reason}) async {
+    await _request(
+      () => _dio.delete<Map<String, dynamic>>(
+        '/v1/profiles/me',
+        data: {
+          if (reason != null && reason.isNotEmpty) 'reason': reason,
+        },
+        options: Options(headers: _authHeaders()),
+      ),
+    );
+  }
+
   String _currentUserId() {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) throw const UnauthorizedException();

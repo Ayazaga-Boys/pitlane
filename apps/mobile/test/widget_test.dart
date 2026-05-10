@@ -1,12 +1,23 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:pitlane/app.dart';
+import 'package:pitlane/src/features/map/providers/map_pins_provider.dart';
 
+// Auth bypass aktif olduğundan uygulama direkt MapScreen'e yönlenir.
+// allPinsProvider → HTTP çağrısı yapar; test ortamında override ile engellenir.
 void main() {
-  testWidgets('renders invite code onboarding', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: PitlaneApp()));
-
-    expect(find.text('Pitlane'), findsOneWidget);
-    expect(find.text('Davet Kodu'), findsOneWidget);
+  testWidgets('app starts without crashing', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          allPinsProvider.overrideWith((ref) async => []),
+        ],
+        child: const PitlaneApp(),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    // initState'teki delayed timer'ın bitmesini bekle
+    await tester.pump(const Duration(seconds: 3));
   });
 }

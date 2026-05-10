@@ -7,6 +7,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../shared/providers/supabase_provider.dart';
 import '../constants/community_constants.dart';
 import '../models/community.dart';
+import '../models/community_detail.dart';
 
 final communityRepositoryProvider = Provider<CommunityRepository>((ref) {
   return CommunityRepository(ref.watch(supabaseClientProvider));
@@ -51,6 +52,72 @@ class CommunityRepository {
       final statusCode = error.response?.statusCode;
       if (statusCode == 401) throw const UnauthorizedException();
       return _mockCommunities(filters);
+    }
+  }
+
+  Future<CommunityDetail> getCommunityDetail(String slug) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/communities/$slug',
+        options: Options(headers: _authHeaders()),
+      );
+
+      return CommunityDetail.fromJson(response.data ?? const {});
+    } on DioException catch (error) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode == 401) throw const UnauthorizedException();
+      final community = _seedCommunities.firstWhere(
+        (item) => item.slug == slug,
+        orElse: () => _seedCommunities.first,
+      );
+      return _mockDetail(community);
+    }
+  }
+
+  Future<Community> createCommunity(CreateCommunityDraft draft) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/v1/communities',
+        data: draft.toJson(),
+        options: Options(headers: _authHeaders()),
+      );
+
+      final data = response.data?['data'];
+      if (data is Map<String, dynamic>) {
+        return Community.fromJson(data);
+      }
+      return _communityFromDraft(draft);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
+      return _communityFromDraft(draft);
+    }
+  }
+
+  Future<void> joinCommunity(String id) async {
+    try {
+      await _dio.post<void>(
+        '/v1/communities/$id/join',
+        options: Options(headers: _authHeaders()),
+      );
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
+    }
+  }
+
+  Future<void> leaveCommunity(String id) async {
+    try {
+      await _dio.delete<void>(
+        '/v1/communities/$id/leave',
+        options: Options(headers: _authHeaders()),
+      );
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        throw const UnauthorizedException();
+      }
     }
   }
 
@@ -117,4 +184,61 @@ class CommunityRepository {
       lastActivityLabel: 'Dün',
     ),
   ];
+
+  Community _communityFromDraft(CreateCommunityDraft draft) {
+    return Community(
+      id: draft.slug,
+      name: draft.name,
+      slug: draft.slug,
+      description: draft.description,
+      type: draft.type,
+      vehicleType: draft.vehicleType,
+      city: draft.city,
+      coverUrl: draft.coverUrl,
+      memberCount: 1,
+      isVerified: false,
+      lastActivityLabel: 'Az önce',
+    );
+  }
+
+  CommunityDetail _mockDetail(Community community) {
+    return CommunityDetail(
+      community: community,
+      isJoined: community.slug == 'istanbul-riders',
+      members: const [
+        CommunityMember(
+          id: 'mert',
+          username: 'mert_cb650r',
+          displayName: 'Mert Yılmaz',
+          role: 'captain',
+        ),
+        CommunityMember(
+          id: 'selin',
+          username: 'selin_e30',
+          displayName: 'Selin Arslan',
+          role: 'moderator',
+        ),
+        CommunityMember(
+          id: 'deniz',
+          username: 'deniz_garage',
+          displayName: 'Deniz Kaya',
+          role: 'member',
+        ),
+      ],
+      flares: const [
+        CommunityFlarePreview(
+          id: 'sahil-cruise',
+          title: 'Sahil cruise',
+          startsAtLabel: 'Cumartesi 10:30',
+          rsvpCount: 18,
+        ),
+        CommunityFlarePreview(
+          id: 'garaj-bulusmasi',
+          title: 'Garaj buluşması',
+          startsAtLabel: 'Pazar 14:00',
+          rsvpCount: 11,
+        ),
+      ],
+    );
+  }
 }

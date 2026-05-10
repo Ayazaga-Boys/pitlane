@@ -24,10 +24,26 @@ class PitlaneButton extends StatelessWidget {
     final isDisabled = onPressed == null || isLoading;
 
     final (bg, fg, border) = switch (variant) {
-      PitlaneButtonVariant.primary     => (AppColors.pitRed, Colors.white, Colors.transparent),
-      PitlaneButtonVariant.secondary   => (AppColors.surface3, AppColors.textPrimary, Colors.transparent),
-      PitlaneButtonVariant.ghost       => (Colors.transparent, AppColors.pitRed, AppColors.pitRed),
-      PitlaneButtonVariant.destructive => (AppColors.error, Colors.white, Colors.transparent),
+      PitlaneButtonVariant.primary => (
+          AppColors.pitRed,
+          Colors.white,
+          Colors.transparent
+        ),
+      PitlaneButtonVariant.secondary => (
+          AppColors.surface3,
+          AppColors.textPrimary,
+          Colors.transparent
+        ),
+      PitlaneButtonVariant.ghost => (
+          Colors.transparent,
+          AppColors.pitRed,
+          AppColors.pitRed
+        ),
+      PitlaneButtonVariant.destructive => (
+          AppColors.error,
+          Colors.white,
+          Colors.transparent
+        ),
     };
 
     return Semantics(
@@ -43,19 +59,26 @@ class PitlaneButton extends StatelessWidget {
             backgroundColor: bg,
             foregroundColor: fg,
             disabledBackgroundColor: bg.withAlpha(120),
-            side: border == Colors.transparent ? BorderSide.none : BorderSide(color: border),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            side: border == Colors.transparent
+                ? BorderSide.none
+                : BorderSide(color: border),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: isLoading
               ? const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 8)],
+                    if (icon != null) ...[
+                      Icon(icon, size: 18),
+                      const SizedBox(width: 8)
+                    ],
                     Text(label),
                   ],
                 ),
