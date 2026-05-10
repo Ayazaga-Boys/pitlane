@@ -32,8 +32,23 @@ export interface BusinessPinRow {
   owner_id: string;
   name: string;
   category: "garage" | "repair" | "parts" | "fuel" | "cafe" | "other";
+  address: string | null;
   is_active: boolean;
   is_verified: boolean;
+  created_at: string;
+}
+
+export interface ReportRow {
+  id: string;
+  reporter_id: string;
+  content_type: "message" | "flare" | "community" | "profile" | "business_pin";
+  content_id: string;
+  reason: "spam" | "harassment" | "inappropriate" | "fake" | "other";
+  description: string | null;
+  status: "pending" | "reviewed" | "dismissed";
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  action_taken: "none" | "content_deleted" | "user_warned" | "user_banned" | null;
   created_at: string;
 }
 
@@ -65,10 +80,24 @@ export interface Database {
           owner_id: string;
           name: string;
           category: BusinessPinRow["category"];
+          address?: string | null;
           is_active: boolean;
           is_verified: boolean;
         };
         Update: Partial<BusinessPinRow>;
+        Relationships: [];
+      };
+      reports: {
+        Row: ReportRow;
+        Insert: Partial<ReportRow> & {
+          id: string;
+          reporter_id: string;
+          content_type: ReportRow["content_type"];
+          content_id: string;
+          reason: ReportRow["reason"];
+          status: ReportRow["status"];
+        };
+        Update: Partial<ReportRow>;
         Relationships: [];
       };
     };

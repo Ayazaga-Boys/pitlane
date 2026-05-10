@@ -1,27 +1,24 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import type { MockPin, MockReport } from "@/lib/mock-data";
+import type { BusinessPinRow, ReportRow } from "@/lib/types/database";
 
 export interface AdminDataResult<T> {
   data: T;
   usingMockData: boolean;
 }
 
-interface PinRow {
-  id: string;
-  name: string;
-  category: MockPin["category"];
-  owner_id: string;
-  created_at: string;
-  is_verified: boolean;
+interface PinRecord extends Pick<BusinessPinRow, "id" | "name" | "category" | "address" | "owner_id" | "created_at" | "is_verified"> {
+  owner_profile: {
+    username: string | null;
+    display_name: string | null;
+  } | null;
 }
 
-interface ReportRow {
-  id: string;
-  content_type: "message" | "flare" | "community" | "profile" | "business_pin";
-  reason: "spam" | "harassment" | "inappropriate" | "fake" | "other";
-  status: "pending" | "reviewed" | "dismissed";
-  reporter_id: string;
-  created_at: string;
+interface ReportRecord extends Pick<ReportRow, "id" | "content_type" | "reason" | "status" | "created_at"> {
+  reporter_profile: {
+    username: string | null;
+    display_name: string | null;
+  } | null;
 }
 
 function formatDate(dateString: string): string {
@@ -51,12 +48,33 @@ function shortenId(id: string): string {
   return id.slice(0, 8);
 }
 
+function formatDateTime(dateString: string): string {
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(dateString));
+}
+
+function mapContentType(contentType: ReportRow["content_type"]): MockReport["contentType"] {
+  switch (contentType) {
+    case "message":
+      return "message";
+    case "flare":
+      return "flare";
+    default:
+      return "community_post";
+  }
+}
+
 export async function getAdminPinsOrMock(mockPins: MockPin[]): Promise<AdminDataResult<MockPin[]>> {
   try {
     const supabase = createAdminSupabaseClient();
     const result = await supabase
       .from("business_pins")
-      .select("id, name, category, owner_id, created_at, is_verified")
+      .select("id, name, category, address, owner_id, created_at, is_verified, owner_profile:profiles!business_pins_owner_id_fkey(username, display_name)")
       .order("is_verified", { ascending: true })
       .order("created_at", { ascending: false });
 
@@ -64,13 +82,14 @@ export async function getAdminPinsOrMock(mockPins: MockPin[]): Promise<AdminData
       return { data: mockPins, usingMockData: true };
     }
 
-    const data = (result.data as unknown as PinRow[]).map((pin) => {
+    const data = (result.data as unknown as PinRecord[]).map((pin) => {
+      const owner = pin.owner_profile?.display_name ?? pin.owner_profile?.username ?? shortenId(pin.owner_id);
       const mappedPin: MockPin = {
         id: pin.id,
         name: pin.name,
         category: pin.category,
-        owner: shortenId(pin.owner_id),
-        city: "—",
+        owner,
+        city: pin.address ?? "Adres yok",
         submittedAt: formatDate(pin.created_at),
         status: pin.is_verified ? "verified" : "pending",
       };
@@ -89,7 +108,8 @@ export async function getAdminReportsOrMock(mockReports: MockReport[]): Promise<
     const supabase = createAdminSupabaseClient();
     const result = await supabase
       .from("reports")
-      .select("id, content_type, reason, status, reporter_id, created_at")
+      .select("id, content_type, reason, status, created_at, reporter_profile:profiles!reports_reporter_id_fkey(username, display_name)")
+      .eq("status", "pending")
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -97,16 +117,14 @@ export async function getAdminReportsOrMock(mockReports: MockReport[]): Promise<
       return { data: mockReports, usingMockData: true };
     }
 
-    const data = (result.data as unknown as ReportRow[]).map((report) => {
+    const data = (result.data as unknown as ReportRecord[]).map((report) => {
+      const reporter = report.reporter_profile?.username ?? report.reporter_profile?.display_name ?? "anonim";
       const mappedReport: MockReport = {
         id: report.id,
-        contentType:
-          report.content_type === "community" || report.content_type === "profile" || report.content_type === "business_pin"
-            ? "community_post"
-            : report.content_type,
+        contentType: mapContentType(report.content_type),
         reason: mapReason(report.reason),
-        reporter: shortenId(report.reporter_id),
-        createdAt: formatDate(report.created_at),
+        reporter,
+        createdAt: formatDateTime(report.created_at),
         severity:
           report.reason === "harassment"
             ? "high"

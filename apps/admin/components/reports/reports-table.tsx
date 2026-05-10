@@ -27,7 +27,7 @@ export function ReportsTable({ reports }: { reports: MockReport[] }) {
                     : "topluluk gönderisi"}
               </TD>
               <TD>{report.reason}</TD>
-              <TD>@{report.reporter}</TD>
+              <TD>{report.reporter}</TD>
               <TD>
                 <Badge
                   tone={

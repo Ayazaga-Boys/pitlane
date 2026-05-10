@@ -11,7 +11,7 @@ export function PinsTable({ pins }: { pins: MockPin[] }) {
             <TH>İşletme</TH>
             <TH>Kategori</TH>
             <TH>Sahip</TH>
-            <TH>Şehir</TH>
+            <TH>Konum</TH>
             <TH>Durum</TH>
             <TH>Başvuru</TH>
           </TR>
