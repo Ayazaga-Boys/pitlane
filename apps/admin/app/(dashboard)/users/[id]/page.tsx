@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
-import { MockDataBanner } from "@/components/dashboard/mock-data-banner";
+import { DataStateBanner } from "@/components/dashboard/data-state-banner";
 import { PageShell } from "@/components/dashboard/page-shell";
 import { UserDetailGrid } from "@/components/users/user-detail-grid";
 import { UserSummaryCard } from "@/components/users/user-summary-card";
-import { getMockUserById } from "@/lib/mock-data";
+import { getAdminUserByIdOrMock } from "@/lib/admin-data";
+import { mockUsers } from "@/lib/mock-data";
 
-export default function UserDetailPage({ params }: { params: { id: string } }) {
-  const user = getMockUserById(params.id);
+export default async function UserDetailPage({ params }: { params: { id: string } }) {
+  const { data: user, usingMockData } = await getAdminUserByIdOrMock(params.id, mockUsers);
 
   if (!user) {
     notFound();
@@ -18,7 +19,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
     <PageShell
       eyebrow="Sprint 2 hazırlık"
       title="Kullanıcı detayı"
-      description="Gerçek `profiles` ve ilişkili tablolar gelene kadar bu ekran mock veriyle moderasyon akışını prova eder."
+      description="Kullanıcı detayı gerçek `profiles`, `vehicles` ve moderasyon kayıtları okunabildiğinde canlı veriyi gösterir."
     >
       <Link
         className="focus-ring inline-flex items-center gap-sm rounded-sm text-sm font-medium text-text-secondary hover:text-text-primary"
@@ -28,7 +29,11 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
         Kullanıcı listesine dön
       </Link>
 
-      <MockDataBanner label="Detay ekranı şu an örnek kullanıcı verisiyle besleniyor" />
+      <DataStateBanner
+        usingMockData={usingMockData}
+        mockLabel="Detay ekranı için gerçek kullanıcı verisi bulunamadı; örnek kayıt gösteriliyor."
+        liveLabel="Kullanıcı profili, araçlar ve ilişkili topluluk kayıtları gerçek veriden geliyor."
+      />
       <UserSummaryCard user={user} />
       <UserDetailGrid user={user} />
     </PageShell>

@@ -1,18 +1,25 @@
-import { MockDataBanner } from "@/components/dashboard/mock-data-banner";
+import { DataStateBanner } from "@/components/dashboard/data-state-banner";
 import { PageShell } from "@/components/dashboard/page-shell";
 import { UsersTable } from "@/components/users/users-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getAdminUsersOrMock } from "@/lib/admin-data";
 import { mockUsers } from "@/lib/mock-data";
 
-export default function UsersPage() {
+export default async function UsersPage() {
+  const { data: users, usingMockData } = await getAdminUsersOrMock(mockUsers);
+
   return (
     <PageShell
       eyebrow="Sprint 2 hazırlık"
       title="Kullanıcılar"
-      description="Gerçek `profiles` migrationı gelene kadar bu ekran admin akışlarını mock veriyle prova eder."
+      description="Kullanıcı listesi mümkün olduğunda gerçek `profiles` verisinden, aksi durumda mock kayıtlarla çalışır."
     >
-      <MockDataBanner label="Profiles bağımlılığı bekleniyor" />
+      <DataStateBanner
+        usingMockData={usingMockData}
+        mockLabel="Gerçek profiles verisi okunamadı; şimdilik mock kullanıcı listesi gösteriliyor."
+        liveLabel="Gerçek profiles, vehicles ve topluluk üyelikleri listede aktif."
+      />
       <div className="surface-panel p-xl">
         <div className="flex flex-col gap-md lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-1 flex-col gap-md md:flex-row">
@@ -22,7 +29,7 @@ export default function UsersPage() {
           <Button variant="secondary">Dışa aktar</Button>
         </div>
         <div className="mt-lg">
-          <UsersTable users={mockUsers} />
+          <UsersTable users={users} />
         </div>
       </div>
     </PageShell>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableWrapper, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import type { MockPin } from "@/lib/mock-data";
@@ -14,12 +15,17 @@ export function PinsTable({ pins }: { pins: MockPin[] }) {
             <TH>Konum</TH>
             <TH>Durum</TH>
             <TH>Başvuru</TH>
+            <TH>Aksiyon</TH>
           </TR>
         </THead>
         <TBody>
           {pins.map((pin) => (
             <TR key={pin.id}>
-              <TD className="font-medium text-text-primary">{pin.name}</TD>
+              <TD>
+                <Link className="focus-ring inline-flex rounded-xs font-medium text-text-primary hover:text-pit-red" href={`/pins/${pin.id}/verify`}>
+                  {pin.name}
+                </Link>
+              </TD>
               <TD>
                 {pin.category === "repair"
                   ? "tamir"
@@ -49,6 +55,11 @@ export function PinsTable({ pins }: { pins: MockPin[] }) {
                 </Badge>
               </TD>
               <TD>{pin.submittedAt}</TD>
+              <TD>
+                <Link className="focus-ring inline-flex rounded-xs text-sm font-medium text-pit-red hover:text-pit-red-soft" href={`/pins/${pin.id}/verify`}>
+                  {pin.status === "pending" ? "İncele" : "Detayı aç"}
+                </Link>
+              </TD>
             </TR>
           ))}
         </TBody>

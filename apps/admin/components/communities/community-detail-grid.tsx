@@ -84,8 +84,8 @@ export function CommunityDetailGrid({ community }: { community: MockCommunity })
             <div className="rounded-md border border-surface-3 bg-surface-2 p-lg sm:col-span-2">
               <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Bugünkü karar</p>
               <p className="mt-sm text-sm leading-6 text-text-secondary">
-                Bu detay görünümü gerçek `communities`, `community_members` ve `flares` tabloları gelmeden önce masaüstü moderasyon
-                akışını örnek veriyle prova eder.
+                Bu görünüm, topluluğun üye yapısını ve flare yoğunluğunu tek ekranda toplayarak moderasyon kararını daha hızlı vermeyi
+                hedefler.
               </p>
             </div>
           </div>

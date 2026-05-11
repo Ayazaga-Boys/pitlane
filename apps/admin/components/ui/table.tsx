@@ -1,4 +1,4 @@
-import type { HTMLAttributes, TableHTMLAttributes } from "react";
+import type { HTMLAttributes, TableHTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 export function TableWrapper({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
@@ -21,7 +21,7 @@ export function TR({ className, ...props }: HTMLAttributes<HTMLTableRowElement>)
   return <tr className={cn("border-b border-surface-3 last:border-b-0", className)} {...props} />;
 }
 
-export function TH({ className, ...props }: HTMLAttributes<HTMLTableCellElement>) {
+export function TH({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
   return (
     <th
       className={cn("px-lg py-md text-xs font-semibold uppercase tracking-[0.18em] text-text-tertiary", className)}
@@ -30,6 +30,6 @@ export function TH({ className, ...props }: HTMLAttributes<HTMLTableCellElement>
   );
 }
 
-export function TD({ className, ...props }: HTMLAttributes<HTMLTableCellElement>) {
+export function TD({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
   return <td className={cn("px-lg py-md text-sm text-text-secondary", className)} {...props} />;
 }

@@ -3,12 +3,13 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { CommunityDetailGrid } from "@/components/communities/community-detail-grid";
 import { CommunitySummaryCard } from "@/components/communities/community-summary-card";
-import { MockDataBanner } from "@/components/dashboard/mock-data-banner";
+import { DataStateBanner } from "@/components/dashboard/data-state-banner";
 import { PageShell } from "@/components/dashboard/page-shell";
-import { getMockCommunityById } from "@/lib/mock-data";
+import { getAdminCommunityByIdOrMock } from "@/lib/admin-data";
+import { mockCommunities } from "@/lib/mock-data";
 
-export default function CommunityDetailPage({ params }: { params: { id: string } }) {
-  const community = getMockCommunityById(params.id);
+export default async function CommunityDetailPage({ params }: { params: { id: string } }) {
+  const { data: community, usingMockData } = await getAdminCommunityByIdOrMock(params.id, mockCommunities);
 
   if (!community) {
     notFound();
@@ -18,7 +19,7 @@ export default function CommunityDetailPage({ params }: { params: { id: string }
     <PageShell
       eyebrow="Sprint 2 hazırlık"
       title="Topluluk detayı"
-      description="Gerçek topluluk tabloları gelene kadar bu ekran moderasyon, üye görünümü ve flare akışını mock veriyle prova eder."
+      description="Topluluk detayı gerçek üyelik ve flare kayıtları okunabildiğinde canlı veriyi gösterir."
     >
       <Link
         className="focus-ring inline-flex items-center gap-sm rounded-sm text-sm font-medium text-text-secondary hover:text-text-primary"
@@ -28,7 +29,11 @@ export default function CommunityDetailPage({ params }: { params: { id: string }
         Topluluk listesine dön
       </Link>
 
-      <MockDataBanner label="Detay ekranı şu an örnek topluluk verisiyle besleniyor" />
+      <DataStateBanner
+        usingMockData={usingMockData}
+        mockLabel="Topluluk detayı için gerçek kayıt okunamadı; örnek veri gösteriliyor."
+        liveLabel="Topluluk özeti, üyeler ve flare akışı gerçek kayıtlardan okunuyor."
+      />
       <CommunitySummaryCard community={community} />
       <CommunityDetailGrid community={community} />
     </PageShell>
