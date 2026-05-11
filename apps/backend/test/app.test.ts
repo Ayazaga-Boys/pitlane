@@ -99,6 +99,13 @@ describe('app routes', () => {
     expect(devicesResponse.status).toBe(401);
   });
 
+  it('keeps message routes protected', async () => {
+    const app = createApp();
+    const response = await app.request('/v1/messages/dms');
+
+    expect(response.status).toBe(401);
+  });
+
   it('returns 503 when maintenance mode is enabled', async () => {
     process.env.MAINTENANCE_MODE = 'true';
     const app = createApp();

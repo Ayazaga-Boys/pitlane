@@ -4,6 +4,7 @@ import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/com
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
+import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
 import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
@@ -200,5 +201,19 @@ describe('notification schemas', () => {
       platform: 'android',
       token: 'short',
     }).success).toBe(false);
+  });
+});
+
+describe('message schemas', () => {
+  it('accepts text messages', () => {
+    expect(SendMessageSchema.parse({ body: 'Selam' }).body).toBe('Selam');
+  });
+
+  it('requires text or media', () => {
+    expect(SendMessageSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('requires media type with media url', () => {
+    expect(SendMessageSchema.safeParse({ media_url: 'https://pitlane.test/a.jpg' }).success).toBe(false);
   });
 });
