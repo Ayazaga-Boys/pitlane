@@ -112,7 +112,8 @@ helpRoutes.get('/:id', async (c) => {
   return c.json({ data });
 });
 
-helpRoutes.patch('/:id/respond', async (c) => {
+// Flutter POST ile çağırıyor — hem PATCH hem POST kabul et
+helpRoutes.on(['PATCH', 'POST'], '/:id/respond', async (c) => {
   const params = HelpIdParamSchema.safeParse(c.req.param());
   if (!params.success) return validationError(c, params.error);
 
@@ -135,7 +136,7 @@ helpRoutes.patch('/:id/respond', async (c) => {
   return c.json({ data });
 });
 
-helpRoutes.patch('/:id/resolve', async (c) => {
+helpRoutes.on(['PATCH', 'POST'], '/:id/resolve', async (c) => {
   const params = HelpIdParamSchema.safeParse(c.req.param());
   if (!params.success) return validationError(c, params.error);
 
@@ -157,7 +158,7 @@ helpRoutes.patch('/:id/resolve', async (c) => {
   return c.json({ data });
 });
 
-helpRoutes.patch('/:id/cancel', async (c) => {
+helpRoutes.on(['PATCH', 'POST', 'DELETE'], '/:id/cancel', async (c) => {
   const params = HelpIdParamSchema.safeParse(c.req.param());
   if (!params.success) return validationError(c, params.error);
 
