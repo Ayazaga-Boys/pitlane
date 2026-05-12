@@ -4,6 +4,7 @@ import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/com
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
+import { UploadUrlSchema } from '../src/schemas/media.schema.js';
 import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
@@ -158,6 +159,37 @@ describe('help schemas', () => {
       h3_cell: '8928308280fffff',
       issue_type: 'fuel',
       description: 'x'.repeat(301),
+    }).success).toBe(false);
+  });
+});
+
+describe('media schemas', () => {
+  it('accepts valid photo upload requests', () => {
+    const parsed = UploadUrlSchema.parse({
+      filename: 'snap.jpg',
+      content_type: 'image/jpeg',
+      asset_type: 'photo',
+      size_bytes: 512_000,
+    });
+
+    expect(parsed.asset_type).toBe('photo');
+  });
+
+  it('rejects media type mismatches', () => {
+    expect(UploadUrlSchema.safeParse({
+      filename: 'video.mp4',
+      content_type: 'video/mp4',
+      asset_type: 'photo',
+      size_bytes: 1_000_000,
+    }).success).toBe(false);
+  });
+
+  it('rejects oversized uploads', () => {
+    expect(UploadUrlSchema.safeParse({
+      filename: 'huge.mp4',
+      content_type: 'video/mp4',
+      asset_type: 'video',
+      size_bytes: 101 * 1024 * 1024,
     }).success).toBe(false);
   });
 });

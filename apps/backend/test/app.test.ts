@@ -103,6 +103,17 @@ describe('app routes', () => {
     expect(devicesResponse.status).toBe(401);
   });
 
+  it('keeps media routes protected', async () => {
+    const app = createApp();
+    const [uploadResponse, finalizeResponse] = await Promise.all([
+      app.request('/v1/media/upload-url', { method: 'POST' }),
+      app.request('/v1/media/finalize', { method: 'POST' }),
+    ]);
+
+    expect(uploadResponse.status).toBe(401);
+    expect(finalizeResponse.status).toBe(401);
+  });
+
   it('keeps message routes protected', async () => {
     const app = createApp();
     const response = await app.request('/v1/messages/dms');

@@ -126,6 +126,8 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Fly.io production deploy + auto-rollback (23. doküman Bölüm 12)
 - [ ] Status sayfası setup (statuspage.io veya Cachet)
 
+> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Cloudflare Images kopyalama, Stream ingest/webhook ve R2 delete/head doğrulamaları sonraki medya adımı olarak açık.
+
 ---
 
 ## Senin Sahip Olduğun Secret'lar
