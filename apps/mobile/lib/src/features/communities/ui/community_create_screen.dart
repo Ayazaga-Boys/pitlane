@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
-import '../../../shared/widgets/pitlane_text_field.dart';
+import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/rollpit_text_field.dart';
 import '../constants/community_constants.dart';
 import '../models/community.dart';
 import '../providers/communities_provider.dart';
@@ -152,7 +152,7 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
                   ),
             ),
             const SizedBox(height: AppSpacing.xl2),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Ad',
               hint: 'Istanbul Riders',
               controller: _nameController,
@@ -163,7 +163,7 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
               onChanged: _syncSlug,
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Slug',
               hint: 'istanbul-riders',
               controller: _slugController,
@@ -206,7 +206,7 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
                       setState(() => _vehicleType = value ?? _vehicleType),
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Şehir',
               hint: 'İstanbul',
               controller: _cityController,
@@ -214,7 +214,7 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Açıklama',
               hint: 'Buluşmalar, rotalar ve garaj sohbetleri',
               controller: _descriptionController,
@@ -222,7 +222,7 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Kapak bağlantısı',
               hint: 'İstersen boş bırak',
               controller: _coverUrlController,
@@ -232,7 +232,7 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: AppSpacing.xl),
-            PitlaneButton(
+            RollpitButton(
               label: 'Oluştur',
               onPressed: isLoading ? null : _submit,
               isLoading: isLoading,

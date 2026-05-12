@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../features/help/providers/help_request_provider.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../providers/map_pins_provider.dart';
 
 void showHelpDetailSheet(BuildContext context, MapPin pin) {
@@ -106,7 +106,7 @@ class _HelpDetailSheet extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            PitlaneButton(
+            RollpitButton(
               label: 'Yardım Edeceğim',
               icon: Icons.volunteer_activism_outlined,
               isLoading: isLoading,
@@ -123,10 +123,10 @@ class _HelpDetailSheet extends ConsumerWidget {
                     },
             ),
             const SizedBox(height: AppSpacing.sm),
-            PitlaneButton(
+            RollpitButton(
               label: 'Mesaj Gönder',
               icon: Icons.chat_bubble_outline,
-              variant: PitlaneButtonVariant.secondary,
+              variant: RollpitButtonVariant.secondary,
               onPressed: pin.peerId == null
                   ? null
                   : () {

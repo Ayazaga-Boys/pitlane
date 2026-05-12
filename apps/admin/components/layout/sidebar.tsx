@@ -12,7 +12,7 @@ export function Sidebar() {
     <aside className="surface-panel sticky top-lg hidden h-[calc(100vh-2rem)] min-w-[280px] flex-col justify-between p-lg lg:flex">
       <div className="space-y-xl">
         <div className="space-y-sm border-b border-surface-3 pb-lg">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-pit-red-soft">Pitlane Admin</p>
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-pit-red-soft">Rollpit Admin</p>
           <div>
             <h1 className="text-xl font-semibold text-text-primary">Kontrol Paneli</h1>
             <p className="mt-xs text-sm text-text-secondary">

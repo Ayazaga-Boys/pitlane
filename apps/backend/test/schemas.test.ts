@@ -12,17 +12,17 @@ import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile
 
 describe('auth schemas', () => {
   it('normalizes invite codes', () => {
-    const parsed = ValidateInviteCodeSchema.parse({ code: ' pitlane ' });
-    expect(parsed.code).toBe('PITLANE');
+    const parsed = ValidateInviteCodeSchema.parse({ code: ' rollpit ' });
+    expect(parsed.code).toBe('ROLLPIT');
   });
 
   it('normalizes waiting list emails', () => {
     const parsed = JoinWaitingListSchema.parse({
-      email: 'TEST@PITLANE.APP',
+      email: 'TEST@ROLLPIT.COM',
       vehicle_type: 'car',
       city: 'Istanbul',
     });
-    expect(parsed.email).toBe('test@pitlane.app');
+    expect(parsed.email).toBe('test@rollpit.com');
   });
 });
 
@@ -208,7 +208,7 @@ describe('notification schemas', () => {
   it('accepts valid push device registration', () => {
     const parsed = RegisterDeviceSchema.parse({
       platform: 'ios',
-      token: 'pitlane-dev-device-token-ios',
+      token: 'rollpit-dev-device-token-ios',
       app_build: 'dev',
     });
 
@@ -233,6 +233,6 @@ describe('message schemas', () => {
   });
 
   it('requires media type with media url', () => {
-    expect(SendMessageSchema.safeParse({ media_url: 'https://pitlane.test/a.jpg' }).success).toBe(false);
+    expect(SendMessageSchema.safeParse({ media_url: 'https://rollpit.test/a.jpg' }).success).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 # 26 — Lokalizasyon (i18n) & Erişilebilirlik (a11y)
 
-> Pitlane Türkiye'de doğdu, ama erişilemeyen bir uygulama olamaz.
+> Rollpit Türkiye'de doğdu, ama erişilemeyen bir uygulama olamaz.
 > Bu dosya **çeviri ve evrensel kullanılabilirlik** standartlarını tanımlar.
 
 ---
@@ -60,7 +60,7 @@ output-class: AppLocalizations
 {
   "@@locale": "tr",
 
-  "appName": "Pitlane",
+  "appName": "Rollpit",
   "@appName": { "description": "Marka adı, çevrilmez" },
 
   "auth_signin_title": "Giriş Yap",
@@ -99,7 +99,7 @@ output-class: AppLocalizations
 ```json
 {
   "@@locale": "en",
-  "appName": "Pitlane",
+  "appName": "Rollpit",
   "auth_signin_title": "Sign In",
   "auth_signin_email": "Your email",
   "auth_signin_button": "Continue",
@@ -124,7 +124,7 @@ output-class: AppLocalizations
 ## 3. Kullanım
 
 ```dart
-import 'package:pitlane/l10n/app_localizations.dart';
+import 'package:rollpit/l10n/app_localizations.dart';
 
 @override
 Widget build(BuildContext context) {
@@ -168,7 +168,7 @@ Text(l10n.time_minutes_ago(minutesAgo));
 
 - Cinsel, küfür, ırkçı içerik (uygulama içi mesajlarda da)
 - Marka isimleri (BMW, Honda) çevirilmez
-- Pitlane → her dilde "Pitlane"
+- Rollpit → her dilde "Rollpit"
 
 ### Tarih, Sayı, Para Biçimi
 
@@ -478,7 +478,7 @@ Tüm icon ve animasyon RTL'de doğru yön → flutter `Directionality` widget.
 
 ## 15. Marka & Tonlama Üstünlüğü
 
-Pitlane çevirileri:
+Rollpit çevirileri:
 - Resmi değil (Sayın değil "Merhaba")
 - Otomotif tutkusunu paylaşan dost
 - Türkçe argosuna açık ama küfürsüz
@@ -530,10 +530,10 @@ A11y test:
 
 ## 18. Erişilebilirlik Vaadi (Public)
 
-Pitlane web sitesinde:
+Rollpit web sitesinde:
 
-> "Pitlane'i her sürücü için erişilebilir yapma sorumluluğunu taşıyoruz.
+> "Rollpit'i her sürücü için erişilebilir yapma sorumluluğunu taşıyoruz.
 > Eğer uygulamamızda erişilebilirlik engeline takıldıysan, lütfen
-> a11y@pitlane.app adresinden bize yaz. 30 gün içinde yanıt veririz."
+> a11y@rollpit.com adresinden bize yaz. 30 gün içinde yanıt veririz."
 
 > Bu vaat WCAG 2.1 AA seviyesini taahhüt eder; AAA seviyesi hedeftir.

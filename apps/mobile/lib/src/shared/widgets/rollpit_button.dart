@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
-enum PitlaneButtonVariant { primary, secondary, ghost, destructive }
+enum RollpitButtonVariant { primary, secondary, ghost, destructive }
 
-class PitlaneButton extends StatelessWidget {
-  const PitlaneButton({
+class RollpitButton extends StatelessWidget {
+  const RollpitButton({
     super.key,
     required this.label,
     required this.onPressed,
-    this.variant = PitlaneButtonVariant.primary,
+    this.variant = RollpitButtonVariant.primary,
     this.isLoading = false,
     this.icon,
   });
 
   final String label;
   final VoidCallback? onPressed;
-  final PitlaneButtonVariant variant;
+  final RollpitButtonVariant variant;
   final bool isLoading;
   final IconData? icon;
 
@@ -24,22 +24,22 @@ class PitlaneButton extends StatelessWidget {
     final isDisabled = onPressed == null || isLoading;
 
     final (bg, fg, border) = switch (variant) {
-      PitlaneButtonVariant.primary => (
+      RollpitButtonVariant.primary => (
           AppColors.pitRed,
           Colors.white,
           Colors.transparent
         ),
-      PitlaneButtonVariant.secondary => (
+      RollpitButtonVariant.secondary => (
           AppColors.surface3,
           AppColors.textPrimary,
           Colors.transparent
         ),
-      PitlaneButtonVariant.ghost => (
+      RollpitButtonVariant.ghost => (
           Colors.transparent,
           AppColors.pitRed,
           AppColors.pitRed
         ),
-      PitlaneButtonVariant.destructive => (
+      RollpitButtonVariant.destructive => (
           AppColors.error,
           Colors.white,
           Colors.transparent

@@ -52,14 +52,14 @@ class BusinessPinRepository {
   BusinessPin _mockBusinessPin(String id) {
     return BusinessPin(
       id: id,
-      name: 'Pitlane Garage',
+      name: 'Rollpit Garage',
       category: BusinessPinCategory.garage,
       h3Cell: '89283082803ffff',
       address: 'Maslak, İstanbul',
       phone: '+90 212 000 00 00',
-      website: 'https://pitlane.local/garage',
+      website: 'https://rollpit.local/garage',
       isVerified: true,
-      campaignText: 'Bugün Pitlane üyelerine hızlı kontrol indirimi.',
+      campaignText: 'Bugün Rollpit üyelerine hızlı kontrol indirimi.',
       campaignEndsAt: DateTime.now().add(const Duration(days: 3)),
     );
   }

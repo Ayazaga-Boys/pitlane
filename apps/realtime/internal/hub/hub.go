@@ -8,10 +8,10 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/auth"
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/auth"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/config"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/location"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/metrics"
 )
 
 func newUpgrader(cfg *config.Config) websocket.Upgrader {

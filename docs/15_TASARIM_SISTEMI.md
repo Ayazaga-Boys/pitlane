@@ -1,6 +1,6 @@
 # 15 — Tasarım Sistemi
 
-> Pitlane görsel kimliğinin kuralları. Figma kütüphanesi `pitlane-design-system` ile birebir senkron.
+> Rollpit görsel kimliğinin kuralları. Figma kütüphanesi `rollpit-design-system` ile birebir senkron.
 > Tasarımcı ve geliştirici için tek doğruluk kaynağı.
 
 ---
@@ -21,7 +21,7 @@
 
 ### İsimlendirme
 
-- Marka adı: **Pitlane** (P büyük, gerisi küçük). "PitLane", "PITLANE" yazılışları yanlıştır.
+- Marka adı: **Rollpit** (P büyük, gerisi küçük). "PitLane", "ROLLPIT" yazılışları yanlıştır.
 - Slogan (TR): "Asfaltta yalnız değilsin."
 - Slogan (EN): "Never ride alone."
 
@@ -199,11 +199,11 @@ flutter:
 
 - **Set:** Lucide Icons (1.0 stroke, 24×24 base)
 - **Paket:** `lucide_icons_flutter` veya manuel SVG asset
-- **Stroke width:** 1.5 (Pitlane'in özelleştirilmiş varyantı)
+- **Stroke width:** 1.5 (Rollpit'in özelleştirilmiş varyantı)
 - **Renk:** Bağlama göre `text-primary` veya `text-secondary`
 - **Boyutlar:** 16, 20, 24, 32, 48 (sabit basamaklar)
 
-### Özel İkon Listesi (Pitlane'e Özgü)
+### Özel İkon Listesi (Rollpit'e Özgü)
 
 | İsim | Anlam |
 |---|---|
@@ -358,7 +358,7 @@ Dosya adı: `kebab-case.png`. 1x, 2x, 3x klasörleri ya da SVG.
 
 ## 13. Figma → Kod Akışı
 
-1. Tasarımcı Figma'da `pitlane-design-system` kütüphanesindeki bileşenleri kullanarak ekran tasarlar.
+1. Tasarımcı Figma'da `rollpit-design-system` kütüphanesindeki bileşenleri kullanarak ekran tasarlar.
 2. Yeni token ihtiyacı varsa **önce bu dosya güncellenir**, sonra Figma'ya eklenir.
 3. Geliştirici `Figma Inspect` ile değer alır; ancak değerleri `app_colors.dart`, `app_spacing.dart` gibi sabit dosyalardan kullanır.
 4. Pixel-perfect uyum: ekran başına maksimum 2 px sapma kabul edilebilir; sapma bilinçliyse PR açıklamasında not düşülür.
@@ -384,7 +384,7 @@ Aşağıdaki düzen 6.9" iPhone (1320×2868) için referans:
 │   │                         │   │
 │   └─────────────────────────┘   │
 │                                 │
-│   [Pitlane logo + slogan TR]    │
+│   [Rollpit logo + slogan TR]    │
 └─────────────────────────────────┘
 ```
 
@@ -399,7 +399,7 @@ Aşağıdaki düzen 6.9" iPhone (1320×2868) için referans:
 
 ## 15. Tasarım Sistemi Sürüm Yönetimi
 
-- Figma dosyası: `Pitlane Design System v1.x`
+- Figma dosyası: `Rollpit Design System v1.x`
 - Kod (Flutter): `lib/core/theme/` altındaki sabitler
 - **Senkronizasyon:** Her sprint sonu Figma + Flutter eşleştirme review'ı zorunlu.
 - **Breaking change** (örn. `pit-red` ton değişimi): tüm ekranlarda görsel regresyon testi (Patrol screenshot diff).

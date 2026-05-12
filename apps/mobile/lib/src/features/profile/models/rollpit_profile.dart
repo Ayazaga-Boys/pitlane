@@ -1,5 +1,5 @@
-class PitlaneProfile {
-  const PitlaneProfile({
+class RollpitProfile {
+  const RollpitProfile({
     required this.id,
     required this.username,
     this.displayName,
@@ -9,8 +9,8 @@ class PitlaneProfile {
     this.isVerified = false,
   });
 
-  factory PitlaneProfile.fromJson(Map<String, dynamic> json) {
-    return PitlaneProfile(
+  factory RollpitProfile.fromJson(Map<String, dynamic> json) {
+    return RollpitProfile(
       id: json['id'] as String,
       username: json['username'] as String? ?? '',
       displayName: json['display_name'] as String?,

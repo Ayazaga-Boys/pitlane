@@ -11,8 +11,8 @@
 | Ortam | Flutter Hedef | Backend | Realtime | Amaç |
 |---|---|---|---|---|
 | **development** | Simulator/Emulator | localhost:3000 | localhost:8080 | Günlük geliştirme |
-| **staging** | TestFlight (iOS) / Internal Testing (Android) | pitlane-api-staging.fly.dev | pitlane-rt-staging.fly.dev | QA + demo |
-| **production** | App Store / Play Store | api.pitlane.app | realtime.pitlane.app | Kullanıcılar |
+| **staging** | TestFlight (iOS) / Internal Testing (Android) | rollpit-api-staging.fly.dev | rollpit-rt-staging.fly.dev | QA + demo |
+| **production** | App Store / Play Store | api.rollpit.com | realtime.rollpit.com | Kullanıcılar |
 
 ### Flutter Ortam Değişkenleri (--dart-define)
 
@@ -29,8 +29,8 @@ flutter run \
 flutter build ios \
   --dart-define=SUPABASE_URL=https://staging-xxx.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=eyJ... \
-  --dart-define=API_BASE_URL=https://pitlane-api-staging.fly.dev \
-  --dart-define=WS_BASE_URL=wss://pitlane-rt-staging.fly.dev \
+  --dart-define=API_BASE_URL=https://rollpit-api-staging.fly.dev \
+  --dart-define=WS_BASE_URL=wss://rollpit-rt-staging.fly.dev \
   --dart-define=APP_ENV=staging \
   --dart-define=SENTRY_DSN=https://xxx@sentry.io/staging
 
@@ -38,8 +38,8 @@ flutter build ios \
 flutter build ios --release \
   --dart-define=SUPABASE_URL=https://prod-xxx.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=eyJ... \
-  --dart-define=API_BASE_URL=https://api.pitlane.app \
-  --dart-define=WS_BASE_URL=wss://realtime.pitlane.app \
+  --dart-define=API_BASE_URL=https://api.rollpit.com \
+  --dart-define=WS_BASE_URL=wss://realtime.rollpit.com \
   --dart-define=APP_ENV=production \
   --dart-define=SENTRY_DSN=https://xxx@sentry.io/prod \
   --dart-define=CF_IMAGES_ACCOUNT_HASH=xxx \
@@ -93,14 +93,14 @@ gem "match"
 
 ```ruby
 # apps/mobile/fastlane/Appfile
-app_identifier("app.pitlane.mobile")
+app_identifier("app.rollpit.mobile")
 apple_id(ENV["APPLE_ID"])
 itc_team_id(ENV["ITC_TEAM_ID"])
 team_id(ENV["APPLE_TEAM_ID"])
 
 # Android
 json_key_file(ENV["GOOGLE_PLAY_JSON_KEY_PATH"])
-package_name("app.pitlane.mobile")
+package_name("app.rollpit.mobile")
 ```
 
 ### Matchfile (iOS Sertifika Yönetimi)
@@ -110,7 +110,7 @@ package_name("app.pitlane.mobile")
 git_url(ENV["MATCH_GIT_URL"])   # Private repo (sertifikalar)
 storage_mode("git")
 type("appstore")                # development | adhoc | appstore
-app_identifier(["app.pitlane.mobile"])
+app_identifier(["app.rollpit.mobile"])
 username(ENV["APPLE_ID"])
 ```
 
@@ -157,7 +157,7 @@ platform :ios do
       output_directory: "./build/ios",
       export_options: {
         provisioningProfiles: {
-          "app.pitlane.mobile" => "match AppStore app.pitlane.mobile"
+          "app.rollpit.mobile" => "match AppStore app.rollpit.mobile"
         }
       }
     )
@@ -349,7 +349,7 @@ jobs:
         working-directory: apps/mobile/android
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: echo "$KEYSTORE_BASE64" | base64 --decode > pitlane.keystore
+        run: echo "$KEYSTORE_BASE64" | base64 --decode > rollpit.keystore
 
       - name: Flutter pub get + codegen
         working-directory: apps/mobile
@@ -364,7 +364,7 @@ jobs:
           STAGING_API_URL:            ${{ secrets.STAGING_API_URL }}
           STAGING_SUPABASE_URL:       ${{ secrets.STAGING_SUPABASE_URL }}
           STAGING_SUPABASE_ANON_KEY:  ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          ANDROID_KEYSTORE_PATH:      android/pitlane.keystore
+          ANDROID_KEYSTORE_PATH:      android/rollpit.keystore
           ANDROID_KEY_ALIAS:          ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_STORE_PASSWORD:     ${{ secrets.ANDROID_STORE_PASSWORD }}
           ANDROID_KEY_PASSWORD:       ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -381,7 +381,7 @@ android {
     ...
     signingConfigs {
         release {
-            storeFile     file(System.getenv("ANDROID_KEYSTORE_PATH") ?: "pitlane.keystore")
+            storeFile     file(System.getenv("ANDROID_KEYSTORE_PATH") ?: "rollpit.keystore")
             storePassword System.getenv("ANDROID_STORE_PASSWORD")
             keyAlias      System.getenv("ANDROID_KEY_ALIAS")
             keyPassword   System.getenv("ANDROID_KEY_PASSWORD")
@@ -402,17 +402,17 @@ android {
 
 ```bash
 keytool -genkey -v \
-  -keystore pitlane.keystore \
-  -alias pitlane \
+  -keystore rollpit.keystore \
+  -alias rollpit \
   -keyalg RSA \
   -keysize 2048 \
   -validity 10000
 
 # Base64'e çevir → GitHub Secret'a ekle
-base64 -i pitlane.keystore | pbcopy
+base64 -i rollpit.keystore | pbcopy
 ```
 
-> ⚠️ `pitlane.keystore` dosyası asla Git'e commit edilmez. `.gitignore`'a ekle.
+> ⚠️ `rollpit.keystore` dosyası asla Git'e commit edilmez. `.gitignore`'a ekle.
 
 ---
 
@@ -421,7 +421,7 @@ base64 -i pitlane.keystore | pbcopy
 ### Ön Koşullar
 
 - [ ] Apple Developer Program üyeliği ($99/yıl)
-- [ ] App Store Connect'te uygulama oluşturuldu (`app.pitlane.mobile`)
+- [ ] App Store Connect'te uygulama oluşturuldu (`app.rollpit.mobile`)
 - [ ] Bundle ID kayıtlı
 - [ ] App Store Connect API key oluşturuldu (Fastlane için)
 - [ ] Firebase projesi kuruldu (FCM için `GoogleService-Info.plist`)
@@ -430,7 +430,7 @@ base64 -i pitlane.keystore | pbcopy
 
 ```
 # fastlane/metadata/ios/tr/name.txt
-Pitlane — Araç & Moto Sosyal
+Rollpit — Araç & Moto Sosyal
 
 # fastlane/metadata/ios/tr/subtitle.txt
 Otomobil tutkunları için harita
@@ -439,7 +439,7 @@ Otomobil tutkunları için harita
 araba,motosiklet,otomobil,cruise,buluşma,topluluk,harita,araç,modifiye,classic
 
 # fastlane/metadata/ios/tr/description.txt
-Pitlane, araç ve motosiklet tutkunlarını gerçek zamanlı bir haritada birleştirir.
+Rollpit, araç ve motosiklet tutkunlarını gerçek zamanlı bir haritada birleştirir.
 
 • Şehrindeki cruise ve buluşmaları haritada gör
 • Topluluk oluştur veya katıl
@@ -506,13 +506,13 @@ ATT (App Tracking Transparency)
 
 ```
 Demo Hesap:
-  E-posta: reviewer@pitlane.app
+  E-posta: reviewer@rollpit.com
   OTP: Supabase test ortamından otomatik (ya da sabit: 123456)
 
 Notlar:
   - Konum özelliği için simülatörde Xcode > Features > Location > Custom Location kullanın
   - Harita için Google Maps API key staging ortamına girilmiştir
-  - WebSocket servisi staging.realtime.pitlane.app adresinde çalışmaktadır
+  - WebSocket servisi staging.realtime.rollpit.com adresinde çalışmaktadır
   - Acil yardım özelliği test için "Test Yardım" butonuyla tetiklenebilir
 ```
 
@@ -531,7 +531,7 @@ Notlar:
 
 ```
 # fastlane/metadata/android/tr-TR/title.txt
-Pitlane — Araç & Moto Sosyal
+Rollpit — Araç & Moto Sosyal
 
 # fastlane/metadata/android/tr-TR/short_description.txt
 Araç ve motosiklet tutkunları için harita odaklı sosyal ağ.
@@ -580,7 +580,7 @@ upload_to_play_store(
 
 ```toml
 # apps/backend/fly.toml
-app    = "pitlane-api"
+app    = "rollpit-api"
 primary_region = "fra"   # Frankfurt (TR'ye yakın)
 
 [build]
@@ -620,7 +620,7 @@ primary_region = "fra"   # Frankfurt (TR'ye yakın)
 
 ```toml
 # apps/realtime/fly.toml
-app    = "pitlane-realtime"
+app    = "rollpit-realtime"
 primary_region = "fra"
 
 [build]
@@ -658,21 +658,21 @@ primary_region = "fra"
 
 ```bash
 # İlk kurulum (bir kez)
-fly launch --name pitlane-api --region fra
-fly secrets set SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... --app pitlane-api
+fly launch --name rollpit-api --region fra
+fly secrets set SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... --app rollpit-api
 
 # Staging deploy
-fly deploy --app pitlane-api-staging --image ghcr.io/pitlane/api:staging
+fly deploy --app rollpit-api-staging --image ghcr.io/rollpit/api:staging
 
 # Production deploy
-fly deploy --app pitlane-api --image ghcr.io/pitlane/api:latest
+fly deploy --app rollpit-api --image ghcr.io/rollpit/api:latest
 
 # Scale (gerektiğinde)
-fly scale count 3 --app pitlane-api
-fly scale vm performance-2x --app pitlane-api
+fly scale count 3 --app rollpit-api
+fly scale vm performance-2x --app rollpit-api
 
 # Loglar
-fly logs --app pitlane-api
+fly logs --app rollpit-api
 ```
 
 ---
@@ -833,9 +833,9 @@ git push origin v1.0.1
 
 ```bash
 # Fly.io status webhook (Slack entegrasyonu)
-fly monitoring create --app pitlane-api \
+fly monitoring create --app rollpit-api \
   --type http \
-  --url https://api.pitlane.app/health \
+  --url https://api.rollpit.com/health \
   --interval 60
 ```
 

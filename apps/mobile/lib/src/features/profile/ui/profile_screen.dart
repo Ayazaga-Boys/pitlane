@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../features/auth/providers/auth_provider.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../models/vehicle.dart';
 import '../providers/profile_completion_provider.dart';
 
@@ -56,7 +56,7 @@ class _ProfileContent extends StatelessWidget {
     final profile = state.profile;
     final title = profile?.displayName?.isNotEmpty == true
         ? profile!.displayName!
-        : 'Pitlane sürücüsü';
+        : 'Rollpit sürücüsü';
     final username = profile?.username.isNotEmpty == true
         ? '@${profile!.username}'
         : '@profil';
@@ -129,7 +129,7 @@ class _ProfileContent extends StatelessWidget {
                         ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  PitlaneButton(
+                  RollpitButton(
                     label: 'Tamamla',
                     onPressed: () => context.go('/profile/complete'),
                   ),
@@ -151,9 +151,9 @@ class _ProfileContent extends StatelessWidget {
         else
           ...state.vehicles.map((vehicle) => _VehicleTile(vehicle: vehicle)),
         const SizedBox(height: AppSpacing.xl3),
-        PitlaneButton(
+        RollpitButton(
           label: 'Çıkış Yap',
-          variant: PitlaneButtonVariant.ghost,
+          variant: RollpitButtonVariant.ghost,
           onPressed: onSignOut,
         ),
       ],
@@ -220,7 +220,7 @@ class _ProfileError extends ConsumerWidget {
                 ?.copyWith(color: AppColors.error),
           ),
           const SizedBox(height: AppSpacing.lg),
-          PitlaneButton(
+          RollpitButton(
             label: 'Tekrar dene',
             onPressed: () => ref.invalidate(profileCompletionProvider),
           ),

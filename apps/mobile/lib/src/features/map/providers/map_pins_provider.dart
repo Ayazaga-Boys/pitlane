@@ -41,7 +41,7 @@ final _dioProvider = Provider<Dio>((ref) {
       'Content-Type': 'application/json',
       // Dev bypass — Resend + domain hazır olunca Supabase token ile değişir
       if (AppConstants.isDev) 'x-dev-user-id': 'dev-user-map',
-      if (AppConstants.isDev) 'x-dev-user-email': 'dev@pitlane.test',
+      if (AppConstants.isDev) 'x-dev-user-email': 'dev@rollpit.test',
     },
   ));
 });

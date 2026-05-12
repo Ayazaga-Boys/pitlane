@@ -158,7 +158,7 @@ messageRoutes.get('/dms', async (c) => {
     return [{
       peer_id: peerId,
       username: profile?.username,
-      display_name: profile?.display_name ?? profile?.username ?? 'Pitlane user',
+      display_name: profile?.display_name ?? profile?.username ?? 'Rollpit user',
       avatar_url: raw.sender_id === userId ? raw.peer?.avatar_url : undefined,
       last_message_preview: raw.body ?? '',
       last_message_at: raw.created_at,

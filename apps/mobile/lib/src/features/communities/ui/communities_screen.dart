@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_text_field.dart';
+import '../../../shared/widgets/rollpit_text_field.dart';
 import '../constants/community_constants.dart';
 import '../models/community.dart';
 import '../providers/communities_provider.dart';
@@ -53,7 +53,7 @@ class _CommunitiesScreenState extends ConsumerState<CommunitiesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PitlaneTextField(
+              RollpitTextField(
                 label: 'Ara',
                 hint: 'Topluluk, slug veya açıklama',
                 controller: _searchController,
@@ -63,7 +63,7 @@ class _CommunitiesScreenState extends ConsumerState<CommunitiesScreen> {
                 },
               ),
               const SizedBox(height: AppSpacing.lg),
-              PitlaneTextField(
+              RollpitTextField(
                 label: 'Şehir',
                 hint: 'İstanbul',
                 controller: _cityController,

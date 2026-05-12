@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../../map/ui/sos_pulse_widget.dart';
 import '../models/help_request.dart';
 import '../providers/help_request_provider.dart';
@@ -106,7 +106,7 @@ class _HelpWaitingContent extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Yakındaki Pitlane üyeleri isteğini haritada görüyor.',
+            'Yakındaki Rollpit üyeleri isteğini haritada görüyor.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
@@ -141,17 +141,17 @@ class _HelpWaitingContent extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xl2),
           if (request.helperId != null && request.helperId!.isNotEmpty) ...[
-            PitlaneButton(
+            RollpitButton(
               label: 'Yardım Edene Mesaj Gönder',
               icon: Icons.chat_bubble_outline,
               onPressed: () => context.push('/messages/${request.helperId}'),
             ),
             const SizedBox(height: AppSpacing.md),
           ],
-          PitlaneButton(
+          RollpitButton(
             label: 'İsteği İptal Et',
             icon: Icons.close,
-            variant: PitlaneButtonVariant.destructive,
+            variant: RollpitButtonVariant.destructive,
             isLoading: isLoading,
             onPressed: isLoading
                 ? null
@@ -247,7 +247,7 @@ class _HelpStateMessage extends StatelessWidget {
               ),
         ),
         const SizedBox(height: AppSpacing.xl),
-        PitlaneButton(label: actionLabel, onPressed: onAction),
+        RollpitButton(label: actionLabel, onPressed: onAction),
       ],
     );
   }

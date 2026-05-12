@@ -35,8 +35,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pitlane/features/map/providers/heatmap_provider.dart';
-import 'package:pitlane/features/map/data/map_repository.dart';
+import 'package:rollpit/features/map/providers/heatmap_provider.dart';
+import 'package:rollpit/features/map/data/map_repository.dart';
 
 class MockMapRepository extends Mock implements MapRepository {}
 
@@ -82,19 +82,19 @@ void main() {
 ### Widget Test
 
 ```dart
-// test/widget/shared/pitlane_button_test.dart
+// test/widget/shared/rollpit_button_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitlane/shared/widgets/pitlane_button.dart';
+import 'package:rollpit/shared/widgets/rollpit_button.dart';
 
 void main() {
-  group('PitlaneButton', () {
+  group('RollpitButton', () {
     testWidgets('onPressed çağrıldığında callback tetiklenir', (tester) async {
       var tapped = false;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: PitlaneButton(
+            body: RollpitButton(
               label: 'Test',
               onPressed: () => tapped = true,
             ),
@@ -110,7 +110,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: PitlaneButton(label: 'Test', onPressed: null, isLoading: true),
+            body: RollpitButton(label: 'Test', onPressed: null, isLoading: true),
           ),
         ),
       );
@@ -142,7 +142,7 @@ void main() {
   patrolTest('E2E-01: Kayıt & Giriş akışı', ($) async {
     await $.pumpWidgetAndSettle(const App());
 
-    await $(#emailField).enterText('test@pitlane.app');
+    await $(#emailField).enterText('test@rollpit.com');
     await $(#sendOtpButton).tap();
     await $.pumpAndSettle();
 
@@ -166,7 +166,7 @@ dev_dependencies:
     sdk: flutter
 
 # patrol.yaml
-app_id: app.pitlane.mobile
+app_id: app.rollpit.mobile
 ```
 
 ---
@@ -312,7 +312,7 @@ import (
     "github.com/stretchr/testify/assert"
     "github.com/stretchr/testify/require"
 
-    "github.com/pitlane/realtime/internal/location"
+    "github.com/rollpit/realtime/internal/location"
 )
 
 func newTestStore(t *testing.T) (*location.Store, *miniredis.Miniredis) {
@@ -372,7 +372,7 @@ import (
     "github.com/golang-jwt/jwt/v5"
     "github.com/stretchr/testify/assert"
 
-    "github.com/pitlane/realtime/internal/auth"
+    "github.com/rollpit/realtime/internal/auth"
 )
 
 const testSecret = "test-secret-32-chars-minimum-len"
@@ -475,7 +475,7 @@ jobs:
           R2_ENDPOINT:               ${{ secrets.TEST_R2_ENDPOINT }}
           R2_ACCESS_KEY_ID:          ${{ secrets.TEST_R2_KEY }}
           R2_SECRET_ACCESS_KEY:      ${{ secrets.TEST_R2_SECRET }}
-          R2_BUCKET:                 pitlane-test
+          R2_BUCKET:                 rollpit-test
           TEST_USER_JWT:             ${{ secrets.TEST_USER_JWT }}
 
       - name: Coverage Yükleme
@@ -575,7 +575,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --app pitlane-api --remote-only
+      - run: flyctl deploy --app rollpit-api --remote-only
         working-directory: apps/backend
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -587,7 +587,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --app pitlane-realtime --remote-only
+      - run: flyctl deploy --app rollpit-realtime --remote-only
         working-directory: apps/realtime
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -783,7 +783,7 @@ export const options = {
 
 export default function () {
   const token = __ENV.TEST_JWT;
-  const url   = `wss://realtime.pitlane.app/ws/location?token=${token}`;
+  const url   = `wss://realtime.rollpit.com/ws/location?token=${token}`;
 
   ws.connect(url, {}, (socket) => {
     socket.on('open', () => {

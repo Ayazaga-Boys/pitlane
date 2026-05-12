@@ -103,25 +103,25 @@ War room kuralları:
 
 | Diagnostic Komutları (kopyala/yapıştır) |
 |---|
-| `fly status --app pitlane-api` |
-| `fly logs --app pitlane-api -n 200` |
+| `fly status --app rollpit-api` |
+| `fly logs --app rollpit-api -n 200` |
 | `supabase status` (Supabase dashboard) |
-| `fly releases --app pitlane-api` (son deploy) |
+| `fly releases --app rollpit-api` (son deploy) |
 
 | Mitigation seçenekleri |
 |---|
-| `fly releases rollback --app pitlane-api` |
-| `fly scale memory 4096 --app pitlane-api` |
-| `fly machine restart --app pitlane-api` |
-| Maintenance modu: `fly secrets set MAINTENANCE_MODE=true --app pitlane-api` |
+| `fly releases rollback --app rollpit-api` |
+| `fly scale memory 4096 --app rollpit-api` |
+| `fly machine restart --app rollpit-api` |
+| Maintenance modu: `fly secrets set MAINTENANCE_MODE=true --app rollpit-api` |
 | Feature flag: `feature_<x>_enabled = false` (admin panel) |
 
 ### İletişim Paralel (CL Sorumluluğu)
 
 10 dakika içinde:
-- **Status sayfası** güncellenir: `https://status.pitlane.app`
+- **Status sayfası** güncellenir: `https://status.rollpit.com`
 - **App içi banner** aktive edilir (remote_configs)
-- **Twitter/X** bildirimi: "Pitlane'de kısa bir aksaklık yaşıyoruz, çözüm için çalışıyoruz."
+- **Twitter/X** bildirimi: "Rollpit'de kısa bir aksaklık yaşıyoruz, çözüm için çalışıyoruz."
 
 30 dakika içinde:
 - **Daha detaylı update** (etkilenen özellik, ETA varsa)
@@ -134,7 +134,7 @@ War room kuralları:
 
 ## 5. Status Sayfası
 
-`https://status.pitlane.app` — Statuspage.io veya açık kaynak (Atlassian Statuspage / Cachet).
+`https://status.rollpit.com` — Statuspage.io veya açık kaynak (Atlassian Statuspage / Cachet).
 
 ### Bileşenler
 
@@ -164,14 +164,14 @@ War room kuralları:
 
 - Sentry'de PII expose
 - Pen test bulgusu
-- Whistleblower / hata raporu (`security@pitlane.app`)
+- Whistleblower / hata raporu (`security@rollpit.com`)
 - Kötü amaçlı kullanım kanıtı
 
 ### İlk 24 Saat
 
 1. **Sızıntıyı durdur:** açık endpointi, RLS'yi düzelt.
 2. **Kapsamı belirle:** kaç kullanıcı etkilendi, hangi veriler?
-3. **Hukuk + DPO bilgilendir:** privacy@pitlane.app
+3. **Hukuk + DPO bilgilendir:** privacy@rollpit.com
 4. **Sızdırılan veriler iptal et:** token rotasyonu, parola sıfırlama.
 5. **Sentry / PostHog → veri kaldırma:** etkilenen kayıtlar.
 6. **War room:** SEV-0, IC senior dev/lead.
@@ -185,11 +185,11 @@ War room kuralları:
 ### Kullanıcıya Mesaj Şablonu
 
 ```
-Konu: Pitlane Hesabını Etkileyen Güvenlik Olayı
+Konu: Rollpit Hesabını Etkileyen Güvenlik Olayı
 
 Merhaba [Kullanıcı Adı],
 
-[TARİH] tarihinde Pitlane platformunda bir güvenlik olayı tespit ettik.
+[TARİH] tarihinde Rollpit platformunda bir güvenlik olayı tespit ettik.
 Soruşturmamız sonucunda hesabına ilişkin şu bilgilerin yetkisiz erişim
 riski altında olduğunu belirledik:
 
@@ -205,16 +205,16 @@ NE YAPTIK?
 - KVKK Kurumu'na bildirimde bulunduk.
 
 NE YAPMALISIN?
-- Pitlane parolanı değiştir.
+- Rollpit parolanı değiştir.
 - Aynı parolayı başka servislerde kullanıyorsan oraları da değiştir.
 - Şüpheli e-postalara karşı dikkatli ol (oltalama riski).
 
-Daha fazla bilgi: privacy@pitlane.app
-Detaylı rapor: https://pitlane.app/security/incident-[ID]
+Daha fazla bilgi: privacy@rollpit.com
+Detaylı rapor: https://rollpit.com/security/incident-[ID]
 
 Üzgünüz. Güveninizi geri kazanmak için elimizden geleni yapacağız.
 
-Pitlane Ekibi
+Rollpit Ekibi
 ```
 
 ---
@@ -353,7 +353,7 @@ Form: [KVKK Veri İhlali Bildirim Formu](https://kvkk.gov.tr) (online).
 ### Periyodik DR Drill (3 ayda bir)
 
 - "Kasten" servis öldür (staging'de):
-  - `fly machine kill --app pitlane-api`
+  - `fly machine kill --app rollpit-api`
   - Postgres failover trigger
   - R2 yanlış endpoint
 - Süreyi ölç, runbook eksiklerini bul.
@@ -366,7 +366,7 @@ Form: [KVKK Veri İhlali Bildirim Formu](https://kvkk.gov.tr) (online).
 
 ```
 [Servis Adı] - [SEV Düzeyi]
-Pitlane API'de gecikme yaşıyoruz. Ekibimiz inceliyor.
+Rollpit API'de gecikme yaşıyoruz. Ekibimiz inceliyor.
 Tahmini düzeltme süresi henüz net değil. 15 dk içinde güncelleyeceğiz.
 ```
 
@@ -390,21 +390,21 @@ Detaylı post-mortem 72 saat içinde paylaşılacak.
 ### D) Twitter/X — Aktif İncident
 
 ```
-🛠️ Pitlane'de [servis adı] geçici olarak yavaş/erişilemez. Ekibimiz
-çalışıyor. Güncel bilgi için: status.pitlane.app
+🛠️ Rollpit'de [servis adı] geçici olarak yavaş/erişilemez. Ekibimiz
+çalışıyor. Güncel bilgi için: status.rollpit.com
 ```
 
 ### E) Twitter/X — Çözüm Sonrası
 
 ```
-✅ Pitlane normale döndü. [Süre] boyunca yaşadığınız sorun için özür
+✅ Rollpit normale döndü. [Süre] boyunca yaşadığınız sorun için özür
 dileriz. Daha güçlü dönüş için iyileştirmeler yapıyoruz. 🙏
 ```
 
 ### F) Uygulama İçi Banner
 
 ```
-"Pitlane'de bazı özellikler geçici olarak sınırlı. Ekibimiz çalışıyor."
+"Rollpit'de bazı özellikler geçici olarak sınırlı. Ekibimiz çalışıyor."
 ```
 
 ---
@@ -432,10 +432,10 @@ GitHub Actions deploy:
 ```yaml
 - name: Deploy + Auto-rollback
   run: |
-    fly deploy --app pitlane-api
+    fly deploy --app rollpit-api
     sleep 300
-    if ! curl -f https://api.pitlane.app/health; then
-      fly releases rollback --app pitlane-api -y
+    if ! curl -f https://api.rollpit.com/health; then
+      fly releases rollback --app rollpit-api -y
       exit 1
     fi
 ```
@@ -452,7 +452,7 @@ GitHub Actions deploy:
 | 4 | Kişi 1 |
 | ... | döngü |
 
-PagerDuty schedule: `pitlane-oncall-primary`.
+PagerDuty schedule: `rollpit-oncall-primary`.
 
 ### Yorgunluk Yönetimi
 
@@ -464,7 +464,7 @@ PagerDuty schedule: `pitlane-oncall-primary`.
 
 ## 14. Müşteri Tarafı — Geri Bildirim Kanalı
 
-- `support@pitlane.app` → Linear + Slack #support
+- `support@rollpit.com` → Linear + Slack #support
 - Uygulama içi "Geri bildirim gönder" → Linear ticket
 - Twitter/X mention → CM yanıt verir
 - App Store / Play Store yorum → CM + üst seviye dev haftalık review

@@ -12,7 +12,7 @@
 - [ ] Monorepo kurulumu (pnpm workspace + Flutter + Go)
 - [ ] GitHub Actions CI: lint + test + build
 - [ ] Supabase projesi: dev + staging + prod ortamları
-- [ ] Fly.io app'leri: `pitlane-api`, `pitlane-realtime`
+- [ ] Fly.io app'leri: `rollpit-api`, `rollpit-realtime`
 - [ ] Cloudflare: R2 bucket, Images, Stream hesap
 - [ ] 1Password Secrets Automation
 - [ ] Sentry projeleri (mobile, backend, admin)

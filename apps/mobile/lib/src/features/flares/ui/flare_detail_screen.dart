@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../models/flare.dart';
 import '../providers/flare_detail_provider.dart';
 
@@ -126,9 +126,9 @@ class _FlareDetailContent extends ConsumerWidget {
         const SizedBox(height: AppSpacing.lg),
         _RsvpCounts(flare: flare),
         const SizedBox(height: AppSpacing.md),
-        PitlaneButton(
+        RollpitButton(
           label: 'Flare sohbeti',
-          variant: PitlaneButtonVariant.secondary,
+          variant: RollpitButtonVariant.secondary,
           onPressed: () => context.push('/flares/${flare.id}/chat'),
         ),
         const SizedBox(height: AppSpacing.xl2),
@@ -400,9 +400,9 @@ class _FlareDetailError extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneButton(
+            RollpitButton(
               label: 'Geri dön',
-              variant: PitlaneButtonVariant.secondary,
+              variant: RollpitButtonVariant.secondary,
               onPressed: () => Navigator.of(context).maybePop(),
             ),
           ],

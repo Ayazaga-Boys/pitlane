@@ -22,5 +22,5 @@ Future<void> main() async {
     );
   }
 
-  runApp(const ProviderScope(child: PitlaneApp()));
+  runApp(const ProviderScope(child: RollpitApp()));
 }

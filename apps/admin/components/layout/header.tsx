@@ -44,7 +44,7 @@ export function Header({ email }: HeaderProps) {
           </button>
 
           <div className="hidden rounded-pill border border-surface-3 bg-surface-2 px-md py-sm text-sm text-text-secondary sm:block">
-            {email ?? "admin@pitlane.app"}
+            {email ?? "admin@rollpit.com"}
           </div>
 
           <Button className="gap-sm" onClick={handleSignOut} variant="ghost">

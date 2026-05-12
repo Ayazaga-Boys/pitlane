@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/metrics"
 )
 
 // h3CellLen — geçerli H3 hücre string uzunluğu (15 hex char = 60 bit)

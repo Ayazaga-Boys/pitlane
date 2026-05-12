@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 
 /// Konum izni rationale ekranı
 /// GPS izni reddedildiyse veya ilk kez isteniyorsa gösterilir
@@ -51,7 +51,7 @@ class LocationPermissionScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Pitlane, etrafındaki sürücüleri ve etkinlikleri gösterebilmek için yaklaşık konumunu kullanır.\n\n'
+              'Rollpit, etrafındaki sürücüleri ve etkinlikleri gösterebilmek için yaklaşık konumunu kullanır.\n\n'
               'Ham GPS koordinatın hiçbir zaman paylaşılmaz — sadece ~100 m\'lik bölge bilgisi.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -60,15 +60,15 @@ class LocationPermissionScreen extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: AppSpacing.xl2),
-            PitlaneButton(
+            RollpitButton(
               label: 'Konuma İzin Ver',
               onPressed: () => _requestPermission(context),
               icon: Icons.location_on,
             ),
             const SizedBox(height: AppSpacing.md),
-            PitlaneButton(
+            RollpitButton(
               label: 'Şimdi Değil',
-              variant: PitlaneButtonVariant.ghost,
+              variant: RollpitButtonVariant.ghost,
               onPressed: onDismiss,
             ),
           ],

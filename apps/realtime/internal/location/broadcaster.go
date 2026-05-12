@@ -8,7 +8,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/metrics"
 )
 
 const broadcastMinInterval = 5 * time.Second

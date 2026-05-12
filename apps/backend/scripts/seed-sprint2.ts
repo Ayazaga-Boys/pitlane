@@ -20,19 +20,19 @@ type SeedUser = {
 
 const users: SeedUser[] = [
   {
-    email: process.env.DEV_TEST_EMAIL ?? 'dev@pitlane.test',
+    email: process.env.DEV_TEST_EMAIL ?? 'dev@rollpit.test',
     username: 'dev_driver',
-    displayName: 'Pitlane Dev Driver',
+    displayName: 'Rollpit Dev Driver',
   },
   {
-    email: process.env.DEV_HELPER_EMAIL ?? 'helper@pitlane.test',
+    email: process.env.DEV_HELPER_EMAIL ?? 'helper@rollpit.test',
     username: 'dev_helper',
-    displayName: 'Pitlane Dev Helper',
+    displayName: 'Rollpit Dev Helper',
   },
   {
-    email: process.env.DEV_BUSINESS_EMAIL ?? 'business@pitlane.test',
+    email: process.env.DEV_BUSINESS_EMAIL ?? 'business@rollpit.test',
     username: 'dev_business',
-    displayName: 'Pitlane Dev Business',
+    displayName: 'Rollpit Dev Business',
   },
 ];
 
@@ -110,7 +110,7 @@ async function seedVehicle(userId: string): Promise<string> {
 }
 
 async function seedFlares(driverId: string) {
-  const title = '[DEV] Pitlane Cars & Coffee';
+  const title = '[DEV] Rollpit Cars & Coffee';
   await supabase.from('flares').delete().eq('creator_id', driverId).eq('title', title);
 
   const startsAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
@@ -144,7 +144,7 @@ async function seedBusinessPins(businessId: string) {
       h3_cell: h3Cell,
       address: 'Maslak, Istanbul',
       phone: '+905551112233',
-      website: 'https://pitlane.test',
+      website: 'https://rollpit.test',
       is_verified: true,
       is_active: true,
       campaign_text: 'Bugün fren bakımında indirim',

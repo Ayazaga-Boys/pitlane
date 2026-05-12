@@ -1,5 +1,5 @@
 # 👤 KİŞİ 1 — Track Paketi (Burak)
-> Full-stack · Mid/Senior · Pitlane Projesi
+> Full-stack · Mid/Senior · Rollpit Projesi
 
 ## Senin Sorumluluk Alanın
 
@@ -35,7 +35,7 @@
 - ✅ Supabase Flutter bağlantısı
 - ✅ Auth ekranları (invite code, login, OTP) — **Furkan'a devredildi**
 - ✅ AppColors, AppSpacing, AppTheme
-- ✅ PitlaneButton, PitlaneTextField, MainShell
+- ✅ RollpitButton, RollpitTextField, MainShell
 - ✅ Go: hub, client, message yapısı
 - ✅ Go: JWT doğrulama (dev bypass dahil)
 - ✅ Go: In-memory location store + TTL
@@ -61,7 +61,7 @@
 - [ ] Go: Valkey bağlantısı ekle (şu an in-memory, swap et)
 - [ ] Go: Pub/Sub yayın mantığı (hücre bazlı)
 - [ ] Go: k-ring genişletme (yakınlık sorgusu)
-- [ ] Go: Prometheus metrics (`pitlane_ws_active_connections`)
+- [ ] Go: Prometheus metrics (`rollpit_ws_active_connections`)
 
 ---
 
@@ -101,7 +101,7 @@
 cd apps/realtime && go run ./cmd/realtime
 
 # Terminal 2 — Backend (Erol'un)
-cd apps/backend && pnpm --filter @pitlane/backend dev
+cd apps/backend && pnpm --filter @rollpit/backend dev
 
 # Terminal 3 — Flutter
 cd apps/mobile && flutter run \

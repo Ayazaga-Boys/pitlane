@@ -13,7 +13,7 @@ describe('app routes', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
-      service: 'pitlane-api',
+      service: 'rollpit-api',
     });
   });
 
@@ -31,7 +31,7 @@ describe('app routes', () => {
     process.env.SUPABASE_SERVICE_ROLE_KEY = previousServiceRoleKey;
 
     expect(response.status).toBe(200);
-    expect(body.data.app_name).toBe('Pitlane');
+    expect(body.data.app_name).toBe('Rollpit');
     expect(body.data.feature_flags.invite_only).toBe(true);
   });
 
