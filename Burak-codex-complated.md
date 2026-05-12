@@ -187,3 +187,36 @@ Doğrulama:
 - `flutter analyze` geçti.
 - `flutter test` geçti.
 - `go test ./...` geçti.
+
+### İş 4 — Rollpit Realtime Fly.io Deploy Konfigürasyonu
+
+Erol'dan gelen prod kararları:
+
+- Provider: Fly.io
+- Fly app adı: `rollpit-realtime`
+- Public domain: `realtime.rollpit.com`
+- Flutter prod `WS_BASE_URL`: `wss://realtime.rollpit.com`
+- Final endpoint: `wss://realtime.rollpit.com/ws/location?token=<JWT>`
+- Cloudflare CNAME hedefi: `rollpit-realtime.fly.dev`
+
+Yapıldı:
+
+- `apps/realtime/fly.toml` eklendi.
+- Fly app adı `rollpit-realtime` olarak ayarlandı.
+- Region `fra`, port `8080`, production env ve `/health` check tanımlandı.
+- WebSocket için Fly auto-stop kapalı tutuldu.
+- Connection concurrency limitleri eklendi.
+- `apps/realtime/.env.example` prod secret kullanımını belgelemek için güncellendi.
+- Production WebSocket origin kontrolünde native mobile client'ların boş `Origin` header ile bağlanabilmesi sağlandı.
+- Web client'lar için unknown origin reddi korunuyor.
+
+Secret notu:
+
+- `VALKEY_ADDR` ve `SUPABASE_JWT_SECRET` gerçek değerleri dosyaya yazılmadı.
+- Prod'da Fly secrets olarak set edilmeli.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go test ./...` geçti.
+- `fly config validate --config apps/realtime/fly.toml` denenemedi; local makinede Fly CLI bulunamadı.

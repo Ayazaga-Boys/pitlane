@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"testing"
 	"time"
 
@@ -28,6 +29,37 @@ func TestSendToNonExistentUser(t *testing.T) {
 	h := newTestHub()
 	// Var olmayan kullanıcıya mesaj göndermek panic yapmamalı
 	h.SendToUser("nonexistent", []byte(`{"type":"pong"}`))
+}
+
+func TestUpgraderAllowsNativeClientsWithoutOriginInProd(t *testing.T) {
+	cfg := &config.Config{
+		IsDev:          false,
+		AllowedOrigins: []string{"https://rollpit.com"},
+	}
+	upgrader := newUpgrader(cfg)
+	req, err := http.NewRequest(http.MethodGet, "/ws/location", nil)
+	if err != nil {
+		t.Fatalf("request build failed: %v", err)
+	}
+	if !upgrader.CheckOrigin(req) {
+		t.Fatal("expected native client without Origin to be allowed")
+	}
+}
+
+func TestUpgraderRejectsUnknownOriginInProd(t *testing.T) {
+	cfg := &config.Config{
+		IsDev:          false,
+		AllowedOrigins: []string{"https://rollpit.com"},
+	}
+	upgrader := newUpgrader(cfg)
+	req, err := http.NewRequest(http.MethodGet, "/ws/location", nil)
+	if err != nil {
+		t.Fatalf("request build failed: %v", err)
+	}
+	req.Header.Set("Origin", "https://evil.example")
+	if upgrader.CheckOrigin(req) {
+		t.Fatal("expected unknown web origin to be rejected")
+	}
 }
 
 func TestSendToAllEmpty(t *testing.T) {

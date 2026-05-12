@@ -23,6 +23,9 @@ func newUpgrader(cfg *config.Config) websocket.Upgrader {
 				return true // Geliştirme ortamında her origin kabul
 			}
 			origin := r.Header.Get("Origin")
+			if origin == "" {
+				return true // Native mobile clients may omit Origin.
+			}
 			for _, allowed := range cfg.AllowedOrigins {
 				if allowed == origin {
 					return true
