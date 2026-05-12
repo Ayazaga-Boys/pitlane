@@ -96,6 +96,8 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Geçersiz token temizliği (`registration-token-not-registered` → DB sil)
 - [ ] Supabase Realtime channel konfigürasyonu
 
+> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare job wrapper'ları hazır. FCM/APNs provider ve Trigger.dev schedule bağlanınca yukarıdaki maddeler kapatılmalı.
+
 ### Sprint 5 — Acil Yardım & İşletme Pinleri (Hafta 9-10)
 - [ ] Supabase migration: `help_requests`
 - [ ] Yardım CRUD endpoint'leri
