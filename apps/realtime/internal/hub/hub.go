@@ -108,10 +108,11 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := &Client{
-		hub:    h,
-		conn:   conn,
-		userID: userID,
-		send:   make(chan []byte, sendBufferSize),
+		hub:           h,
+		conn:          conn,
+		userID:        userID,
+		send:          make(chan []byte, sendBufferSize),
+		subscriptions: make(map[string]int),
 	}
 	h.register <- c
 	go c.writePump()
@@ -142,6 +143,22 @@ func (h *Hub) SendToAll(msg []byte) {
 		case c.send <- msg:
 		default:
 			log.Warn().Str("userID", userID).Msg("send_buffer_full_broadcast")
+		}
+	}
+}
+
+// SendToSubscribers — yalnızca güncellenen hücreyle aynı heatmap bölgesine abone client'lara yayınlar.
+func (h *Hub) SendToSubscribers(h3Cell string, msg []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for userID, c := range h.clients {
+		if !c.isInterestedIn(h3Cell) {
+			continue
+		}
+		select {
+		case c.send <- msg:
+		default:
+			log.Warn().Str("userID", userID).Msg("send_buffer_full_subscribers")
 		}
 	}
 }

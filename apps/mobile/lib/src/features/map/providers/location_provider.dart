@@ -35,16 +35,23 @@ class LocationNotifier extends AsyncNotifier<String?> {
         resolution: H3Constants.proximityResolution,
       );
       state = AsyncData(cell);
-      ref.read(wsServiceProvider).sendLocation(cell);
+      final ws = ref.read(wsServiceProvider);
+      ws.sendLocation(cell);
+      ws.subscribeCell(cell, k: H3Constants.helpKRing);
     }, onError: (_) {
       // Konum alınamazsa sessizce geç
     });
   }
 
   void stopTracking() {
+    final currentCell = state.valueOrNull;
     _positionSub?.cancel();
     _positionSub = null;
-    ref.read(wsServiceProvider).sendGhostOn();
+    final ws = ref.read(wsServiceProvider);
+    if (currentCell != null) {
+      ws.unsubscribeCell(currentCell);
+    }
+    ws.sendGhostOn();
     state = const AsyncData(null);
   }
 }

@@ -48,3 +48,8 @@ func h3CellToParent(h3Cell string, parentRes int) (string, error) {
 
 	return fmt.Sprintf("%015x", idx), nil
 }
+
+// CellToHeatmapParent returns the res-8 parent used for heatmap fan-out.
+func CellToHeatmapParent(h3Cell string) (string, error) {
+	return h3CellToParent(h3Cell, heatmapResolution)
+}

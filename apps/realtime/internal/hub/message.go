@@ -4,6 +4,7 @@ package hub
 type InboundMessage struct {
 	Type   string `json:"type"`
 	H3Cell string `json:"h3_cell,omitempty"`
+	K      int    `json:"k,omitempty"`
 }
 
 // OutboundMessage — Flutter'a gönderilen mesaj tipleri
@@ -27,9 +28,11 @@ const (
 
 // İstemci→sunucu mesaj type sabitleri
 const (
-	TypeLocation = "location"
-	TypeGhostOn  = "ghost_on"
-	TypeGhostOff = "ghost_off"
+	TypeLocation        = "location"
+	TypeGhostOn         = "ghost_on"
+	TypeGhostOff        = "ghost_off"
+	TypeSubscribeCell   = "subscribe_cell"
+	TypeUnsubscribeCell = "unsubscribe_cell"
 )
 
 // Flood koruması — saniyede max mesaj

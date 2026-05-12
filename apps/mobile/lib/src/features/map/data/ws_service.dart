@@ -46,6 +46,14 @@ class WsService {
     _send({'type': 'ghost_off'});
   }
 
+  void subscribeCell(String h3Cell, {int k = 2}) {
+    _send({'type': 'subscribe_cell', 'h3_cell': h3Cell, 'k': k});
+  }
+
+  void unsubscribeCell(String h3Cell) {
+    _send({'type': 'unsubscribe_cell', 'h3_cell': h3Cell});
+  }
+
   void _onMessage(dynamic raw) {
     final msg = jsonDecode(raw as String) as Map<String, dynamic>;
     switch (msg['type']) {
