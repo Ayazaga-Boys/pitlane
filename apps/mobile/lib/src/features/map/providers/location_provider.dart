@@ -11,6 +11,7 @@ const int kLocationDistanceFilterMeters = 30;
 
 class LocationNotifier extends AsyncNotifier<String?> {
   StreamSubscription<Position>? _positionSub;
+  String? _subscribedCell;
 
   @override
   Future<String?> build() async {
@@ -37,19 +38,25 @@ class LocationNotifier extends AsyncNotifier<String?> {
       state = AsyncData(cell);
       final ws = ref.read(wsServiceProvider);
       ws.sendLocation(cell);
-      ws.subscribeCell(cell, k: H3Constants.helpKRing);
+      if (_subscribedCell != cell) {
+        if (_subscribedCell != null) {
+          ws.unsubscribeCell(_subscribedCell!);
+        }
+        ws.subscribeCell(cell, k: H3Constants.helpKRing);
+        _subscribedCell = cell;
+      }
     }, onError: (_) {
       // Konum alınamazsa sessizce geç
     });
   }
 
   void stopTracking() {
-    final currentCell = state.valueOrNull;
     _positionSub?.cancel();
     _positionSub = null;
     final ws = ref.read(wsServiceProvider);
-    if (currentCell != null) {
-      ws.unsubscribeCell(currentCell);
+    if (_subscribedCell != null) {
+      ws.unsubscribeCell(_subscribedCell!);
+      _subscribedCell = null;
     }
     ws.sendGhostOn();
     state = const AsyncData(null);

@@ -13,7 +13,7 @@ final wsConnectionProvider = Provider<void>((ref) {
     if (token != null && token.isNotEmpty) {
       ws.connect(token);
     } else {
-      ws.disconnect();
+      ws.disconnect(clearSubscriptions: true);
     }
   });
 

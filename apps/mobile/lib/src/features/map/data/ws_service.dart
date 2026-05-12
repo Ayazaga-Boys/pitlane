@@ -18,6 +18,7 @@ class WsService {
   String? _token;
   String? _connectedToken;
   int _reconnectAttempts = 0;
+  final _subscriptions = <String, int>{};
 
   final _heatmapController = StreamController<Map<String, int>>.broadcast();
   Stream<Map<String, int>> get heatmapStream => _heatmapController.stream;
@@ -44,6 +45,7 @@ class WsService {
       onDone: _onDisconnect,
       onError: (_) => _scheduleReconnect(),
     );
+    _resubscribeAll();
   }
 
   void sendLocation(String h3Cell) {
@@ -59,10 +61,12 @@ class WsService {
   }
 
   void subscribeCell(String h3Cell, {int k = 2}) {
+    _subscriptions[h3Cell] = k;
     _send({'type': 'subscribe_cell', 'h3_cell': h3Cell, 'k': k});
   }
 
   void unsubscribeCell(String h3Cell) {
+    _subscriptions.remove(h3Cell);
     _send({'type': 'unsubscribe_cell', 'h3_cell': h3Cell});
   }
 
@@ -78,7 +82,7 @@ class WsService {
     }
   }
 
-  void disconnect() {
+  void disconnect({bool clearSubscriptions = false}) {
     _reconnectTimer?.cancel();
     _token = null;
     _connectedToken = null;
@@ -86,6 +90,9 @@ class WsService {
     _sub = null;
     _channel?.sink.close();
     _channel = null;
+    if (clearSubscriptions) {
+      _subscriptions.clear();
+    }
   }
 
   void _onDisconnect() {
@@ -114,8 +121,18 @@ class WsService {
   }
 
   void dispose() {
-    disconnect();
+    disconnect(clearSubscriptions: true);
     _heatmapController.close();
+  }
+
+  void _resubscribeAll() {
+    for (final entry in _subscriptions.entries) {
+      _send({
+        'type': 'subscribe_cell',
+        'h3_cell': entry.key,
+        'k': entry.value,
+      });
+    }
   }
 }
 

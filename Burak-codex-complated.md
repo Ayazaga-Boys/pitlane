@@ -163,3 +163,27 @@ Doğrulama:
 - `flutter analyze` geçti.
 - `flutter test` geçti.
 - `go test ./...` geçti.
+
+### İş 3 — WS Subscription Yaşam Döngüsü ve Reconnect Resubscribe
+
+Yapıldı:
+
+- `WsService` artık aktif cell subscription'larını local map içinde takip ediyor.
+- `subscribeCell` subscription'ı kaydedip WS'e gönderiyor.
+- `unsubscribeCell` subscription'ı local state'ten silip WS'e gönderiyor.
+- Reconnect sonrası mevcut subscription'lar otomatik tekrar server'a gönderiliyor.
+- Auth logout / token kaybı durumunda `disconnect(clearSubscriptions: true)` ile subscription state temizleniyor.
+- `LocationNotifier` artık konum hücresi değiştiğinde eski hücre aboneliğini kaldırıp yeni hücreye abone oluyor.
+- Tracking durduğunda son abone olunan hücre temizleniyor, ardından `ghost_on` gönderiliyor.
+
+Neden:
+
+- Önceki durumda konum değiştikçe eski hücre abonelikleri birikebilirdi.
+- WS reconnect olduğunda Go tarafındaki client subscription state'i kaybolduğu için client tekrar abone olmuyordu.
+
+Doğrulama:
+
+- `dart format` çalıştırıldı.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./...` geçti.
