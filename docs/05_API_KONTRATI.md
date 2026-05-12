@@ -25,6 +25,7 @@ Backend sadece Supabase'in döndürdüğü JWT'yi doğrular.
 ## Profil
 
 ```
+GET    /v1/profiles/me                 — Kendi profilim
 GET    /v1/profiles/:username          — Public profil
 PATCH  /v1/profiles/me                 — Kendi profilini güncelle
 DELETE /v1/profiles/me                 — Hesap sil (GDPR/KVKK)
@@ -44,6 +45,18 @@ const UpdateProfileSchema = z.object({
   bio:          z.string().max(300).optional(),
   avatar_url:   z.string().url().optional(),
   ghost_mode:   z.boolean().optional(),
+  notification_prefs: z.object({
+    help_nearby: z.boolean().optional(),
+    help_helper_arrived: z.boolean().optional(),
+    flare_invite: z.boolean().optional(),
+    flare_starting: z.boolean().optional(),
+    dm_new: z.boolean().optional(),
+    community_message: z.boolean().optional(),
+    community_invite: z.boolean().optional(),
+    system: z.boolean().optional(),
+    quiet_hours_start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+    quiet_hours_end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+  }).optional(),
 });
 ```
 

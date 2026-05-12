@@ -32,6 +32,25 @@ describe('profile schemas', () => {
     expect(parsed.ghost_mode).toBe(true);
   });
 
+  it('accepts notification preferences on profile update', () => {
+    const parsed = UpdateProfileSchema.parse({
+      notification_prefs: {
+        dm_new: true,
+        community_message: false,
+        quiet_hours_start: '23:00',
+        quiet_hours_end: '08:00',
+      },
+    });
+
+    expect(parsed.notification_prefs?.dm_new).toBe(true);
+  });
+
+  it('rejects invalid quiet hour values', () => {
+    expect(UpdateProfileSchema.safeParse({
+      notification_prefs: { quiet_hours_start: '25:99' },
+    }).success).toBe(false);
+  });
+
   it('rejects impossible vehicle years', () => {
     expect(() => CreateVehicleSchema.parse({
       type: 'car',

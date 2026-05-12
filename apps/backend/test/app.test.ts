@@ -37,9 +37,13 @@ describe('app routes', () => {
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const response = await app.request('/v1/profiles/me/vehicles');
+    const [profileResponse, vehiclesResponse] = await Promise.all([
+      app.request('/v1/profiles/me'),
+      app.request('/v1/profiles/me/vehicles'),
+    ]);
 
-    expect(response.status).toBe(401);
+    expect(profileResponse.status).toBe(401);
+    expect(vehiclesResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {

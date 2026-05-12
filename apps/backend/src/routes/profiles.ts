@@ -12,6 +12,25 @@ import type { AppEnv } from '../types/hono.js';
 
 export const profileRoutes = new Hono<AppEnv>();
 
+const PROFILE_PRIVATE_SELECT =
+  'id,username,display_name,avatar_url,bio,ghost_mode,is_verified,role,notification_prefs,created_at,updated_at';
+
+profileRoutes.get('/me', async (c) => {
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(PROFILE_PRIVATE_SELECT)
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+  return c.json({ data });
+});
+
 profileRoutes.get('/:username', async (c) => {
   const parsed = UsernameParamSchema.safeParse(c.req.param());
   if (!parsed.success) return validationError(c, parsed.error);
@@ -44,7 +63,7 @@ profileRoutes.patch('/me', async (c) => {
     .from('profiles')
     .update(parsed.data)
     .eq('id', userId)
-    .select('id,username,display_name,avatar_url,bio,ghost_mode,is_verified,role,updated_at')
+    .select(PROFILE_PRIVATE_SELECT)
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
