@@ -140,3 +140,26 @@ Doğrulama:
 - `go test ./...` geçti.
 - `flutter test` geçti.
 - `flutter analyze` geçti.
+
+### İş 2 — Flutter WS Bağlantı Idempotency ve Reconnect Düzeltmesi
+
+Yapıldı:
+
+- `WsService.connect` aynı token ile tekrar çağrılırsa ikinci bir WebSocket bağlantısı açmayacak hale getirildi.
+- Token değişirse eski subscription/channel kapatılıp yeni token ile temiz bağlantı açılıyor.
+- `WsService.disconnect` eklendi.
+- Auth session token yoksa `wsConnectionProvider` artık bağlantıyı kapatıyor.
+- Reconnect backoff'un her reconnect denemesinde sıfırlanması engellendi.
+- Reconnect artık önce 3 sn, sonra 6 sn, 12 sn şeklinde ilerleyebiliyor.
+
+Neden:
+
+- `PitlaneApp` rebuild olduğunda veya auth stream tekrar data verdiğinde aynı token ile birden fazla WS açılma riski vardı.
+- Çoklu WS bağlantısı, aynı kullanıcının Valkey/heatmap state'inde gereksiz gürültü oluşturabilirdi.
+
+Doğrulama:
+
+- `dart format` çalıştırıldı.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./...` geçti.

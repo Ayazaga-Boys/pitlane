@@ -16,14 +16,26 @@ class WsService {
   StreamSubscription? _sub;
   Timer? _reconnectTimer;
   String? _token;
+  String? _connectedToken;
   int _reconnectAttempts = 0;
 
   final _heatmapController = StreamController<Map<String, int>>.broadcast();
   Stream<Map<String, int>> get heatmapStream => _heatmapController.stream;
 
-  void connect(String jwtToken) {
+  void connect(String jwtToken, {bool resetBackoff = true}) {
+    if (_channel != null && _connectedToken == jwtToken) {
+      return;
+    }
+
+    _reconnectTimer?.cancel();
+    _sub?.cancel();
+    _channel?.sink.close();
+
     _token = jwtToken;
-    _reconnectAttempts = 0; // başarılı bağlantı — backoff sıfırla
+    _connectedToken = jwtToken;
+    if (resetBackoff) {
+      _reconnectAttempts = 0;
+    }
     _channel = WebSocketChannel.connect(
       Uri.parse('${AppConstants.wsBaseUrl}/ws/location?token=$jwtToken'),
     );
@@ -66,14 +78,28 @@ class WsService {
     }
   }
 
-  void _onDisconnect() => _scheduleReconnect();
+  void disconnect() {
+    _reconnectTimer?.cancel();
+    _token = null;
+    _connectedToken = null;
+    _sub?.cancel();
+    _sub = null;
+    _channel?.sink.close();
+    _channel = null;
+  }
+
+  void _onDisconnect() {
+    _connectedToken = null;
+    _channel = null;
+    _scheduleReconnect();
+  }
 
   void _scheduleReconnect() {
     _reconnectTimer?.cancel();
     _reconnectAttempts++;
     final delay = _backoffDelay(_reconnectAttempts);
     _reconnectTimer = Timer(delay, () {
-      if (_token != null) connect(_token!);
+      if (_token != null) connect(_token!, resetBackoff: false);
     });
   }
 
@@ -88,9 +114,7 @@ class WsService {
   }
 
   void dispose() {
-    _reconnectTimer?.cancel();
-    _sub?.cancel();
-    _channel?.sink.close();
+    disconnect();
     _heatmapController.close();
   }
 }
