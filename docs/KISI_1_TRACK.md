@@ -74,11 +74,11 @@
 
 ---
 
-### Sprint 6 — Go Performans (Hafta 11-12)
+### Sprint 6 — Go Performans (Hafta 11-12) ✅ TAMAMLANDI
 
-- [ ] Go: k6 ile 10k bağlantı load test
-- [ ] Go: Sentry entegrasyonu
-- [ ] Go: go.sum + go mod tidy son kontrol
+- [x] Go: k6 ile 10k bağlantı load test — **PASSED** p(95)=4ms, 0 hata, 10k eşzamanlı bağlantı
+- [x] Go: Sentry entegrasyonu — `SENTRY_DSN` env, hub panic recovery, server fatal + shutdown capture
+- [x] Go: go.sum + go mod tidy son kontrol — temiz, Go 1.25'e güncellendi (sentry-go@v0.46.2)
 
 ---
 
