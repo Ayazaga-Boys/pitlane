@@ -12,6 +12,8 @@ final wsConnectionProvider = Provider<void>((ref) {
     final token = state.session?.accessToken;
     if (token != null && token.isNotEmpty) {
       ws.connect(token);
+    } else {
+      ws.disconnect(clearSubscriptions: true);
     }
   });
 

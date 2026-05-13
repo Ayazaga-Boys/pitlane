@@ -17,6 +17,7 @@ const broadcastMinInterval = 5 * time.Second
 type Sender interface {
 	SendToUser(userID string, msg []byte)
 	SendToAll(msg []byte)
+	SendToSubscribers(h3Cell string, msg []byte)
 	ActiveCount() int
 }
 
@@ -57,7 +58,7 @@ func (b *Broadcaster) OnCellUpdate(_ context.Context, userID, h3Cell string, sen
 	}
 
 	metrics.HeatmapBroadcastsTotal.Inc()
-	sender.SendToAll(msg)
+	sender.SendToSubscribers(h3Cell, msg)
 	log.Debug().
 		Str("userID", userID).
 		Str("h3Cell", h3Cell).
