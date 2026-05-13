@@ -220,3 +220,28 @@ Doğrulama:
 - `gofmt` çalıştırıldı.
 - `go test ./...` geçti.
 - `fly config validate --config apps/realtime/fly.toml` denenemedi; local makinede Fly CLI bulunamadı.
+
+### İş 5 — Main Merge Sonrası Realtime Go CI Düzeltmesi
+
+Sebep:
+
+- `main` branch'i Rollpit isimlendirmesine geçmişti.
+- Kişi 1 branch'inde `apps/realtime/internal/hub/h3_interest.go` hâlâ eski `github.com/Ayazaga-Boys/pitlane/...` import path'ini kullanıyordu.
+- `apps/realtime/go.mod` ise `github.com/Ayazaga-Boys/rollpit/apps/realtime` modülüne geçmişti.
+- Bu mismatch GitHub Actions'ta `CI / go` ve `CI / lint-go` job'larını kırıyordu.
+
+Yapıldı:
+
+- `origin/main` Kişi 1 branch'ine merge edildi.
+- Realtime internal import path'i `rollpit` modül adına göre düzeltildi.
+- Go CI sürümü `1.24` ile eşlendi.
+- `apps/realtime/.golangci.yml` içindeki `goimports.local-prefixes` Rollpit path'ine güncellendi.
+- Realtime Docker build image'ı Go `1.24` ile eşlendi.
+- `go mod tidy` çalıştırıldı; Redis dependency sınıflaması ve gerekli `go.sum` kayıtları güncellendi.
+- `hub_test.go` içindeki test request'leri lint'in istediği şekilde `http.NewRequestWithContext` kullanacak hale getirildi.
+
+Doğrulama:
+
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+- `git diff --check` geçti.

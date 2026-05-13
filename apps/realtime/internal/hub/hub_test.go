@@ -37,7 +37,7 @@ func TestUpgraderAllowsNativeClientsWithoutOriginInProd(t *testing.T) {
 		AllowedOrigins: []string{"https://rollpit.com"},
 	}
 	upgrader := newUpgrader(cfg)
-	req, err := http.NewRequest(http.MethodGet, "/ws/location", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/ws/location", nil)
 	if err != nil {
 		t.Fatalf("request build failed: %v", err)
 	}
@@ -52,7 +52,7 @@ func TestUpgraderRejectsUnknownOriginInProd(t *testing.T) {
 		AllowedOrigins: []string{"https://rollpit.com"},
 	}
 	upgrader := newUpgrader(cfg)
-	req, err := http.NewRequest(http.MethodGet, "/ws/location", nil)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/ws/location", nil)
 	if err != nil {
 		t.Fatalf("request build failed: %v", err)
 	}
