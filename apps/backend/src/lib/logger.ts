@@ -12,6 +12,7 @@ export const logger = pino({
       'authorization',
       'SUPABASE_SERVICE_ROLE_KEY',
       'SUPABASE_ANON_KEY',
+      'GO_WS_INTERNAL_SECRET',
     ],
     censor: '[redacted]',
   },

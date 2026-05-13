@@ -2,6 +2,7 @@ import { isValidCell } from 'h3-js';
 import { Hono } from 'hono';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 import { CreateHelpSchema, HelpIdParamSchema } from '../schemas/help.schema.js';
+import { notifyRealtimeHelpEvent } from '../services/realtime.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
@@ -75,6 +76,13 @@ helpRoutes.post('/', async (c) => {
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  void notifyRealtimeHelpEvent({
+    type: 'help_created',
+    help_request_id: data.id,
+    h3_cell: data.h3_cell,
+    requester_id: data.requester_id,
+    issue_type: data.issue_type,
+  });
   return c.json({ data }, 201);
 });
 
@@ -133,6 +141,13 @@ helpRoutes.on(['PATCH', 'POST'], '/:id/respond', async (c) => {
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
   if (!data) return c.json({ code: 'CONFLICT', error: 'Help request is no longer open' }, 409);
+  void notifyRealtimeHelpEvent({
+    type: 'help_assigned',
+    help_request_id: data.id,
+    h3_cell: data.h3_cell,
+    requester_id: data.requester_id,
+    helper_id: data.helper_id,
+  });
   return c.json({ data });
 });
 

@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
+import { notifyRealtimeHelpEvent } from '../services/realtime.js';
 import type { AppEnv } from '../types/hono.js';
 import { z } from 'zod';
 
@@ -45,6 +46,13 @@ helpRequestRoutes.post('/', async (c) => {
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  void notifyRealtimeHelpEvent({
+    type: 'help_created',
+    help_request_id: data.id,
+    h3_cell: data.h3_cell,
+    requester_id: data.requester_id,
+    issue_type: data.issue_type,
+  });
   return c.json({ data }, 201);
 });
 
@@ -99,6 +107,13 @@ helpRequestRoutes.post('/:id/respond', async (c) => {
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  void notifyRealtimeHelpEvent({
+    type: 'help_assigned',
+    help_request_id: data.id,
+    h3_cell: data.h3_cell,
+    requester_id: data.requester_id,
+    helper_id: data.helper_id,
+  });
   return c.json({ data });
 });
 

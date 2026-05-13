@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:rollpit/src/features/map/data/ws_service.dart';
 import 'package:rollpit/src/features/map/providers/ghost_mode_provider.dart';
 import 'package:rollpit/src/features/map/providers/map_pins_provider.dart';
 import 'package:rollpit/src/features/map/ui/map_filter_sheet.dart';
@@ -201,6 +202,47 @@ void main() {
       container.read(ghostModeProvider.notifier).enable();
       container.read(ghostModeProvider.notifier).enable(); // noop
       expect(container.read(ghostModeProvider), isTrue);
+    });
+  });
+
+  group('WS help events', () {
+    test('parses help_nearby event', () {
+      final event = parseWsHelpEvent({
+        'type': 'help_nearby',
+        'help_id': 'help-1',
+        'h3_cell': '89283082803ffff',
+        'issue_type': 'flat_tire',
+      });
+
+      expect(event, isNotNull);
+      expect(event!.type, WsHelpEventType.nearby);
+      expect(event.helpId, 'help-1');
+      expect(event.h3Cell, '89283082803ffff');
+      expect(event.issueType, 'flat_tire');
+    });
+
+    test('parses help_assigned event', () {
+      final event = parseWsHelpEvent({
+        'type': 'help_assigned',
+        'help_id': 'help-1',
+        'h3_cell': '89283082803ffff',
+        'requester_id': 'user-1',
+        'helper_id': 'user-2',
+      });
+
+      expect(event, isNotNull);
+      expect(event!.type, WsHelpEventType.assigned);
+      expect(event.requesterId, 'user-1');
+      expect(event.helperId, 'user-2');
+    });
+
+    test('ignores malformed help event', () {
+      final event = parseWsHelpEvent({
+        'type': 'help_nearby',
+        'h3_cell': '89283082803ffff',
+      });
+
+      expect(event, isNull);
     });
   });
 }

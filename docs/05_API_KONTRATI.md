@@ -477,7 +477,7 @@ Aşılınca: `429` + `Retry-After` header.
 { "type": "flare_nearby",   "flare_id": "uuid", "h3_cell": "..." }
 
 // Yakındaki yeni yardım talebi
-{ "type": "help_nearby",    "help_id":  "uuid", "h3_cell": "..." }
+{ "type": "help_nearby",    "help_id":  "uuid", "h3_cell": "...", "user_id": "uuid" }
 
 // Bağlantı sağlık kontrolü (her 30 sn'de bir)
 { "type": "pong", "ts": 1714999999 }
@@ -498,6 +498,32 @@ Aşılınca: `429` + `Retry-After` header.
 3. Konum izni alındıysa her `kLocationDistanceFilterMeters` (30 m) hareket ile `location` mesajı gönder.
 4. Hayalet mod açılırsa `ghost_on` gönder, sonra konum mesajı gönderme.
 5. `onDone` veya `onError` → 3 sn sonra reconnect (jitter ile).
+
+### Backend → Realtime Internal Event
+
+> URL: `POST /internal/realtime/help-event`
+> Auth: `Authorization: Bearer <GO_WS_INTERNAL_SECRET>`
+> Backend env: `REALTIME_INTERNAL_URL=http://localhost:8080` local, `https://realtime.rollpit.com` prod.
+
+```typescript
+// Yeni yardım talebi açıldı
+{
+  "type": "help_created",
+  "help_request_id": "uuid",
+  "h3_cell": "89283082803ffff",
+  "requester_id": "uuid",
+  "issue_type": "flat_tire"
+}
+
+// Yardım talebine helper atandı
+{
+  "type": "help_assigned",
+  "help_request_id": "uuid",
+  "h3_cell": "89283082803ffff",
+  "requester_id": "uuid",
+  "helper_id": "uuid"
+}
+```
 6. `access_token` yenilenirse mevcut bağlantıyı kapat, yeni token ile tekrar bağlan.
 
 ---
