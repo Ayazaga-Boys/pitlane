@@ -3,6 +3,8 @@ package location
 import (
 	"fmt"
 	"strconv"
+
+	h3 "github.com/uber/h3-go/v4"
 )
 
 // H3 index bit layout (Uber H3 spec):
@@ -52,4 +54,28 @@ func h3CellToParent(h3Cell string, parentRes int) (string, error) {
 // CellToHeatmapParent returns the res-8 parent used for heatmap fan-out.
 func CellToHeatmapParent(h3Cell string) (string, error) {
 	return h3CellToParent(h3Cell, heatmapResolution)
+}
+
+// CellWithinKRing reports whether targetCell is within k H3 grid steps of originCell.
+func CellWithinKRing(originCell, targetCell string, k int) bool {
+	if k < 0 {
+		return false
+	}
+
+	origin := h3.CellFromString(originCell)
+	target := h3.CellFromString(targetCell)
+	if !h3.IsValidIndex(origin) || !h3.IsValidIndex(target) {
+		return false
+	}
+
+	cells, err := h3.GridDisk(origin, k)
+	if err != nil {
+		return false
+	}
+	for _, cell := range cells {
+		if cell == target {
+			return true
+		}
+	}
+	return false
 }

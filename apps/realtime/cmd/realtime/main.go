@@ -30,6 +30,7 @@ func main() {
 	hubCtx, hubCancel := context.WithCancel(context.Background())
 
 	var store location.CellStore
+	var pubsub *location.ValkeyPubSub
 	if cfg.ValkeyAddr != "" {
 		vs, err := location.NewValkeyStore(cfg.ValkeyAddr)
 		if err != nil {
@@ -38,6 +39,12 @@ func main() {
 		} else {
 			log.Info().Str("addr", cfg.ValkeyAddr).Msg("valkey_connected")
 			store = vs
+			if ps, err := location.NewValkeyPubSub(cfg.ValkeyAddr); err != nil {
+				log.Warn().Err(err).Msg("valkey_pubsub_unavailable_single_instance_broadcast")
+			} else {
+				pubsub = ps
+				log.Info().Msg("valkey_pubsub_connected")
+			}
 		}
 	} else {
 		store = location.NewStoreWithContext(hubCtx)
@@ -45,6 +52,17 @@ func main() {
 
 	broadcaster := location.NewBroadcaster(store)
 	h := hub.New(&cfg, store, broadcaster)
+	if pubsub != nil {
+		broadcaster.SetPublisher(pubsub)
+		go func() {
+			err := pubsub.SubscribeHeatmap(hubCtx, func(h3Cell string, msg []byte) {
+				h.SendToSubscribers(h3Cell, msg)
+			})
+			if err != nil && err != context.Canceled {
+				log.Warn().Err(err).Msg("valkey_pubsub_subscribe_stopped")
+			}
+		}()
+	}
 	go h.Run(hubCtx)
 
 	// Aktif bağlantı sayısını periyodik Prometheus'a yaz
@@ -84,6 +102,11 @@ func main() {
 
 	log.Info().Msg("graceful_shutdown_started")
 	hubCancel() // hub goroutine'ini durdur, tüm client send kanallarını kapat
+	if pubsub != nil {
+		if err := pubsub.Close(); err != nil {
+			log.Warn().Err(err).Msg("valkey_pubsub_close_failed")
+		}
+	}
 	shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutCancel()
 	if err := srv.Shutdown(shutCtx); err != nil {

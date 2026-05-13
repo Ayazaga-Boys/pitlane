@@ -58,8 +58,8 @@
 - [x] Flutter: Harita filtreleri (araç tipi, pin tipi)
 - [x] Flutter: Harita pin endpoint standardı `/v1/map/*?h3cell=&k=` olarak sabitlendi
 - [x] Go: Valkey bağlantısı ekle (VALKEY_ADDR varsa production store, yoksa in-memory fallback)
-- [ ] Go: Pub/Sub yayın mantığı (hücre bazlı)
-- [ ] Go: k-ring genişletme (server-side gerçek grid-disk yakınlık sorgusu)
+- [x] Go: Pub/Sub yayın mantığı (Valkey varsa instance'lar arası heatmap fan-out)
+- [x] Go: k-ring genişletme (server-side gerçek grid-disk yakınlık sorgusu)
 - [x] Go: Prometheus metrics (`rollpit_ws_active_connections`)
 
 ---

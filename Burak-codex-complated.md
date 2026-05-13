@@ -162,6 +162,31 @@ Doğrulama:
 - `dart format` çalıştırıldı.
 - `flutter analyze` geçti.
 - `flutter test` geçti.
+
+### İş 7 — Realtime Server-Side k-ring ve Valkey Pub/Sub
+
+Yapıldı:
+
+- Go realtime subscription ilgisi artık yalnızca aynı heatmap parent'a bakmıyor.
+- `subscribe_cell` ile gelen `k` değeri server tarafında gerçek H3 `GridDisk` hesabıyla kullanılıyor.
+- `github.com/uber/h3-go/v4` eklendi.
+- Realtime Docker build cgo kullanan H3 dependency için static cgo build'e alındı.
+- `location.CellWithinKRing(originCell, targetCell, k)` helper'ı eklendi.
+- `Client.isInterestedIn` gerçek k-ring üyeliğine göre karar verecek şekilde güncellendi.
+- Valkey varsa heatmap update mesajları `heatmap:updates` kanalına publish ediliyor.
+- Her realtime instance aynı kanalı subscribe ediyor ve başka instance'lardan gelen heatmap update'leri kendi local subscriber'larına dağıtıyor.
+- Aynı instance'ın kendi yayınını tekrar dağıtmaması için origin id kontrolü eklendi.
+- Valkey Pub/Sub yoksa in-memory/local broadcast davranışı bozulmadan devam ediyor.
+- `docs/KISI_1_TRACK.md` k-ring ve Pub/Sub durumuna göre güncellendi.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go mod tidy` çalıştırıldı.
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+- `git diff --check` geçti.
+- `docker build -t rollpit-realtime:test .` geçti.
 - `go test ./...` geçti.
 
 ### İş 3 — WS Subscription Yaşam Döngüsü ve Reconnect Resubscribe
