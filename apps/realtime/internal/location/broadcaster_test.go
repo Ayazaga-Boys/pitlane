@@ -42,6 +42,20 @@ func (m *mockSender) SendToSubscribers(h3Cell string, msg []byte) {
 
 func (m *mockSender) ActiveCount() int { return m.count }
 
+type mockPublisher struct {
+	mu       sync.Mutex
+	cell     string
+	msgCount int
+}
+
+func (m *mockPublisher) PublishHeatmap(_ context.Context, h3Cell string, _ []byte) error {
+	m.mu.Lock()
+	m.cell = h3Cell
+	m.msgCount++
+	m.mu.Unlock()
+	return nil
+}
+
 func TestOnCellUpdateBroadcastsToSubscribers(t *testing.T) {
 	store := NewStore()
 	bc := NewBroadcaster(store)
@@ -61,6 +75,30 @@ func TestOnCellUpdateBroadcastsToSubscribers(t *testing.T) {
 	}
 	if lastCell != "89283082803ffff" {
 		t.Errorf("expected updated cell to be forwarded, got %s", lastCell)
+	}
+}
+
+func TestOnCellUpdatePublishesWhenPublisherConfigured(t *testing.T) {
+	store := NewStore()
+	bc := NewBroadcaster(store)
+	publisher := &mockPublisher{}
+	bc.SetPublisher(publisher)
+	sender := newMockSender(1)
+
+	ctx := context.Background()
+	_ = store.SetUserCell(ctx, "user-pub", "89283082803ffff")
+	bc.OnCellUpdate(ctx, "user-pub", "89283082803ffff", sender)
+
+	publisher.mu.Lock()
+	msgCount := publisher.msgCount
+	cell := publisher.cell
+	publisher.mu.Unlock()
+
+	if msgCount != 1 {
+		t.Errorf("expected 1 published message, got %d", msgCount)
+	}
+	if cell != "89283082803ffff" {
+		t.Errorf("expected published cell to be forwarded, got %s", cell)
 	}
 }
 

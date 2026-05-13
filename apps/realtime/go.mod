@@ -8,6 +8,7 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/redis/go-redis/v9 v9.19.0
 	github.com/rs/zerolog v1.33.0
+	github.com/uber/h3-go/v4 v4.4.1
 )
 
 require (

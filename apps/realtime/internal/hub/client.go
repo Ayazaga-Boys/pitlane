@@ -162,19 +162,10 @@ func (c *Client) clearSubscriptions() {
 }
 
 func (c *Client) isInterestedIn(h3Cell string) bool {
-	updateParent, err := locationParent(h3Cell)
-	if err != nil {
-		return false
-	}
-
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	for subscribedCell := range c.subscriptions {
-		parent, err := locationParent(subscribedCell)
-		if err != nil {
-			continue
-		}
-		if parent == updateParent {
+	for subscribedCell, k := range c.subscriptions {
+		if cellWithinKRing(subscribedCell, h3Cell, k) {
 			return true
 		}
 	}

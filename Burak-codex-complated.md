@@ -162,6 +162,31 @@ Doğrulama:
 - `dart format` çalıştırıldı.
 - `flutter analyze` geçti.
 - `flutter test` geçti.
+
+### İş 7 — Realtime Server-Side k-ring ve Valkey Pub/Sub
+
+Yapıldı:
+
+- Go realtime subscription ilgisi artık yalnızca aynı heatmap parent'a bakmıyor.
+- `subscribe_cell` ile gelen `k` değeri server tarafında gerçek H3 `GridDisk` hesabıyla kullanılıyor.
+- `github.com/uber/h3-go/v4` eklendi.
+- Realtime Docker build cgo kullanan H3 dependency için static cgo build'e alındı.
+- `location.CellWithinKRing(originCell, targetCell, k)` helper'ı eklendi.
+- `Client.isInterestedIn` gerçek k-ring üyeliğine göre karar verecek şekilde güncellendi.
+- Valkey varsa heatmap update mesajları `heatmap:updates` kanalına publish ediliyor.
+- Her realtime instance aynı kanalı subscribe ediyor ve başka instance'lardan gelen heatmap update'leri kendi local subscriber'larına dağıtıyor.
+- Aynı instance'ın kendi yayınını tekrar dağıtmaması için origin id kontrolü eklendi.
+- Valkey Pub/Sub yoksa in-memory/local broadcast davranışı bozulmadan devam ediyor.
+- `docs/KISI_1_TRACK.md` k-ring ve Pub/Sub durumuna göre güncellendi.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go mod tidy` çalıştırıldı.
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+- `git diff --check` geçti.
+- `docker build -t rollpit-realtime:test .` geçti.
 - `go test ./...` geçti.
 
 ### İş 3 — WS Subscription Yaşam Döngüsü ve Reconnect Resubscribe
@@ -245,3 +270,30 @@ Doğrulama:
 - `go test ./... -race` geçti.
 - `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
 - `git diff --check` geçti.
+
+### İş 6 — Harita Endpoint Standardını `/v1/map/*` Kontratına Çekme
+
+Erol'dan gelen karar:
+
+- Harita ekranı için canonical endpoint standardı `/v1/map/*`.
+- `/v1/pins` ve `/v1/flares` resource/list/CRUD ekranları için kalacak.
+- Mobile map provider tarafı tüm harita verisini `h3cell` + `k` ile istemeli.
+
+Yapıldı:
+
+- Branch `origin/main` ile fast-forward eşlendi.
+- Flutter map provider business pinleri artık `/v1/map/pins?h3cell=&k=` üzerinden çekiyor.
+- Flutter map provider flare pinleri artık `/v1/map/flares?h3cell=&k=` üzerinden çekiyor.
+- Help pinleri mevcut `/v1/map/help?h3cell=&k=` standardında tutuldu.
+- `H3Constants` içine harita endpoint k-ring sabitleri eklendi:
+  - `flareKRing = 2`
+  - `businessPinKRing = 3`
+  - `helpKRing = 2`
+- Kullanıcı konumu yoksa map endpointleri için İstanbul fallback H3 hücresi kullanılmaya devam ediyor.
+- `docs/KISI_1_TRACK.md` güncel kod durumuna göre işaretlendi.
+
+Doğrulama:
+
+- `dart format` çalıştırıldı.
+- `flutter analyze` geçti.
+- `flutter test` geçti.

@@ -3,12 +3,14 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /build
 
+RUN apk add --no-cache build-base
+
 # Bağımlılıkları cache'le — kaynak değişince yeniden indirilmez
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o realtime ./cmd/realtime
+RUN CGO_ENABLED=1 GOOS=linux go build -ldflags="-linkmode external -extldflags '-static' -s -w" -o realtime ./cmd/realtime
 
 # ── Runtime stage ──────────────────────────────────────────────────────────────
 FROM scratch
