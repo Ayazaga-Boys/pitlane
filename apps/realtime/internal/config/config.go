@@ -12,6 +12,7 @@ type Config struct {
 	InternalSecret    string
 	AllowedOrigins    []string // WebSocket origin whitelist
 	IsDev             bool
+	SentryDSN         string
 }
 
 func Load() Config {
@@ -36,6 +37,7 @@ func Load() Config {
 		InternalSecret:    os.Getenv("GO_WS_INTERNAL_SECRET"),
 		AllowedOrigins:    origins,
 		IsDev:             isDev,
+		SentryDSN:         os.Getenv("SENTRY_DSN"),
 	}
 }
 

@@ -3,9 +3,11 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 
@@ -73,6 +75,12 @@ func New(cfg *config.Config, store location.CellStore, bc *location.Broadcaster)
 }
 
 func (h *Hub) Run(ctx context.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			sentry.CaptureException(fmt.Errorf("hub panic: %v", r))
+			log.Error().Interface("panic", r).Msg("hub_panic_recovered")
+		}
+	}()
 	for {
 		select {
 		case <-ctx.Done():

@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -27,6 +28,19 @@ func main() {
 
 	startTime := time.Now()
 	cfg := config.Load()
+
+	if cfg.SentryDSN != "" {
+		if err := sentry.Init(sentry.ClientOptions{
+			Dsn:              cfg.SentryDSN,
+			Environment:      map[bool]string{true: "development", false: "production"}[cfg.IsDev],
+			TracesSampleRate: 0.1,
+		}); err != nil {
+			log.Warn().Err(err).Msg("sentry_init_failed")
+		} else {
+			log.Info().Msg("sentry_initialized")
+		}
+	}
+
 	hubCtx, hubCancel := context.WithCancel(context.Background())
 
 	var store location.CellStore
@@ -93,6 +107,8 @@ func main() {
 	go func() {
 		log.Info().Str("port", cfg.Port).Msg("realtime_service_started")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			sentry.CaptureException(err)
+			sentry.Flush(2 * time.Second)
 			log.Fatal().Err(err).Msg("server_error")
 		}
 	}()
@@ -111,7 +127,9 @@ func main() {
 	shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutCancel()
 	if err := srv.Shutdown(shutCtx); err != nil {
+		sentry.CaptureException(err)
 		log.Error().Err(err).Msg("shutdown_error")
 	}
+	sentry.Flush(2 * time.Second)
 	log.Info().Msg("graceful_shutdown_complete")
 }
