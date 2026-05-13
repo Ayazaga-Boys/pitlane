@@ -1,9 +1,11 @@
 package hub
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -14,7 +16,7 @@ import (
 func newTestHub() *Hub {
 	store := location.NewStore()
 	bc := location.NewBroadcaster(store)
-	cfg := &config.Config{Port: "8080"}
+	cfg := &config.Config{Port: "8080", InternalSecret: "test-secret"}
 	return New(cfg, store, bc)
 }
 
@@ -197,6 +199,67 @@ func TestSendToSubscribersDeliversOnlyInterestedClients(t *testing.T) {
 	select {
 	case got := <-notInterested.send:
 		t.Fatalf("not interested client received %s", got)
+	case <-time.After(50 * time.Millisecond):
+		// expected
+	}
+}
+
+func TestServeHelpEventRequiresBearerToken(t *testing.T) {
+	h := newTestHub()
+	body := []byte(`{"type":"help_created","help_request_id":"help-1","h3_cell":"8929a15b3a3ffff","requester_id":"user-help","issue_type":"flat_tire"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/help-event", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+
+	h.ServeHelpEvent(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", rec.Code)
+	}
+}
+
+func TestServeHelpEventBroadcastsToKRingSubscribers(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	inside := newTestClient(h, "user-inside")
+	outside := newTestClient(h, "user-outside")
+	inside.subscribeCell("8929a15b3a3ffff", 0)
+	outside.subscribeCell("89283082803ffff", 0)
+
+	h.register <- inside
+	h.register <- outside
+	time.Sleep(20 * time.Millisecond)
+
+	body := []byte(`{"type":"help_created","help_request_id":"help-1","h3_cell":"8929a15b3a3ffff","requester_id":"user-help","issue_type":"flat_tire"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/help-event", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer test-secret")
+	rec := httptest.NewRecorder()
+
+	h.ServeHelpEvent(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", rec.Code)
+	}
+
+	select {
+	case raw := <-inside.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal outbound message: %v", err)
+		}
+		if msg.Type != TypeHelpNearby {
+			t.Fatalf("expected %s, got %s", TypeHelpNearby, msg.Type)
+		}
+		if msg.HelpID != "help-1" {
+			t.Fatalf("expected help-1, got %s", msg.HelpID)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("inside subscriber did not receive help event")
+	}
+
+	select {
+	case raw := <-outside.send:
+		t.Fatalf("outside subscriber received %s", raw)
 	case <-time.After(50 * time.Millisecond):
 		// expected
 	}

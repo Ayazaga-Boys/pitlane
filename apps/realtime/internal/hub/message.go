@@ -13,6 +13,8 @@ type OutboundMessage struct {
 	Cells   map[string]int `json:"cells,omitempty"`    // heatmap_update
 	HelpID  string         `json:"help_id,omitempty"`  // help_nearby
 	FlareID string         `json:"flare_id,omitempty"` // flare_nearby
+	H3Cell  string         `json:"h3_cell,omitempty"`  // help_nearby
+	UserID  string         `json:"user_id,omitempty"`  // help_nearby
 	Code    string         `json:"code,omitempty"`     // error
 	Message string         `json:"message,omitempty"`  // error
 }
@@ -24,6 +26,11 @@ const (
 	TypeFlareNearby   = "flare_nearby"
 	TypePong          = "pong"
 	TypeError         = "error"
+)
+
+const (
+	TypeHelpCreated  = "help_created"
+	TypeHelpAssigned = "help_assigned"
 )
 
 // İstemci→sunucu mesaj type sabitleri

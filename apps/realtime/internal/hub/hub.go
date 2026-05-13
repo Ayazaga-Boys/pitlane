@@ -2,6 +2,7 @@ package hub
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"sync"
 
@@ -13,6 +14,17 @@ import (
 	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/location"
 	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/metrics"
 )
+
+const helpEventKRing = 2
+
+type helpEventRequest struct {
+	Type          string `json:"type"`
+	HelpRequestID string `json:"help_request_id"`
+	H3Cell        string `json:"h3_cell"`
+	RequesterID   string `json:"requester_id"`
+	HelperID      string `json:"helper_id,omitempty"`
+	IssueType     string `json:"issue_type,omitempty"`
+}
 
 func newUpgrader(cfg *config.Config) websocket.Upgrader {
 	return websocket.Upgrader{
@@ -122,6 +134,55 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 	go c.readPump()
 }
 
+func (h *Hub) ServeHelpEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if h.cfg.InternalSecret == "" {
+		http.Error(w, "Internal secret not configured", http.StatusServiceUnavailable)
+		return
+	}
+	if r.Header.Get("Authorization") != "Bearer "+h.cfg.InternalSecret {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var event helpEventRequest
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	if !event.isValid() {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	payload := OutboundMessage{
+		Type:   TypeHelpNearby,
+		HelpID: event.HelpRequestID,
+		H3Cell: event.H3Cell,
+	}
+	switch event.Type {
+	case TypeHelpCreated:
+		payload.UserID = event.RequesterID
+	case TypeHelpAssigned:
+		payload.UserID = event.HelperID
+	}
+
+	msg, err := json.Marshal(payload)
+	if err != nil {
+		log.Error().Err(err).Msg("help_event_marshal_failed")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	h.SendToSubscribersWithK(event.H3Cell, helpEventKRing, msg)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_, _ = w.Write([]byte(`{"ok":true}`))
+}
+
 // SendToUser — belirli bir kullanıcıya mesaj gönder
 func (h *Hub) SendToUser(userID string, msg []byte) {
 	h.mu.RLock()
@@ -152,10 +213,14 @@ func (h *Hub) SendToAll(msg []byte) {
 
 // SendToSubscribers — yalnızca güncellenen hücreyle aynı heatmap bölgesine abone client'lara yayınlar.
 func (h *Hub) SendToSubscribers(h3Cell string, msg []byte) {
+	h.SendToSubscribersWithK(h3Cell, 0, msg)
+}
+
+func (h *Hub) SendToSubscribersWithK(h3Cell string, minK int, msg []byte) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 	for userID, c := range h.clients {
-		if !c.isInterestedIn(h3Cell) {
+		if !c.isInterestedInWithMinK(h3Cell, minK) {
 			continue
 		}
 		select {
@@ -163,6 +228,22 @@ func (h *Hub) SendToSubscribers(h3Cell string, msg []byte) {
 		default:
 			log.Warn().Str("userID", userID).Msg("send_buffer_full_subscribers")
 		}
+	}
+}
+
+func (e helpEventRequest) isValid() bool {
+	switch e.Type {
+	case TypeHelpCreated:
+		return e.HelpRequestID != "" &&
+			e.RequesterID != "" &&
+			isValidH3Cell(e.H3Cell)
+	case TypeHelpAssigned:
+		return e.HelpRequestID != "" &&
+			e.RequesterID != "" &&
+			e.HelperID != "" &&
+			isValidH3Cell(e.H3Cell)
+	default:
+		return false
 	}
 }
 

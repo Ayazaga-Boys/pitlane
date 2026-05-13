@@ -9,6 +9,7 @@ type Config struct {
 	Port              string
 	ValkeyAddr        string
 	SupabaseJWTSecret string
+	InternalSecret    string
 	AllowedOrigins    []string // WebSocket origin whitelist
 	IsDev             bool
 }
@@ -32,6 +33,7 @@ func Load() Config {
 		Port:              getEnv("PORT", "8080"),
 		ValkeyAddr:        os.Getenv("VALKEY_ADDR"),
 		SupabaseJWTSecret: os.Getenv("SUPABASE_JWT_SECRET"),
+		InternalSecret:    os.Getenv("GO_WS_INTERNAL_SECRET"),
 		AllowedOrigins:    origins,
 		IsDev:             isDev,
 	}

@@ -25,6 +25,7 @@ func TestLoadFromEnv(t *testing.T) {
 	t.Setenv("GO_ENV", "production")
 	t.Setenv("ALLOWED_ORIGINS", "https://rollpit.com, https://api.rollpit.com")
 	t.Setenv("SUPABASE_JWT_SECRET", "test-secret")
+	t.Setenv("GO_WS_INTERNAL_SECRET", "internal-secret")
 	t.Setenv("VALKEY_ADDR", "localhost:6379")
 
 	cfg := Load()
@@ -43,6 +44,9 @@ func TestLoadFromEnv(t *testing.T) {
 	}
 	if cfg.SupabaseJWTSecret != "test-secret" {
 		t.Error("expected jwt secret")
+	}
+	if cfg.InternalSecret != "internal-secret" {
+		t.Error("expected internal secret")
 	}
 }
 
