@@ -47,21 +47,20 @@
 
 ### Sprint 2 — Harita & Canlı Konum (Şimdiki Sprint)
 
-**Erol'dan `GET /v1/map/heatmap` endpoint'ini bekle**
-
-- [ ] Flutter: `h3_dart` paketini ekle, `location_utils.dart` gerçek implementasyona çevir
-- [ ] Flutter: `geolocator` ile konum stream'i başlat
-- [ ] Flutter: Konum izni akışı (`permission_handler`)
-- [ ] Flutter: Google Maps entegrasyonu (API key Erol'dan)
-- [ ] Flutter: WebSocket servisi (`WsService`) — Go'ya bağlan
-- [ ] Flutter: H3 hücre → WS'e gönder (ham GPS değil!)
-- [ ] Flutter: Isı haritası overlay (H3 Polygon, heatmap gradient)
-- [ ] Flutter: Hayalet mod toggle (UI + WS ghost_on sinyali)
-- [ ] Flutter: Harita filtreleri (araç tipi, pin tipi)
-- [ ] Go: Valkey bağlantısı ekle (şu an in-memory, swap et)
+- [x] Flutter: `h3_dart` paketini ekle, `location_utils.dart` gerçek implementasyona çevir
+- [x] Flutter: `geolocator` ile konum stream'i başlat
+- [x] Flutter: Konum izni akışı (`permission_handler`)
+- [x] Flutter: Google Maps entegrasyonu
+- [x] Flutter: WebSocket servisi (`WsService`) — Go'ya bağlan
+- [x] Flutter: H3 hücre → WS'e gönder (ham GPS değil!)
+- [x] Flutter: Isı haritası overlay (H3 Polygon, heatmap gradient)
+- [x] Flutter: Hayalet mod toggle (UI + WS ghost_on sinyali)
+- [x] Flutter: Harita filtreleri (araç tipi, pin tipi)
+- [x] Flutter: Harita pin endpoint standardı `/v1/map/*?h3cell=&k=` olarak sabitlendi
+- [x] Go: Valkey bağlantısı ekle (VALKEY_ADDR varsa production store, yoksa in-memory fallback)
 - [ ] Go: Pub/Sub yayın mantığı (hücre bazlı)
-- [ ] Go: k-ring genişletme (yakınlık sorgusu)
-- [ ] Go: Prometheus metrics (`rollpit_ws_active_connections`)
+- [ ] Go: k-ring genişletme (server-side gerçek grid-disk yakınlık sorgusu)
+- [x] Go: Prometheus metrics (`rollpit_ws_active_connections`)
 
 ---
 
@@ -69,8 +68,8 @@
 
 > Furkan formu yazar, sen haritaya SOS pinlerini eklersin
 
-- [ ] Flutter: Haritada açık yardım pinlerini göster
-- [ ] Flutter: SOS butonu → Furkan'ın form ekranına yönlendir
+- [x] Flutter: Haritada açık yardım pinlerini göster
+- [x] Flutter: SOS butonu → Furkan'ın form ekranına yönlendir
 - [ ] Go: Help request açılınca k-ring 2 yayını
 
 ---
@@ -88,9 +87,7 @@
 | Kim | Ne | Ne Zaman |
 |---|---|---|
 | **Erol** | Supabase OTP email aktif etsin | Şimdi |
-| **Erol** | Google Maps API key | Sprint 2 başı |
-| **Erol** | `GET /v1/map/heatmap` endpoint | Sprint 2 başı |
-| **Furkan** | Profil tamamlama ekranı | Sprint 1 sonu |
+| **Erol** | `/v1/map/pins`, `/v1/map/flares`, `/v1/map/help` prod davranışını aynı response standardında tutması | Sprint 2 |
 
 ---
 

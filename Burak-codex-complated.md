@@ -245,3 +245,30 @@ Doğrulama:
 - `go test ./... -race` geçti.
 - `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
 - `git diff --check` geçti.
+
+### İş 6 — Harita Endpoint Standardını `/v1/map/*` Kontratına Çekme
+
+Erol'dan gelen karar:
+
+- Harita ekranı için canonical endpoint standardı `/v1/map/*`.
+- `/v1/pins` ve `/v1/flares` resource/list/CRUD ekranları için kalacak.
+- Mobile map provider tarafı tüm harita verisini `h3cell` + `k` ile istemeli.
+
+Yapıldı:
+
+- Branch `origin/main` ile fast-forward eşlendi.
+- Flutter map provider business pinleri artık `/v1/map/pins?h3cell=&k=` üzerinden çekiyor.
+- Flutter map provider flare pinleri artık `/v1/map/flares?h3cell=&k=` üzerinden çekiyor.
+- Help pinleri mevcut `/v1/map/help?h3cell=&k=` standardında tutuldu.
+- `H3Constants` içine harita endpoint k-ring sabitleri eklendi:
+  - `flareKRing = 2`
+  - `businessPinKRing = 3`
+  - `helpKRing = 2`
+- Kullanıcı konumu yoksa map endpointleri için İstanbul fallback H3 hücresi kullanılmaya devam ediyor.
+- `docs/KISI_1_TRACK.md` güncel kod durumuna göre işaretlendi.
+
+Doğrulama:
+
+- `dart format` çalıştırıldı.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
