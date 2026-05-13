@@ -221,6 +221,30 @@ Doğrulama:
 - `gofmt` çalıştırıldı.
 - `go test ./... -race` geçti.
 - `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+
+### İş 9 — Realtime `.env` Smoke Test
+
+Yapıldı:
+
+- `apps/realtime/.env` içinde `VALKEY_ADDR` ve `SUPABASE_JWT_SECRET` bulunduğu doğrulandı.
+- `GO_WS_INTERNAL_SECRET` mevcut `.env` içinde yoktu; smoke test için geçici local secret kullanıldı.
+- Mevcut 8080 portunda eski realtime süreci çalıştığı için yeni kod 18080 portunda ayağa kaldırıldı.
+- Realtime servisinin Valkey store bağlantısı başarılı oldu.
+- Realtime servisinin Valkey Pub/Sub bağlantısı başarılı oldu.
+- `/health` endpoint'i test edildi.
+- `/internal/realtime/help-event` auth ve payload davranışı test edildi.
+
+Doğrulama:
+
+- `GET /health` → `200`
+- Auth header olmadan `POST /internal/realtime/help-event` → `401`
+- Geçici internal secret ile valid `help_created` payload → `202`
+- Geçici internal secret ile invalid `h3_cell` payload → `400`
+
+Not:
+
+- Kalıcı backend entegrasyonu için aynı `GO_WS_INTERNAL_SECRET` değeri backend ve realtime env'lerinde set edilmeli.
+- Smoke test için açılan 18080 realtime süreci test sonunda kapatıldı.
 - `go test ./...` geçti.
 
 ### İş 3 — WS Subscription Yaşam Döngüsü ve Reconnect Resubscribe
