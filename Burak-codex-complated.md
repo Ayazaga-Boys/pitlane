@@ -187,6 +187,40 @@ Doğrulama:
 - `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
 - `git diff --check` geçti.
 - `docker build -t rollpit-realtime:test .` geçti.
+
+### İş 8 — Backend Help Event → Go Realtime Internal Endpoint
+
+Erol'dan gelen karar:
+
+- Backend help request create/assign başarılı olduktan sonra Go realtime servisine internal HTTP event atacak.
+- Endpoint: `POST /internal/realtime/help-event`
+- Auth: `Authorization: Bearer <GO_WS_INTERNAL_SECRET>`
+- Prod base URL: `https://realtime.rollpit.com`
+
+Yapıldı:
+
+- Go realtime config'e `GO_WS_INTERNAL_SECRET` eklendi.
+- `.env.example` içine `GO_WS_INTERNAL_SECRET` eklendi.
+- `POST /internal/realtime/help-event` endpoint'i eklendi.
+- `help_created` payload'ı kabul ediliyor:
+  - `help_request_id`
+  - `h3_cell`
+  - `requester_id`
+  - `issue_type`
+- `help_assigned` payload'ı kabul ediliyor:
+  - `help_request_id`
+  - `h3_cell`
+  - `requester_id`
+  - `helper_id`
+- Endpoint yalnızca Bearer internal secret ile çalışıyor.
+- Geçerli help event gelince `help_nearby` WS mesajı k-ring 2 içindeki subscriber'lara gönderiliyor.
+- `docs/KISI_1_TRACK.md` Sprint 5 help k-ring maddesi tamamlandı olarak güncellendi.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
 - `go test ./...` geçti.
 
 ### İş 3 — WS Subscription Yaşam Döngüsü ve Reconnect Resubscribe

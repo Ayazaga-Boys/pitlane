@@ -161,10 +161,13 @@ func (c *Client) clearSubscriptions() {
 	c.mu.Unlock()
 }
 
-func (c *Client) isInterestedIn(h3Cell string) bool {
+func (c *Client) isInterestedInWithMinK(h3Cell string, minK int) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	for subscribedCell, k := range c.subscriptions {
+		if k < minK {
+			k = minK
+		}
 		if cellWithinKRing(subscribedCell, h3Cell, k) {
 			return true
 		}

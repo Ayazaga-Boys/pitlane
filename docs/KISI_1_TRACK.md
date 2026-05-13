@@ -70,7 +70,7 @@
 
 - [x] Flutter: Haritada açık yardım pinlerini göster
 - [x] Flutter: SOS butonu → Furkan'ın form ekranına yönlendir
-- [ ] Go: Help request açılınca k-ring 2 yayını
+- [x] Go: Help request açılınca k-ring 2 yayını
 
 ---
 
