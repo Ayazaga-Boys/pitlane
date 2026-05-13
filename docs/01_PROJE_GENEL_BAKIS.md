@@ -4,7 +4,7 @@
 
 > "Otomobil ve motosiklet tutkunlarının dünyasını gerçek zamanlı bir haritada birleştirmek."
 
-Pitlane, bir kullanıcı uygulamayı açtığında **şehrindeki diğer araç/motor sahiplerini, anlık etkinlikleri (cruise, buluşma, yarış izleme), acil yardım çağrılarını ve güvenilir tamircileri tek bir harita üzerinde** görmesini sağlar. Reklamsızdır; gelir modeli **işletme pinleri (sponsorlu)** ve **isteğe bağlı premium üyelik** üzerine kuruludur.
+Rollpit, bir kullanıcı uygulamayı açtığında **şehrindeki diğer araç/motor sahiplerini, anlık etkinlikleri (cruise, buluşma, yarış izleme), acil yardım çağrılarını ve güvenilir tamircileri tek bir harita üzerinde** görmesini sağlar. Reklamsızdır; gelir modeli **işletme pinleri (sponsorlu)** ve **isteğe bağlı premium üyelik** üzerine kuruludur.
 
 ## Hedef Kullanıcı
 

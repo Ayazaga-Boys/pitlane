@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../shared/providers/supabase_provider.dart';
-import '../models/pitlane_profile.dart';
+import '../models/rollpit_profile.dart';
 import '../models/vehicle.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
@@ -28,7 +28,7 @@ class ProfileRepository {
   final SupabaseClient _supabase;
   final Dio _dio;
 
-  Future<PitlaneProfile?> getCurrentProfile() async {
+  Future<RollpitProfile?> getCurrentProfile() async {
     final userId = _currentUserId();
     final data = await _supabase
         .from('profiles')
@@ -37,7 +37,7 @@ class ProfileRepository {
         .eq('id', userId)
         .maybeSingle();
 
-    return data == null ? null : PitlaneProfile.fromJson(data);
+    return data == null ? null : RollpitProfile.fromJson(data);
   }
 
   Future<List<Vehicle>> getVehicles() async {
@@ -55,7 +55,7 @@ class ProfileRepository {
         .toList(growable: false);
   }
 
-  Future<PitlaneProfile> updateProfile({
+  Future<RollpitProfile> updateProfile({
     required String username,
     required String displayName,
     String? avatarUrl,

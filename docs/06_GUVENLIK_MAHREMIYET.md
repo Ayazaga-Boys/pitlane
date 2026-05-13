@@ -133,7 +133,7 @@ CREATE POLICY "msg_select_all"  ON public.messages FOR SELECT USING (... OR ... 
   env:
     SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     R2_SECRET_ACCESS_KEY:      ${{ secrets.R2_SECRET_ACCESS_KEY }}
-  run: fly deploy --app pitlane-api
+  run: fly deploy --app rollpit-api
 ```
 
 Flutter'da gizli değer: `--dart-define` ile build-time enjeksiyon:
@@ -149,7 +149,7 @@ flutter build ios \
 ## 5. İletişim Güvenliği
 
 - Tüm HTTP trafiği: **TLS 1.3** (Cloudflare + Fly.io varsayılan).
-- WebSocket: **WSS** (wss://realtime.pitlane.app).
+- WebSocket: **WSS** (wss://realtime.rollpit.com).
 - Certificate pinning: ilk sürümde opsiyonel; V2'de uygulanacak (Flutter `http_certificate_pinning`).
 - HSTS header: `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
 

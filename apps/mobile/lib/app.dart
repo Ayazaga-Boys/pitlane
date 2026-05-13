@@ -170,8 +170,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
 
 // ─── App ────────────────────────────────────────────────────────────────────
 
-class PitlaneApp extends ConsumerWidget {
-  const PitlaneApp({super.key});
+class RollpitApp extends ConsumerWidget {
+  const RollpitApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -181,7 +181,7 @@ class PitlaneApp extends ConsumerWidget {
     ref.watch(pushNotificationControllerProvider);
 
     return MaterialApp.router(
-      title: 'Pitlane',
+      title: 'Rollpit',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: router,

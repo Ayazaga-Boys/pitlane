@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/config"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/location"
 )
 
 func newTestHub() *Hub {

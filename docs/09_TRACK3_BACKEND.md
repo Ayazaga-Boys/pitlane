@@ -80,7 +80,7 @@ export function createApp() {
 
   // Global middleware
   app.use('*', secureHeaders());
-  app.use('*', cors({ origin: ['https://admin.pitlane.app'] }));
+  app.use('*', cors({ origin: ['https://admin.rollpit.com'] }));
   app.use('*', logger());
 
   // Health check (auth yok)
@@ -413,7 +413,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 R2_ENDPOINT=https://xxxx.r2.cloudflarestorage.com
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=
-R2_BUCKET=pitlane-media
+R2_BUCKET=rollpit-media
 
 # Cloudflare Images
 CF_ACCOUNT_ID=

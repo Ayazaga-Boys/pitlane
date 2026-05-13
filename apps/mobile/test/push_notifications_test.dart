@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitlane/src/features/notifications/models/push_notification.dart';
-import 'package:pitlane/src/features/notifications/providers/push_notifications_provider.dart';
+import 'package:rollpit/src/features/notifications/models/push_notification.dart';
+import 'package:rollpit/src/features/notifications/providers/push_notifications_provider.dart';
 
 void main() {
   group('PushDeepLinkResolver', () {

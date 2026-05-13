@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pitlane/src/features/map/ui/sos_pulse_widget.dart';
+import 'package:rollpit/src/features/map/ui/sos_pulse_widget.dart';
 
 Widget _wrap(Widget child) =>
     MaterialApp(home: Scaffold(body: Center(child: child)));

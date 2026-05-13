@@ -8,10 +8,10 @@ if (!supabase) {
   process.exit(1);
 }
 
-const email = process.env.DEV_ADMIN_EMAIL ?? 'admin@pitlane.test';
+const email = process.env.DEV_ADMIN_EMAIL ?? 'admin@rollpit.test';
 const password = process.env.DEV_ADMIN_PASSWORD ?? 'AdminTest123!';
 const username = process.env.DEV_ADMIN_USERNAME ?? 'admin';
-const displayName = process.env.DEV_ADMIN_DISPLAY_NAME ?? 'Pitlane Admin';
+const displayName = process.env.DEV_ADMIN_DISPLAY_NAME ?? 'Rollpit Admin';
 
 async function findExistingUserId() {
   const { data, error } = await supabase.auth.admin.listUsers();

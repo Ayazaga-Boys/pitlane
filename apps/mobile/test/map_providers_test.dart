@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pitlane/src/features/map/providers/ghost_mode_provider.dart';
-import 'package:pitlane/src/features/map/providers/map_pins_provider.dart';
-import 'package:pitlane/src/features/map/ui/map_filter_sheet.dart';
+import 'package:rollpit/src/features/map/providers/ghost_mode_provider.dart';
+import 'package:rollpit/src/features/map/providers/map_pins_provider.dart';
+import 'package:rollpit/src/features/map/ui/map_filter_sheet.dart';
 
 // Mock pinler — allPinsProvider'ı override etmek için
 const _mockPins = [

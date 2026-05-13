@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../shared/providers/supabase_provider.dart';
-import '../models/pitlane_notification.dart';
+import '../models/rollpit_notification.dart';
 
 final notificationsRepositoryProvider =
     Provider<NotificationsRepository>((ref) {
@@ -28,7 +28,7 @@ class NotificationsRepository {
   final SupabaseClient _supabase;
   final Dio _dio;
 
-  Future<List<PitlaneNotification>> listNotifications() async {
+  Future<List<RollpitNotification>> listNotifications() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/v1/notifications',
@@ -38,7 +38,7 @@ class NotificationsRepository {
       final items = response.data?['data'] as List<dynamic>? ?? const [];
       return items
           .whereType<Map<String, dynamic>>()
-          .map(PitlaneNotification.fromJson)
+          .map(RollpitNotification.fromJson)
           .toList(growable: false);
     } on DioException catch (error) {
       if (error.response?.statusCode == 401) {
@@ -80,41 +80,41 @@ class NotificationsRepository {
     if (AppConstants.isDev) {
       return {
         'x-dev-user-id': 'c87820f3-a0af-4fe0-b848-6593ef413846',
-        'x-dev-user-email': 'dev@pitlane.test',
+        'x-dev-user-email': 'dev@rollpit.test',
       };
     }
     throw const UnauthorizedException();
   }
 
   static const _mockNotifications = [
-    PitlaneNotification(
+    RollpitNotification(
       id: 'flare-starting',
-      type: PitlaneNotificationType.flareStarting,
+      type: RollpitNotificationType.flareStarting,
       title: 'Sahil cruise yaklaşıyor',
       body: 'Flare 1 saat içinde başlıyor.',
       deepLink: '/flares/sahil-cruise',
       createdAtLabel: '12 dk',
     ),
-    PitlaneNotification(
+    RollpitNotification(
       id: 'dm-new',
-      type: PitlaneNotificationType.dmNew,
+      type: RollpitNotificationType.dmNew,
       title: 'Mert yeni mesaj gönderdi',
       body: 'Cumartesi rota için 10:15 gibi çıkalım mı?',
       deepLink: '/messages/mert',
       createdAtLabel: '34 dk',
     ),
-    PitlaneNotification(
+    RollpitNotification(
       id: 'community-message',
-      type: PitlaneNotificationType.communityMessage,
+      type: RollpitNotificationType.communityMessage,
       title: 'Istanbul Riders',
       body: 'Topluluk sohbetinde yeni mesajlar var.',
       deepLink: '/communities/istanbul-riders/messages',
       createdAtLabel: 'Dün',
       isRead: true,
     ),
-    PitlaneNotification(
+    RollpitNotification(
       id: 'help-nearby',
-      type: PitlaneNotificationType.helpNearby,
+      type: RollpitNotificationType.helpNearby,
       title: 'Yakında yardım gerekiyor',
       body: '100 m mesafede bir sürücü acil yardım istiyor.',
       deepLink: '/help/local-help',

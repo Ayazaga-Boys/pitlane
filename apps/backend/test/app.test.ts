@@ -13,7 +13,7 @@ describe('app routes', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
-      service: 'pitlane-api',
+      service: 'rollpit-api',
     });
   });
 
@@ -31,15 +31,19 @@ describe('app routes', () => {
     process.env.SUPABASE_SERVICE_ROLE_KEY = previousServiceRoleKey;
 
     expect(response.status).toBe(200);
-    expect(body.data.app_name).toBe('Pitlane');
+    expect(body.data.app_name).toBe('Rollpit');
     expect(body.data.feature_flags.invite_only).toBe(true);
   });
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const response = await app.request('/v1/profiles/me/vehicles');
+    const [profileResponse, vehiclesResponse] = await Promise.all([
+      app.request('/v1/profiles/me'),
+      app.request('/v1/profiles/me/vehicles'),
+    ]);
 
-    expect(response.status).toBe(401);
+    expect(profileResponse.status).toBe(401);
+    expect(vehiclesResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
@@ -97,6 +101,24 @@ describe('app routes', () => {
 
     expect(notificationsResponse.status).toBe(401);
     expect(devicesResponse.status).toBe(401);
+  });
+
+  it('keeps media routes protected', async () => {
+    const app = createApp();
+    const [uploadResponse, finalizeResponse] = await Promise.all([
+      app.request('/v1/media/upload-url', { method: 'POST' }),
+      app.request('/v1/media/finalize', { method: 'POST' }),
+    ]);
+
+    expect(uploadResponse.status).toBe(401);
+    expect(finalizeResponse.status).toBe(401);
+  });
+
+  it('keeps message routes protected', async () => {
+    const app = createApp();
+    const response = await app.request('/v1/messages/dms');
+
+    expect(response.status).toBe(401);
   });
 
   it('returns 503 when maintenance mode is enabled', async () => {

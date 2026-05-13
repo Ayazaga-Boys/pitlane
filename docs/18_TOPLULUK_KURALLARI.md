@@ -5,16 +5,16 @@
 > 1. **Kullanıcıya gösterilecek topluluk kuralları metni** (TR + EN) — uygulama içinde + web'de.
 > 2. **Moderatör runbook'u** — admin paneldeki ekiplerin takip edeceği aksiyonlar.
 
-> Yayın URL: `https://pitlane.app/community-guidelines`
+> Yayın URL: `https://rollpit.com/community-guidelines`
 
 ---
 
-## 1. Türkçe Kullanıcı Metni — Pitlane Topluluk Kuralları
+## 1. Türkçe Kullanıcı Metni — Rollpit Topluluk Kuralları
 
 ```
 PİTLANE TOPLULUK KURALLARI
 
-Pitlane, otomobil ve motosiklet tutkunlarının birbirini tanıdığı, etkinlik
+Rollpit, otomobil ve motosiklet tutkunlarının birbirini tanıdığı, etkinlik
 düzenlediği ve yolda yardımlaştığı bir platformdur. Bu topluluk hepimizin.
 Aşağıdaki kuralların hepsi zorunludur.
 
@@ -24,7 +24,7 @@ Aşağıdaki kuralların hepsi zorunludur.
    - Aile, din, futbol takımı tartışmaları otomotiv platformunun konusu değildir.
 
 2. GÜVENLİK
-   - Sürerken uygulama kullanmak yasaktır. Pitlane araç hareketliyken
+   - Sürerken uygulama kullanmak yasaktır. Rollpit araç hareketliyken
      bazı özellikleri kısıtlar.
    - Ehliyetsiz veya emniyet kemersiz/kasksız sürüş özendirilemez.
    - Yarış yapma çağrısı (drag, sokak yarışı) içerikleri silinir.
@@ -70,7 +70,7 @@ Aşağıdaki kuralların hepsi zorunludur.
    - Yasal yollara başvuru (yasadışı içerik için)
 
 10. İTİRAZ
-   Banlandığını düşünüyorsan: privacy@pitlane.app
+   Banlandığını düşünüyorsan: privacy@rollpit.com
    30 gün içinde yanıt veririz.
 
 Bu kurallar değişebilir. Önemli değişiklikler 30 gün önceden duyurulur.
@@ -79,10 +79,10 @@ Son güncelleme: [TARİH]
 
 ---
 
-## 2. English User-Facing Text — Pitlane Community Guidelines
+## 2. English User-Facing Text — Rollpit Community Guidelines
 
 ```
-PITLANE COMMUNITY GUIDELINES
+ROLLPIT COMMUNITY GUIDELINES
 
 1. RESPECT
    No insults, discrimination, harassment, or threats.
@@ -121,7 +121,7 @@ PITLANE COMMUNITY GUIDELINES
    Warning → Content removal → Temporary suspension (1–30 days) → Permanent ban → Legal action (for illegal content).
 
 10. APPEALS
-    Email privacy@pitlane.app — we respond within 30 days.
+    Email privacy@rollpit.com — we respond within 30 days.
 ```
 
 ---
@@ -266,7 +266,7 @@ await sb.from('profiles').update({ role: 'banned' }).eq('id', userId);
   - Aksiyon dağılımı (silme, suspend, ban)
   - Ortalama yanıt süresi
   - Yasal taleplere yanıt sayısı
-- Rapor `pitlane.app/transparency` adresinde yayınlanır.
+- Rapor `rollpit.com/transparency` adresinde yayınlanır.
 
 ---
 

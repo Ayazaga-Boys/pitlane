@@ -13,16 +13,16 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/config"
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/hub"
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/location"
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/config"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/hub"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/location"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/metrics"
 )
 
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).
 		With().
-		Str("service", "pitlane-realtime").
+		Str("service", "rollpit-realtime").
 		Logger()
 
 	startTime := time.Now()

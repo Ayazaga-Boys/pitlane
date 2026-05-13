@@ -9,7 +9,7 @@
 
 ### Neden?
 KVKK Madde 6 ve GDPR Madde 9 kapsamında hassas kişisel veri olan konum bilgisi,
-kullanıcı rızası olmaksızın saklanamaz. Pitlane'in değer önerisi "mahremiyet varsayılan açık"tır.
+kullanıcı rızası olmaksızın saklanamaz. Rollpit'in değer önerisi "mahremiyet varsayılan açık"tır.
 
 ### Kurallar
 

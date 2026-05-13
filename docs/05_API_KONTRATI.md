@@ -1,6 +1,6 @@
 # 05 — API Kontratı
 
-> Base URL: `https://api.pitlane.app/v1`
+> Base URL: `https://api.rollpit.com/v1`
 > Her endpoint JWT Bearer token gerektirir (aksi belirtilmediği sürece).
 > Hata modeli: `{ "error": string, "code": string, "details"?: any }`
 > Başarı modeli: `{ "data": T, "meta"?: PaginationMeta }`
@@ -25,6 +25,7 @@ Backend sadece Supabase'in döndürdüğü JWT'yi doğrular.
 ## Profil
 
 ```
+GET    /v1/profiles/me                 — Kendi profilim
 GET    /v1/profiles/:username          — Public profil
 PATCH  /v1/profiles/me                 — Kendi profilini güncelle
 DELETE /v1/profiles/me                 — Hesap sil (GDPR/KVKK)
@@ -44,6 +45,18 @@ const UpdateProfileSchema = z.object({
   bio:          z.string().max(300).optional(),
   avatar_url:   z.string().url().optional(),
   ghost_mode:   z.boolean().optional(),
+  notification_prefs: z.object({
+    help_nearby: z.boolean().optional(),
+    help_helper_arrived: z.boolean().optional(),
+    flare_invite: z.boolean().optional(),
+    flare_starting: z.boolean().optional(),
+    dm_new: z.boolean().optional(),
+    community_message: z.boolean().optional(),
+    community_invite: z.boolean().optional(),
+    system: z.boolean().optional(),
+    quiet_hours_start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+    quiet_hours_end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+  }).optional(),
 });
 ```
 
@@ -428,7 +441,7 @@ Aşılınca: `429` + `Retry-After` header.
 
 ## WebSocket Kontratı
 
-> URL: `wss://realtime.pitlane.app/ws/location?token=<JWT>`
+> URL: `wss://realtime.rollpit.com/ws/location?token=<JWT>`
 > Protokol: JSON satırlı mesajlar. Her mesaj `{"type": "..."}` ile başlar.
 > Ping/Pong: 60 sn `pongWait`, 54 sn aralıklarla server ping atar. Flutter `web_socket_channel` otomatik handle eder.
 
@@ -481,7 +494,7 @@ Aşılınca: `429` + `Retry-After` header.
 ### Bağlantı Yaşam Döngüsü (Flutter)
 
 1. `supabase.auth.currentSession?.accessToken` ile token al.
-2. `wss://realtime.pitlane.app/ws/location?token=<JWT>`'e bağlan.
+2. `wss://realtime.rollpit.com/ws/location?token=<JWT>`'e bağlan.
 3. Konum izni alındıysa her `kLocationDistanceFilterMeters` (30 m) hareket ile `location` mesajı gönder.
 4. Hayalet mod açılırsa `ghost_on` gönder, sonra konum mesajı gönderme.
 5. `onDone` veya `onError` → 3 sn sonra reconnect (jitter ile).

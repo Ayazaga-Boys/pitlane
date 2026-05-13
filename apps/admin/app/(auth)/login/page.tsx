@@ -8,7 +8,7 @@ export default function LoginPage() {
       <div className="grid w-full max-w-5xl gap-xl lg:grid-cols-[1.15fr_0.85fr]">
         <section className="surface-panel relative overflow-hidden p-2xl">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-pit-red to-transparent" />
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-pit-red-soft">Pitlane Admin</p>
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-pit-red-soft">Rollpit Admin</p>
           <h1 className="mt-lg max-w-md text-4xl font-semibold leading-tight text-text-primary">
             Moderasyon ve operasyon merkezi tek yerden yönetilsin.
           </h1>

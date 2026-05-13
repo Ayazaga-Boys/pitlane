@@ -1,5 +1,5 @@
 # 👤 KİŞİ 2 — Track Paketi
-> Full-stack · Mid/Senior · Pitlane Projesi
+> Full-stack · Mid/Senior · Rollpit Projesi
 
 ## Senin Sorumluluk Alanın
 
@@ -43,7 +43,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] `pnpm install` + TypeScript build kontrol
 - [ ] Supabase projesi: dev + staging ortamları
 - [ ] Supabase local geliştirme ortamı (`supabase start`)
-- [ ] Fly.io `pitlane-api` app'i oluştur (deploy etme henüz)
+- [ ] Fly.io `rollpit-api` app'i oluştur (deploy etme henüz)
 - [ ] Cloudflare R2 bucket, Images hesabı kur
 - [ ] Trigger.dev hesabı aç, SDK bağla
 - [ ] Sentry backend projesi oluştur (PII filter — `17_KVKK_*` Bölüm 7)
@@ -96,6 +96,8 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Geçersiz token temizliği (`registration-token-not-registered` → DB sil)
 - [ ] Supabase Realtime channel konfigürasyonu
 
+> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare job wrapper'ları hazır. FCM/APNs provider ve Trigger.dev schedule bağlanınca yukarıdaki maddeler kapatılmalı.
+
 ### Sprint 5 — Acil Yardım & İşletme Pinleri (Hafta 9-10)
 - [ ] Supabase migration: `help_requests`
 - [ ] Yardım CRUD endpoint'leri
@@ -116,13 +118,15 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Supabase migration: `blocks`, `media_assets`, `reports`, `audit_logs`
 - [ ] Engelleme endpoint'leri (`POST /v1/blocks/:userId`, `DELETE`, `GET`)
 - [ ] **Hesap silme akışı (UF-10)**: 30 gün soft-delete + Trigger.dev hard-delete job
-- [ ] Hesap silme: e-posta + iptal linki (`pitlane.app/undelete?token=`)
+- [ ] Hesap silme: e-posta + iptal linki (`rollpit.com/undelete?token=`)
 - [ ] `GET /v1/profiles/me/export` — Trigger.dev job, JSON arşiv, R2 presigned 48 sa
 - [ ] `POST /v1/reports` — şikayet endpoint
 - [ ] Retention cron jobs (`04_VERITABANI_SEMA.md` retention tablosu): notifications/flares/help temizliği
 - [ ] Health check: `/health` Fly.io check, DB ping dahil
 - [ ] Fly.io production deploy + auto-rollback (23. doküman Bölüm 12)
 - [ ] Status sayfası setup (statuspage.io veya Cachet)
+
+> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Cloudflare Images kopyalama, Stream ingest/webhook ve R2 delete/head doğrulamaları sonraki medya adımı olarak açık.
 
 ---
 
@@ -136,7 +140,7 @@ SUPABASE_SERVICE_ROLE_KEY=...   # Sadece backend, asla Flutter'a gitmiyor
 R2_ENDPOINT=...
 R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
-R2_BUCKET=pitlane-media
+R2_BUCKET=rollpit-media
 CF_ACCOUNT_ID=...
 CF_IMAGES_API_TOKEN=...
 CF_STREAM_API_TOKEN=...

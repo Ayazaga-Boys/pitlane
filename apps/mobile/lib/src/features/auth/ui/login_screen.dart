@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
-import '../../../shared/widgets/pitlane_text_field.dart';
+import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/rollpit_text_field.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -62,7 +62,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const SizedBox(height: AppSpacing.xl3),
               Text(
-                'Pitlane',
+                'Rollpit',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: AppColors.pitRed,
                       fontWeight: FontWeight.w700,
@@ -77,7 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
               ),
               const SizedBox(height: AppSpacing.xl3),
-              PitlaneTextField(
+              RollpitTextField(
                 label: 'E-posta',
                 hint: 'ornek@email.com',
                 controller: _emailController,
@@ -88,7 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 autofocus: true,
               ),
               const SizedBox(height: AppSpacing.lg),
-              PitlaneButton(
+              RollpitButton(
                 label: 'Devam et',
                 onPressed: isLoading ? null : _sendOtp,
                 isLoading: isLoading,

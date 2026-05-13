@@ -4,6 +4,8 @@ import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/com
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
 import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
+import { UploadUrlSchema } from '../src/schemas/media.schema.js';
+import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
 import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
@@ -11,17 +13,17 @@ import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile
 
 describe('auth schemas', () => {
   it('normalizes invite codes', () => {
-    const parsed = ValidateInviteCodeSchema.parse({ code: ' pitlane ' });
-    expect(parsed.code).toBe('PITLANE');
+    const parsed = ValidateInviteCodeSchema.parse({ code: ' rollpit ' });
+    expect(parsed.code).toBe('ROLLPIT');
   });
 
   it('normalizes waiting list emails', () => {
     const parsed = JoinWaitingListSchema.parse({
-      email: 'TEST@PITLANE.APP',
+      email: 'TEST@ROLLPIT.COM',
       vehicle_type: 'car',
       city: 'Istanbul',
     });
-    expect(parsed.email).toBe('test@pitlane.app');
+    expect(parsed.email).toBe('test@rollpit.com');
   });
 });
 
@@ -29,6 +31,25 @@ describe('profile schemas', () => {
   it('accepts a valid profile update', () => {
     const parsed = UpdateProfileSchema.parse({ display_name: 'Erol', ghost_mode: true });
     expect(parsed.ghost_mode).toBe(true);
+  });
+
+  it('accepts notification preferences on profile update', () => {
+    const parsed = UpdateProfileSchema.parse({
+      notification_prefs: {
+        dm_new: true,
+        community_message: false,
+        quiet_hours_start: '23:00',
+        quiet_hours_end: '08:00',
+      },
+    });
+
+    expect(parsed.notification_prefs?.dm_new).toBe(true);
+  });
+
+  it('rejects invalid quiet hour values', () => {
+    expect(UpdateProfileSchema.safeParse({
+      notification_prefs: { quiet_hours_start: '25:99' },
+    }).success).toBe(false);
   });
 
   it('rejects impossible vehicle years', () => {
@@ -142,6 +163,37 @@ describe('help schemas', () => {
   });
 });
 
+describe('media schemas', () => {
+  it('accepts valid photo upload requests', () => {
+    const parsed = UploadUrlSchema.parse({
+      filename: 'snap.jpg',
+      content_type: 'image/jpeg',
+      asset_type: 'photo',
+      size_bytes: 512_000,
+    });
+
+    expect(parsed.asset_type).toBe('photo');
+  });
+
+  it('rejects media type mismatches', () => {
+    expect(UploadUrlSchema.safeParse({
+      filename: 'video.mp4',
+      content_type: 'video/mp4',
+      asset_type: 'photo',
+      size_bytes: 1_000_000,
+    }).success).toBe(false);
+  });
+
+  it('rejects oversized uploads', () => {
+    expect(UploadUrlSchema.safeParse({
+      filename: 'huge.mp4',
+      content_type: 'video/mp4',
+      asset_type: 'video',
+      size_bytes: 101 * 1024 * 1024,
+    }).success).toBe(false);
+  });
+});
+
 describe('community schemas', () => {
   it('accepts a valid community draft', () => {
     const parsed = CreateCommunitySchema.parse({
@@ -188,7 +240,7 @@ describe('notification schemas', () => {
   it('accepts valid push device registration', () => {
     const parsed = RegisterDeviceSchema.parse({
       platform: 'ios',
-      token: 'pitlane-dev-device-token-ios',
+      token: 'rollpit-dev-device-token-ios',
       app_build: 'dev',
     });
 
@@ -200,5 +252,19 @@ describe('notification schemas', () => {
       platform: 'android',
       token: 'short',
     }).success).toBe(false);
+  });
+});
+
+describe('message schemas', () => {
+  it('accepts text messages', () => {
+    expect(SendMessageSchema.parse({ body: 'Selam' }).body).toBe('Selam');
+  });
+
+  it('requires text or media', () => {
+    expect(SendMessageSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('requires media type with media url', () => {
+    expect(SendMessageSchema.safeParse({ media_url: 'https://rollpit.test/a.jpg' }).success).toBe(false);
   });
 });

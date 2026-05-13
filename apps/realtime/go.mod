@@ -1,4 +1,4 @@
-module github.com/Ayazaga-Boys/pitlane/apps/realtime
+module github.com/Ayazaga-Boys/rollpit/apps/realtime
 
 go 1.24
 

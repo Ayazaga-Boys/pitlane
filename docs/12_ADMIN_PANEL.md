@@ -304,7 +304,7 @@ export function Sidebar() {
   return (
     <aside className="w-60 h-screen bg-card border-r flex flex-col">
       <div className="p-4 border-b">
-        <span className="font-bold text-lg text-primary">Pitlane Admin</span>
+        <span className="font-bold text-lg text-primary">Rollpit Admin</span>
       </div>
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => (

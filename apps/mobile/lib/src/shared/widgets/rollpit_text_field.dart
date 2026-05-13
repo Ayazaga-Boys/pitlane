@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_spacing.dart';
 
-class PitlaneTextField extends StatelessWidget {
-  const PitlaneTextField({
+class RollpitTextField extends StatelessWidget {
+  const RollpitTextField({
     super.key,
     required this.label,
     this.hint,

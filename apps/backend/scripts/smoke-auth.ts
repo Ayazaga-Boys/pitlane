@@ -2,7 +2,7 @@ import '../src/env.js';
 import { createApp } from '../src/app.js';
 import { getAnonSupabaseClient, getServiceSupabaseClient } from '../src/services/supabase.js';
 
-const email = process.env.DEV_TEST_EMAIL ?? 'dev@pitlane.test';
+const email = process.env.DEV_TEST_EMAIL ?? 'dev@rollpit.test';
 const password = process.env.DEV_TEST_PASSWORD ?? 'ChangeMe123!';
 const username = `dev_${Date.now().toString(36)}`;
 
@@ -23,7 +23,7 @@ async function ensureUser() {
     email_confirm: true,
     user_metadata: {
       username,
-      full_name: 'Pitlane Dev',
+      full_name: 'Rollpit Dev',
     },
   });
 
@@ -41,7 +41,7 @@ async function ensureUser() {
 
   await admin
     .from('profiles')
-    .update({ username, display_name: 'Pitlane Dev' })
+    .update({ username, display_name: 'Rollpit Dev' })
     .eq('id', existing.id);
 
   return existing.id;
@@ -73,7 +73,7 @@ async function main() {
 
   const profileResponse = await request('/v1/profiles/me', token, {
     method: 'PATCH',
-    body: JSON.stringify({ display_name: 'Pitlane Dev', bio: 'Backend smoke test user' }),
+    body: JSON.stringify({ display_name: 'Rollpit Dev', bio: 'Backend smoke test user' }),
   });
   if (profileResponse.status !== 200) {
     throw new Error(`Profile update failed: ${profileResponse.status} ${await profileResponse.text()}`);

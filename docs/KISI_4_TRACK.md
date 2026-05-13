@@ -1,5 +1,5 @@
 # 👤 KİŞİ 4 — Track Paketi
-> Flutter UI · Mid/Senior · Pitlane Projesi
+> Flutter UI · Mid/Senior · Rollpit Projesi
 
 ## Senin Sorumluluk Alanın
 
@@ -55,8 +55,8 @@ apps/mobile/lib/
 ├── src/features/profile/ui/profile_screen.dart ✅ (temel)
 └── src/shared/widgets/
     ├── main_shell.dart                ✅ Bottom nav
-    ├── pitlane_button.dart            ✅
-    └── pitlane_text_field.dart        ✅
+    ├── rollpit_button.dart            ✅
+    └── rollpit_text_field.dart        ✅
 ```
 
 **Senin yazacakların (placeholder olanlar):**
@@ -83,8 +83,8 @@ src/features/
 - [x] `docs/15_TASARIM_SISTEMI.md` oku — hangi renk/spacing kullanılacağını anla
 
 ```bash
-git clone https://github.com/Ayazaga-Boys/pitlane.git
-cd pitlane
+git clone https://github.com/Ayazaga-Boys/rollpit.git
+cd rollpit
 git checkout develop
 cd apps/mobile
 flutter pub get
@@ -189,7 +189,7 @@ PR'ı `develop`'a aç. Burak veya Erol review eder.
 
 ```bash
 # Terminal 1 — Backend (Erol'un servisi yerine local)
-cd /pitlane && pnpm --filter @pitlane/backend dev
+cd /rollpit && pnpm --filter @rollpit/backend dev
 
 # Terminal 2 — Flutter
 cd apps/mobile && flutter run \

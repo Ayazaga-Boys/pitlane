@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../providers/auth_provider.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
@@ -105,7 +105,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 onSubmitted: (_) => _verify(),
               ),
               const SizedBox(height: AppSpacing.lg),
-              PitlaneButton(
+              RollpitButton(
                 label: 'Doğrula',
                 onPressed: isLoading ? null : _verify,
                 isLoading: isLoading,

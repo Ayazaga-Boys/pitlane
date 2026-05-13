@@ -1,5 +1,5 @@
-name: pitlane
-description: Pitlane car and moto social app.
+name: rollpit
+description: Rollpit car and moto social app.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.

@@ -4,7 +4,7 @@
 > 1. **Yasal şablon (TR + EN)**: App Store / Play Store ve uygulama içine konacak gizlilik politikasının metni. Hukuk danışmanı tarafından son review yapılmadan yayına alınmaz.
 > 2. **Geliştirici checklist'i**: Bu metnin uygulamadaki davranışla %100 örtüştüğünden emin olmak için.
 
-> URL (yayında olacak): `https://pitlane.app/legal/privacy`
+> URL (yayında olacak): `https://rollpit.com/legal/privacy`
 > Son güncelleme: yayın tarihinden 24 saat önce.
 
 ---
@@ -29,21 +29,21 @@ Aşağıdaki maddeler `06_GUVENLIK_MAHREMIYET.md` ile birebir uyumlu olmalı:
 
 ---
 
-## 1. Türkçe Şablon — Pitlane Gizlilik Politikası
+## 1. Türkçe Şablon — Rollpit Gizlilik Politikası
 
 > **NOT:** Bu metin teknik gerçeklikle hizalı bir taslaktır. Yayına almadan önce KVKK uzmanı bir avukatın onayından geçmesi zorunludur.
 
 ```
-PITLANE GİZLİLİK POLİTİKASI
+ROLLPIT GİZLİLİK POLİTİKASI
 Yürürlük tarihi: [YAYIN TARİHİ]
 
 1. VERİ SORUMLUSU
 
-Bu uygulamayı işleten "[ŞIRKET TİCARET ÜNVANI]" ("Pitlane", "biz")
+Bu uygulamayı işleten "[ŞIRKET TİCARET ÜNVANI]" ("Rollpit", "biz")
 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında
 veri sorumlusu sıfatıyla kişisel verilerinizi işlemektedir.
 
-İletişim: privacy@pitlane.app
+İletişim: privacy@rollpit.com
 Adres: [ŞIRKET ADRESİ]
 
 2. İŞLENEN KİŞİSEL VERİLER
@@ -85,7 +85,7 @@ D) İşletme hesabı için ek veriler
 
 4. KONUM VERİSİ — ÖZEL HÜKÜM
 
-Pitlane konum gizliliğini varsayılan olarak korur:
+Rollpit konum gizliliğini varsayılan olarak korur:
    - Cihazınızdan alınan ham GPS koordinatı sunucularımıza GÖNDERİLMEZ.
    - Koordinatınız cihazınızda ~100 metrelik H3 altıgen hücresine yuvarlanır;
      yalnızca bu hücre kimliği iletilir.
@@ -145,7 +145,7 @@ Aşağıdaki haklara sahipsiniz:
 
 Bu haklarınızı kullanmak için:
    - Uygulama içi: Ayarlar > Veri Dışa Aktarma / Hesabı Sil
-   - E-posta: privacy@pitlane.app
+   - E-posta: privacy@rollpit.com
    30 gün içinde yanıt veririz.
 
 9. GÜVENLİK ÖNLEMLERİ
@@ -163,7 +163,7 @@ Mobil uygulamada çerez kullanılmaz. Web admin paneli yalnızca oturum çerezi
 
 11. ÇOCUKLARIN GİZLİLİĞİ
 
-Pitlane 18 yaş üstü kullanıcılar içindir. 18 yaş altı bir kullanıcının kayıt
+Rollpit 18 yaş üstü kullanıcılar içindir. 18 yaş altı bir kullanıcının kayıt
 olduğunu fark edersek hesabı geçici olarak kilitler ve yasal vasi onayını
 talep ederiz; alınmazsa hesap silinir.
 
@@ -174,26 +174,26 @@ e-posta ve uygulama içi bildirimle haber veririz.
 
 13. İLETİŞİM
 
-privacy@pitlane.app
+privacy@rollpit.com
 [ŞIRKET ADRESİ]
 Veri Sorumlusu Sicil Bilgi Sistemi (VERBIS) numarası: [VERBIS NO]
 ```
 
 ---
 
-## 2. English Template — Pitlane Privacy Policy
+## 2. English Template — Rollpit Privacy Policy
 
 ```
-PITLANE PRIVACY POLICY
+ROLLPIT PRIVACY POLICY
 Effective date: [LAUNCH DATE]
 
 1. CONTROLLER
 
-This app is operated by "[COMPANY LEGAL NAME]" ("Pitlane", "we").
+This app is operated by "[COMPANY LEGAL NAME]" ("Rollpit", "we").
 We act as data controller under the EU General Data Protection Regulation (GDPR)
 and Turkey's KVKK Law no. 6698.
 
-Contact: privacy@pitlane.app
+Contact: privacy@rollpit.com
 Address: [COMPANY ADDRESS]
 EU representative (if applicable): [APPOINTED REP]
 
@@ -218,7 +218,7 @@ D) Business accounts: tax ID, business document, contact info.
 
 4. LOCATION — SPECIAL CLAUSE
 
-Pitlane is built on location privacy by default:
+Rollpit is built on location privacy by default:
    - Raw GPS coordinates are NEVER sent to our servers.
    - Coordinates are bucketed into ~100 m H3 hexagonal cells on-device;
      only the cell ID is transmitted.
@@ -265,7 +265,7 @@ Clauses (SCCs) and supplementary measures.
 Under GDPR you have rights to access, rectification, erasure ("right to be
 forgotten"), restriction, portability, objection, and lodging a complaint with
 your supervisory authority. To exercise: in-app Settings > Export / Delete or
-email privacy@pitlane.app. We respond within 30 days.
+email privacy@rollpit.com. We respond within 30 days.
 
 9. SECURITY
 
@@ -278,7 +278,7 @@ The mobile app does not use cookies. The admin panel uses a session cookie only.
 
 11. CHILDREN
 
-Pitlane is for users 18+. Underage accounts are locked and removed unless verified.
+Rollpit is for users 18+. Underage accounts are locked and removed unless verified.
 
 12. CHANGES
 
@@ -286,7 +286,7 @@ We notify material changes 30 days in advance via email and in-app.
 
 13. CONTACT
 
-privacy@pitlane.app
+privacy@rollpit.com
 [COMPANY ADDRESS]
 ```
 
@@ -307,7 +307,7 @@ privacy@pitlane.app
 | Performance Data | No | No | Analytics |
 | Other Diagnostic Data | No | No | Analytics |
 
-> "Precise Location" KESİNLİKLE seçilmemeli. Pitlane GPS'i precise olarak iletmiyor.
+> "Precise Location" KESİNLİKLE seçilmemeli. Rollpit GPS'i precise olarak iletmiyor.
 
 ---
 
@@ -340,10 +340,10 @@ privacy@pitlane.app
 ```xml
 <!-- ios/Runner/Info.plist -->
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>Pitlane, etrafındaki etkinlikleri ve yardım taleplerini gösterebilmek için yaklaşık konumunu (~100 m doğruluk) kullanır. Tam GPS koordinatın hiçbir zaman sunucuya gönderilmez.</string>
+<string>Rollpit, etrafındaki etkinlikleri ve yardım taleplerini gösterebilmek için yaklaşık konumunu (~100 m doğruluk) kullanır. Tam GPS koordinatın hiçbir zaman sunucuya gönderilmez.</string>
 
 <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-<string>Pitlane, sen uygulamayı kullanmıyorken bile yakındaki acil yardım taleplerini bildirebilmesi için yaklaşık konumunu kullanabilir. Hayalet modu istediğin zaman açabilirsin.</string>
+<string>Rollpit, sen uygulamayı kullanmıyorken bile yakındaki acil yardım taleplerini bildirebilmesi için yaklaşık konumunu kullanabilir. Hayalet modu istediğin zaman açabilirsin.</string>
 
 <key>NSCameraUsageDescription</key>
 <string>Snap kamera ile fotoğraf ve video çekmek için kameraya erişim izni gereklidir.</string>
@@ -383,7 +383,7 @@ privacy@pitlane.app
 <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
 ```
 
-> Pitlane `ACCESS_BACKGROUND_LOCATION` istemez (V1.0). Acil yardım sinyali ekran açıkken çalışır.
+> Rollpit `ACCESS_BACKGROUND_LOCATION` istemez (V1.0). Acil yardım sinyali ekran açıkken çalışır.
 
 ---
 

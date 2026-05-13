@@ -29,7 +29,7 @@
 ```dart
 // lib/features/camera/data/media_compressor.dart
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:pitlane/core/constants/media_constants.dart';
+import 'package:rollpit/core/constants/media_constants.dart';
 
 class MediaCompressor {
   Future<XFile?> compressImage(XFile source) async {
@@ -255,7 +255,7 @@ class _StreamVideoPlayerState extends State<StreamVideoPlayer> {
 ## 6. R2 Bucket Yapısı
 
 ```
-pitlane-media/
+rollpit-media/
 ├── photos/
 │   └── <userId>/
 │       └── <ulid>.jpg
