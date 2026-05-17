@@ -120,13 +120,15 @@ describe('app routes', () => {
 
   it('keeps media routes protected', async () => {
     const app = createApp();
-    const [uploadResponse, finalizeResponse] = await Promise.all([
+    const [uploadResponse, finalizeResponse, deleteResponse] = await Promise.all([
       app.request('/v1/media/upload-url', { method: 'POST' }),
       app.request('/v1/media/finalize', { method: 'POST' }),
+      app.request('/v1/media/00000000-0000-4000-8000-000000000001', { method: 'DELETE' }),
     ]);
 
     expect(uploadResponse.status).toBe(401);
     expect(finalizeResponse.status).toBe(401);
+    expect(deleteResponse.status).toBe(401);
   });
 
   it('exposes Cloudflare Stream webhook without user auth', async () => {

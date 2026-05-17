@@ -11,7 +11,7 @@ interface R2Config {
 
 interface GenerateUploadUrlInput {
   storageKey: string;
-  method?: 'PUT';
+  method?: 'PUT' | 'DELETE' | 'HEAD';
   expiresInSeconds?: number;
 }
 
@@ -75,6 +75,15 @@ export function generateR2UploadUrl(input: GenerateUploadUrlInput): string {
   query.set('X-Amz-Signature', signature);
 
   return `${endpoint.origin}${canonicalUri}?${toCanonicalQuery(query)}`;
+}
+
+export async function deleteR2Object(storageKey: string): Promise<void> {
+  const url = generateR2UploadUrl({ storageKey, method: 'DELETE' });
+  const response = await fetch(url, { method: 'DELETE' });
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`R2 delete failed with status ${response.status}`);
+  }
 }
 
 function getR2Config(): R2Config {

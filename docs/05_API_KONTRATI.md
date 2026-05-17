@@ -358,6 +358,19 @@ const FinalizeSchema = z.object({
 });
 ```
 
+### DELETE /v1/media/:id — Response
+
+```typescript
+type DeleteMediaResponse = {
+  data: {
+    id: string;
+    deleted: true;
+  };
+};
+```
+
+Not: Endpoint sahiplik kontrolünden sonra R2 objesini siler ve `media_assets` kaydını kaldırır. Cloudflare Images/Stream tarafındaki ek silme çağrıları ilgili token kontratları netleşince aynı akışa bağlanır.
+
 ### POST /v1/media/webhook/stream — Cloudflare Stream
 
 - Public route; kullanıcı JWT istemez.
