@@ -27,6 +27,10 @@ export const UpdateProfileSchema = z.object({
   message: 'At least one field is required',
 });
 
+export const DeleteProfileSchema = z.object({
+  reason: z.string().trim().max(300).optional(),
+}).default({});
+
 export const CreateVehicleSchema = z.object({
   type: z.enum(['car', 'motorcycle', 'other']),
   make: z.string().trim().min(1).max(60),

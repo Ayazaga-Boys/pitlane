@@ -28,7 +28,7 @@ Backend sadece Supabase'in döndürdüğü JWT'yi doğrular.
 GET    /v1/profiles/me                 — Kendi profilim
 GET    /v1/profiles/:username          — Public profil
 PATCH  /v1/profiles/me                 — Kendi profilini güncelle
-DELETE /v1/profiles/me                 — Hesap sil (GDPR/KVKK)
+DELETE /v1/profiles/me                 — 30 günlük hesap silme penceresi başlat (KVKK/GDPR)
 POST   /v1/profiles/me/ghost-mode      — Hayalet mod toggle
 GET    /v1/profiles/me/vehicles        — Araç listesi
 POST   /v1/profiles/me/vehicles        — Araç ekle
@@ -88,6 +88,27 @@ const UpdateProfileSchema = z.object({
     quiet_hours_end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
   }).optional(),
 });
+```
+
+### DELETE /v1/profiles/me — Zod Şeması
+
+```typescript
+const DeleteProfileSchema = z.object({
+  reason: z.string().trim().max(300).optional(),
+}).default({});
+```
+
+### DELETE /v1/profiles/me — Response
+
+```typescript
+type DeleteProfileResponse = {
+  data: {
+    id: string;
+    deletion_requested_at: string;
+    delete_after: string; // deletion_requested_at + 30 gün
+    ghost_mode: true;
+  };
+};
 ```
 
 ### POST /v1/profiles/me/vehicles — Zod Şeması
