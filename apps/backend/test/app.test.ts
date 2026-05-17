@@ -7,13 +7,22 @@ describe('app routes', () => {
   });
 
   it('serves health without auth', async () => {
+    const previousUrl = process.env.SUPABASE_URL;
+    const previousServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     const app = createApp();
     const response = await app.request('/health');
+
+    process.env.SUPABASE_URL = previousUrl;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = previousServiceRoleKey;
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
       service: 'rollpit-api',
+      database: { status: 'not_configured' },
     });
   });
 
