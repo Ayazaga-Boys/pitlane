@@ -374,7 +374,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendEmail(to: string, template: string, data: Record<string, unknown>) {
   await resend.emails.send({
-    from: 'Pitlane <hello@pitlane.app>',
+    from: 'Rollpit <hello@rollpit.com>',
     to,
     subject: getSubject(template, data),
     react: await loadTemplate(template, data),

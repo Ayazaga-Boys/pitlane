@@ -60,8 +60,8 @@ apps/mobile/
 │   │   └── notifications/
 │   └── shared/
 │       ├── widgets/
-│       │   ├── pitlane_button.dart
-│       │   ├── pitlane_avatar.dart
+│       │   ├── rollpit_button.dart
+│       │   ├── rollpit_avatar.dart
 │       │   └── loading_indicator.dart
 │       └── providers/
 │           └── supabase_provider.dart
@@ -78,8 +78,8 @@ apps/mobile/
 ## pubspec.yaml (Kritik Bağımlılıklar)
 
 ```yaml
-name: pitlane
-description: Pitlane — Car & Moto Social
+name: rollpit
+description: Rollpit — Car & Moto Social
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -268,8 +268,8 @@ class AuthNotifier extends _$AuthNotifier {
 // lib/features/map/providers/location_provider.dart
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:pitlane/core/constants/h3_constants.dart';
-import 'package:pitlane/core/utils/location_utils.dart';
+import 'package:rollpit/core/constants/h3_constants.dart';
+import 'package:rollpit/core/utils/location_utils.dart';
 
 part 'location_provider.g.dart';
 
@@ -317,7 +317,7 @@ class LocationNotifier extends _$LocationNotifier {
 import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:pitlane/core/constants/app_constants.dart';
+import 'package:rollpit/core/constants/app_constants.dart';
 
 class WsService {
   WebSocketChannel? _channel;
@@ -413,7 +413,7 @@ class HeatmapOverlay extends StatelessWidget {
 ```dart
 // lib/core/theme/app_colors.dart
 class AppColors {
-  static const primary   = Color(0xFFE63946);  // Pitlane kırmızı
+  static const primary   = Color(0xFFE63946);  // Rollpit kırmızı
   static const surface   = Color(0xFF1A1A2E);  // Koyu lacivert
   static const card      = Color(0xFF16213E);
   static const accent    = Color(0xFF0F3460);

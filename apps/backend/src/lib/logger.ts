@@ -3,7 +3,7 @@ import pino from 'pino';
 export const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',
   base: {
-    service: 'pitlane-api',
+    service: 'rollpit-api',
     env: process.env.NODE_ENV ?? 'development',
   },
   redact: {
@@ -12,6 +12,7 @@ export const logger = pino({
       'authorization',
       'SUPABASE_SERVICE_ROLE_KEY',
       'SUPABASE_ANON_KEY',
+      'GO_WS_INTERNAL_SECRET',
     ],
     censor: '[redacted]',
   },

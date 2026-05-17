@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
 
@@ -171,7 +171,7 @@ class _MapFilterSheet extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            PitlaneButton(
+            RollpitButton(
               label: 'Uygula',
               onPressed: () => Navigator.of(context).pop(),
             ),

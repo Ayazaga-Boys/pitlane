@@ -1,6 +1,6 @@
 # 22 — Observability & Runbook
 
-> Pitlane'i çalışır halde tutmak için: log mimarisi, Sentry kuralları, alarm runbook'ları,
+> Rollpit'i çalışır halde tutmak için: log mimarisi, Sentry kuralları, alarm runbook'ları,
 > on-call rotasyonu, dashboard listesi, SLO/SLA tanımları.
 
 ---
@@ -27,7 +27,7 @@ import pino from 'pino';
 export const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',
   base: {
-    service: 'pitlane-api',
+    service: 'rollpit-api',
     env:     process.env.NODE_ENV,
     version: process.env.GIT_SHA,
   },
@@ -48,7 +48,7 @@ export const logger = pino({
 {
   "ts":         "2026-05-07T10:23:45.123Z",
   "level":      "info",
-  "service":    "pitlane-api",
+  "service":    "rollpit-api",
   "env":        "production",
   "version":    "abc1234",
   "userId":     "uuid",
@@ -69,7 +69,7 @@ export const logger = pino({
 log := zerolog.New(os.Stdout).
     With().
     Timestamp().
-    Str("service", "pitlane-realtime").
+    Str("service", "rollpit-realtime").
     Str("version", os.Getenv("GIT_SHA")).
     Logger()
 ```
@@ -97,10 +97,10 @@ log := zerolog.New(os.Stdout).
 
 | Proje | DSN env | Platform |
 |---|---|---|
-| `pitlane-mobile` | `SENTRY_DSN_MOBILE` | Flutter (iOS+Android) |
-| `pitlane-api` | `SENTRY_DSN_API` | Node Backend |
-| `pitlane-realtime` | `SENTRY_DSN_REALTIME` | Go |
-| `pitlane-admin` | `SENTRY_DSN_ADMIN` | Next.js |
+| `rollpit-mobile` | `SENTRY_DSN_MOBILE` | Flutter (iOS+Android) |
+| `rollpit-api` | `SENTRY_DSN_API` | Node Backend |
+| `rollpit-realtime` | `SENTRY_DSN_REALTIME` | Go |
+| `rollpit-admin` | `SENTRY_DSN_ADMIN` | Next.js |
 
 ### Tag'ler & Konteks
 
@@ -176,20 +176,20 @@ Sentry.init({
 // internal/metrics/prometheus.go
 var (
     wsConnectionsTotal = prometheus.NewCounter(prometheus.CounterOpts{
-        Name: "pitlane_ws_connections_total",
+        Name: "rollpit_ws_connections_total",
         Help: "Toplam WS bağlantı sayısı (cumulative)",
     })
     wsActiveConnections = prometheus.NewGauge(prometheus.GaugeOpts{
-        Name: "pitlane_ws_active_connections",
+        Name: "rollpit_ws_active_connections",
         Help: "Anlık aktif WS bağlantı sayısı",
     })
     locationUpdateLatencyMs = prometheus.NewHistogram(prometheus.HistogramOpts{
-        Name:    "pitlane_location_update_latency_ms",
+        Name:    "rollpit_location_update_latency_ms",
         Help:    "Konum güncelleme latency (Valkey set)",
         Buckets: prometheus.LinearBuckets(1, 5, 20),
     })
     heatmapBroadcastLatencyMs = prometheus.NewHistogram(prometheus.HistogramOpts{
-        Name:    "pitlane_heatmap_broadcast_latency_ms",
+        Name:    "rollpit_heatmap_broadcast_latency_ms",
         Help:    "Heatmap update yayın latency",
     })
 )
@@ -341,14 +341,14 @@ var (
 - 5xx rate > %50
 
 **İlk 5 Dakika:**
-1. Fly.io status'a bak: `fly status --app pitlane-api`
-2. Logs'a bak: `fly logs --app pitlane-api`
+1. Fly.io status'a bak: `fly status --app rollpit-api`
+2. Logs'a bak: `fly logs --app rollpit-api`
 3. Sentry'de yeni `unhandled error` var mı?
 4. Son deploy 30 dk içinde miydi? → Rollback hazırla.
 
 **Karar Akışı:**
 ```
-Yeni deploy mu? ──Evet──▶ fly releases rollback --app pitlane-api
+Yeni deploy mu? ──Evet──▶ fly releases rollback --app rollpit-api
        │
        Hayır
        │
@@ -373,11 +373,11 @@ fly machine restart, logs ile gözle
 - Kullanıcı şikayeti: "Harita güncellenmiyor"
 
 **Adımlar:**
-1. Fly.io: `fly status --app pitlane-realtime`
+1. Fly.io: `fly status --app rollpit-realtime`
 2. Valkey bağlantısı: `redis-cli -h <upstash-url> ping`
-3. Log: `fly logs --app pitlane-realtime | grep ERROR`
+3. Log: `fly logs --app rollpit-realtime | grep ERROR`
 4. Eğer Valkey down: Upstash dashboard, status check
-5. Restart: `fly machine restart --app pitlane-realtime`
+5. Restart: `fly machine restart --app rollpit-realtime`
 6. Müşteriye banner: "Gerçek zamanlı veri sınırlı"
 
 ### RB-003 — Acil Yardım Bildirimleri Çalışmıyor

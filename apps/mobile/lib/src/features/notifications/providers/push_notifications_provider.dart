@@ -1,15 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../data/firebase_push_service.dart';
 import '../data/push_notifications_repository.dart';
 import '../models/push_notification.dart';
 
 class PushNotificationController extends AsyncNotifier<String?> {
   @override
   Future<String?> build() async {
+    final repository = ref.read(pushNotificationsRepositoryProvider);
+    final firebasePushService = ref.read(firebasePushServiceProvider);
+
+    final firebaseDraft =
+        await firebasePushService.requestDeviceRegistrationDraft();
+    if (firebaseDraft != null) {
+      await repository.registerDevice(firebaseDraft);
+      await firebasePushService.bind(onTokenRefresh: repository.registerDevice);
+      return firebaseDraft.token;
+    }
+
     if (!AppConstants.isDev) return null;
 
-    final repository = ref.read(pushNotificationsRepositoryProvider);
     final draft = repository.developmentDeviceDraft();
     await repository.registerDevice(draft);
     return draft.token;
@@ -41,6 +52,17 @@ final pushNotificationControllerProvider =
     AsyncNotifierProvider<PushNotificationController, String?>(
   PushNotificationController.new,
 );
+
+final firebasePushServiceProvider = Provider<FirebasePushService>((ref) {
+  final resolver = ref.watch(pushDeepLinkResolverProvider);
+  final service = FirebasePushService(resolver.resolveMap);
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+final pushDeepLinkEventsProvider = StreamProvider<String>((ref) {
+  return ref.watch(firebasePushServiceProvider).deepLinks;
+});
 
 final pushDeepLinkResolverProvider = Provider<PushDeepLinkResolver>((ref) {
   return const PushDeepLinkResolver();

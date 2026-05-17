@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
-import '../../../shared/widgets/pitlane_text_field.dart';
+import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/rollpit_text_field.dart';
 import '../constants/profile_constants.dart';
 import '../models/vehicle.dart';
 import '../providers/profile_completion_provider.dart';
@@ -185,7 +185,7 @@ class _IdentityStepState extends ConsumerState<_IdentityStep> {
               ),
         ),
         const SizedBox(height: AppSpacing.xl2),
-        PitlaneTextField(
+        RollpitTextField(
           label: 'Kullanıcı adı',
           hint: 'mert_cb650r',
           controller: _usernameController,
@@ -195,7 +195,7 @@ class _IdentityStepState extends ConsumerState<_IdentityStep> {
           autofocus: true,
         ),
         const SizedBox(height: AppSpacing.lg),
-        PitlaneTextField(
+        RollpitTextField(
           label: 'Görünür ad',
           hint: 'Mert Yılmaz',
           controller: _displayNameController,
@@ -204,7 +204,7 @@ class _IdentityStepState extends ConsumerState<_IdentityStep> {
           errorText: _displayNameError,
         ),
         const SizedBox(height: AppSpacing.lg),
-        PitlaneTextField(
+        RollpitTextField(
           label: 'Avatar bağlantısı',
           hint: 'İstersen boş bırak',
           controller: _avatarUrlController,
@@ -214,7 +214,7 @@ class _IdentityStepState extends ConsumerState<_IdentityStep> {
           onSubmitted: (_) => _save(),
         ),
         const SizedBox(height: AppSpacing.xl),
-        PitlaneButton(
+        RollpitButton(
           label: 'Devam et',
           onPressed: isLoading ? null : _save,
           isLoading: isLoading,
@@ -305,7 +305,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Pitlane deneyimi araç profiliyle başlar. Sonra garajına yenilerini ekleyebilirsin.',
+          'Rollpit deneyimi araç profiliyle başlar. Sonra garajına yenilerini ekleyebilirsin.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -327,7 +327,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
               : (value) => setState(() => _type = value ?? _type),
         ),
         const SizedBox(height: AppSpacing.lg),
-        PitlaneTextField(
+        RollpitTextField(
           label: 'Marka',
           hint: 'Honda',
           controller: _makeController,
@@ -336,7 +336,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           errorText: _makeError,
         ),
         const SizedBox(height: AppSpacing.lg),
-        PitlaneTextField(
+        RollpitTextField(
           label: 'Model',
           hint: 'CB650R',
           controller: _modelController,
@@ -345,7 +345,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           errorText: _modelError,
         ),
         const SizedBox(height: AppSpacing.lg),
-        PitlaneTextField(
+        RollpitTextField(
           label: 'Yıl',
           hint: '2024',
           controller: _yearController,
@@ -354,7 +354,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           errorText: _yearError,
         ),
         const SizedBox(height: AppSpacing.lg),
-        PitlaneTextField(
+        RollpitTextField(
           label: 'Renk',
           hint: 'Kırmızı',
           controller: _colorController,
@@ -363,7 +363,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           onSubmitted: (_) => _save(),
         ),
         const SizedBox(height: AppSpacing.xl),
-        PitlaneButton(
+        RollpitButton(
           label: 'Aracı ekle',
           onPressed: isLoading ? null : _save,
           isLoading: isLoading,
@@ -407,7 +407,7 @@ class _PermissionsStep extends ConsumerWidget {
           body: 'Yakındaki yardım çağrısı ve mesajları kaçırmamanı sağlar.',
         ),
         const Spacer(),
-        PitlaneButton(
+        RollpitButton(
           label: 'İzinlere devam et',
           onPressed: () => ref
               .read(profileCompletionProvider.notifier)
@@ -443,9 +443,9 @@ class _RulesStep extends ConsumerWidget {
         const _RuleTile(text: 'Tehlikeli sürüşü teşvik eden içerik paylaşma.'),
         const _RuleTile(text: 'Yardım çağrılarını gerçek ihtiyaç için kullan.'),
         const _RuleTile(
-            text: 'Taciz, spam ve sahte profil Pitlane’de yer bulmaz.'),
+            text: 'Taciz, spam ve sahte profil Rollpit’de yer bulmaz.'),
         const Spacer(),
-        PitlaneButton(
+        RollpitButton(
           label: 'Kabul et ve başla',
           onPressed: () =>
               ref.read(profileCompletionProvider.notifier).acceptRules(),
@@ -550,7 +550,7 @@ class _ErrorState extends ConsumerWidget {
                 ?.copyWith(color: AppColors.error),
           ),
           const SizedBox(height: AppSpacing.lg),
-          PitlaneButton(
+          RollpitButton(
             label: 'Tekrar dene',
             onPressed: () => ref.invalidate(profileCompletionProvider),
           ),

@@ -1,4 +1,4 @@
-# Pitlane — Geliştirme Dokümantasyonu
+# Rollpit — Geliştirme Dokümantasyonu
 
 > Otomobil ve motosiklet tutkunları için harita odaklı, premium, reklamsız sosyal ağ.
 
@@ -6,20 +6,20 @@ Bu dizin, projenin sıfırdan App Store / Google Play yayın kalitesine ulaşana
 
 ## Marka Kararı
 
-Marka adı **Pitlane** olarak seçilmiştir.
+Marka adı **Rollpit** olarak seçilmiştir.
 
-App Store / Play Store başlığı: **"Pitlane — Car & Moto Social"**.
+App Store / Play Store başlığı: **"Rollpit — Car & Moto Social"**.
 
 Kod tabanı ve altyapı adları:
 
 | Alan | Değer |
 |---|---|
-| GitHub repo | `Ayazaga-Boys/pitlane` |
-| Flutter package | `pitlane` |
-| Mobile bundle/package ID | `app.pitlane.mobile` |
-| API app | `pitlane-api` |
-| Realtime app | `pitlane-realtime` |
-| Admin app | `pitlane-admin` |
+| GitHub repo | `Ayazaga-Boys/rollpit` |
+| Flutter package | `rollpit` |
+| Mobile bundle/package ID | `app.rollpit.mobile` |
+| API app | `rollpit-api` |
+| Realtime app | `rollpit-realtime` |
+| Admin app | `rollpit-admin` |
 
 "Snap" terimi yalnızca kamera özelliği için kullanılır: **Snap Kamera**.
 
@@ -86,7 +86,7 @@ Kod tabanı ve altyapı adları:
 
 ```bash
 # 1. Repo klonla
-git clone git@github.com:Ayazaga-Boys/pitlane.git && cd pitlane
+git clone git@github.com:Ayazaga-Boys/rollpit.git && cd rollpit
 
 # 2. Submodüller (mobil / backend / realtime / admin tek monorepoda)
 pnpm install                # backend + admin

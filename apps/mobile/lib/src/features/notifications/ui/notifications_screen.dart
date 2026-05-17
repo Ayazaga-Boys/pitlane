@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../models/pitlane_notification.dart';
+import '../models/rollpit_notification.dart';
 import '../providers/notifications_provider.dart';
 import '../providers/push_notifications_provider.dart';
 
@@ -57,7 +57,7 @@ class NotificationsScreen extends ConsumerWidget {
 class _NotificationTile extends ConsumerWidget {
   const _NotificationTile(this.notification);
 
-  final PitlaneNotification notification;
+  final RollpitNotification notification;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,15 +99,15 @@ class _NotificationTile extends ConsumerWidget {
     );
   }
 
-  IconData _iconFor(PitlaneNotificationType type) {
+  IconData _iconFor(RollpitNotificationType type) {
     return switch (type) {
-      PitlaneNotificationType.helpNearby => Icons.health_and_safety_outlined,
-      PitlaneNotificationType.flareInvite ||
-      PitlaneNotificationType.flareStarting =>
+      RollpitNotificationType.helpNearby => Icons.health_and_safety_outlined,
+      RollpitNotificationType.flareInvite ||
+      RollpitNotificationType.flareStarting =>
         Icons.local_fire_department_outlined,
-      PitlaneNotificationType.dmNew => Icons.chat_bubble_outline,
-      PitlaneNotificationType.communityMessage => Icons.groups_outlined,
-      PitlaneNotificationType.system => Icons.info_outline,
+      RollpitNotificationType.dmNew => Icons.chat_bubble_outline,
+      RollpitNotificationType.communityMessage => Icons.groups_outlined,
+      RollpitNotificationType.system => Icons.info_outline,
     };
   }
 }

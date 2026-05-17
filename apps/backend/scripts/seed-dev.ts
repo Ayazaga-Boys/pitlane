@@ -8,7 +8,7 @@ if (!supabase) {
   process.exit(1);
 }
 
-const code = (process.env.DEV_INVITE_CODE ?? 'PITLANE').trim().toUpperCase();
+const code = (process.env.DEV_INVITE_CODE ?? 'ROLLPIT').trim().toUpperCase();
 
 const { error } = await supabase
   .from('invite_codes')

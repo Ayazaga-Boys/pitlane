@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/profile_repository.dart';
 import '../constants/profile_constants.dart';
-import '../models/pitlane_profile.dart';
+import '../models/rollpit_profile.dart';
 import '../models/vehicle.dart';
 
 enum ProfileCompletionStep {
@@ -24,7 +24,7 @@ class ProfileCompletionState {
   });
 
   final ProfileCompletionStep step;
-  final PitlaneProfile? profile;
+  final RollpitProfile? profile;
   final List<Vehicle> vehicles;
   final bool locationPermissionAcknowledged;
   final bool notificationPermissionAcknowledged;
@@ -42,7 +42,7 @@ class ProfileCompletionState {
 
   ProfileCompletionState copyWith({
     ProfileCompletionStep? step,
-    PitlaneProfile? profile,
+    RollpitProfile? profile,
     List<Vehicle>? vehicles,
     bool? locationPermissionAcknowledged,
     bool? notificationPermissionAcknowledged,
@@ -148,7 +148,7 @@ class ProfileCompletionNotifier extends AsyncNotifier<ProfileCompletionState> {
   }
 
   ProfileCompletionStep _resolveInitialStep(
-    PitlaneProfile? profile,
+    RollpitProfile? profile,
     List<Vehicle> vehicles,
   ) {
     if (profile?.hasCompletedIdentity != true) {

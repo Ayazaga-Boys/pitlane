@@ -62,7 +62,7 @@ class MediaUploadRepository {
     if (AppConstants.isDev) {
       return {
         'x-dev-user-id': 'c87820f3-a0af-4fe0-b848-6593ef413846',
-        'x-dev-user-email': 'dev@pitlane.test',
+        'x-dev-user-email': 'dev@rollpit.test',
       };
     }
     throw const UnauthorizedException();

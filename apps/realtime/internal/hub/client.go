@@ -3,12 +3,13 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 
-	"github.com/Ayazaga-Boys/pitlane/apps/realtime/internal/metrics"
+	"github.com/Ayazaga-Boys/rollpit/apps/realtime/internal/metrics"
 )
 
 // h3CellLen — geçerli H3 hücre string uzunluğu (15 hex char = 60 bit)
@@ -37,10 +38,12 @@ const (
 
 // Client — tek bir WebSocket bağlantısı
 type Client struct {
-	hub    *Hub
-	conn   *websocket.Conn
-	userID string
-	send   chan []byte
+	hub           *Hub
+	conn          *websocket.Conn
+	userID        string
+	send          chan []byte
+	subscriptions map[string]int
+	mu            sync.RWMutex
 }
 
 func (c *Client) readPump() {
@@ -107,14 +110,69 @@ func (c *Client) handleMessage(msg InboundMessage) {
 
 	case TypeGhostOn:
 		_ = c.hub.store.DeleteUserCell(ctx, c.userID)
+		c.clearSubscriptions()
 		log.Debug().Str("userID", c.userID).Msg("ghost_on")
 
 	case TypeGhostOff:
 		log.Debug().Str("userID", c.userID).Msg("ghost_off")
 
+	case TypeSubscribeCell:
+		if !isValidH3Cell(msg.H3Cell) {
+			c.sendError("BAD_PAYLOAD", "h3_cell invalid")
+			return
+		}
+		c.subscribeCell(msg.H3Cell, msg.K)
+		log.Debug().Str("userID", c.userID).Str("h3Cell", msg.H3Cell).Int("k", msg.K).Msg("cell_subscribed")
+
+	case TypeUnsubscribeCell:
+		if !isValidH3Cell(msg.H3Cell) {
+			c.sendError("BAD_PAYLOAD", "h3_cell invalid")
+			return
+		}
+		c.unsubscribeCell(msg.H3Cell)
+		log.Debug().Str("userID", c.userID).Str("h3Cell", msg.H3Cell).Msg("cell_unsubscribed")
+
 	default:
 		log.Debug().Str("type", msg.Type).Msg("unknown_message_type")
 	}
+}
+
+func (c *Client) subscribeCell(h3Cell string, k int) {
+	if k < 0 {
+		k = 0
+	}
+	c.mu.Lock()
+	if c.subscriptions == nil {
+		c.subscriptions = make(map[string]int)
+	}
+	c.subscriptions[h3Cell] = k
+	c.mu.Unlock()
+}
+
+func (c *Client) unsubscribeCell(h3Cell string) {
+	c.mu.Lock()
+	delete(c.subscriptions, h3Cell)
+	c.mu.Unlock()
+}
+
+func (c *Client) clearSubscriptions() {
+	c.mu.Lock()
+	c.subscriptions = nil
+	c.mu.Unlock()
+}
+
+func (c *Client) isInterestedInWithMinK(h3Cell string, minK int) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	for subscribedCell, k := range c.subscriptions {
+		if k < minK {
+			k = minK
+		}
+		if cellWithinKRing(subscribedCell, h3Cell, k) {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Client) writePump() {

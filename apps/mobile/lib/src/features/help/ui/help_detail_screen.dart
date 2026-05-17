@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../models/help_request.dart';
 import '../providers/help_request_provider.dart';
 
@@ -116,7 +116,7 @@ class _HelpDetailContent extends ConsumerWidget {
           subtitle: 'Yaklaşık süre',
         ),
         const SizedBox(height: AppSpacing.xl2),
-        PitlaneButton(
+        RollpitButton(
           label: canRespond ? 'Yardım Edeceğim' : 'Mesaj Gönder',
           icon: canRespond
               ? Icons.volunteer_activism_outlined

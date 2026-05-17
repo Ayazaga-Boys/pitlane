@@ -5,7 +5,7 @@ export async function maintenanceMode(c: Context, next: Next): Promise<Response 
     return c.json(
       {
         code: 'SERVICE_UNAVAILABLE',
-        error: 'Pitlane is temporarily under maintenance',
+        error: 'Rollpit is temporarily under maintenance',
       },
       503,
     );

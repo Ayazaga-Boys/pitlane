@@ -1,5 +1,18 @@
 import { z } from 'zod';
 
+export const NotificationPrefsSchema = z.object({
+  help_nearby: z.boolean().optional(),
+  help_helper_arrived: z.boolean().optional(),
+  flare_invite: z.boolean().optional(),
+  flare_starting: z.boolean().optional(),
+  dm_new: z.boolean().optional(),
+  community_message: z.boolean().optional(),
+  community_invite: z.boolean().optional(),
+  system: z.boolean().optional(),
+  quiet_hours_start: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(),
+  quiet_hours_end: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(),
+}).strict();
+
 export const UsernameParamSchema = z.object({
   username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/),
 });
@@ -9,6 +22,9 @@ export const UpdateProfileSchema = z.object({
   bio: z.string().max(300).optional(),
   avatar_url: z.string().url().optional(),
   ghost_mode: z.boolean().optional(),
+  notification_prefs: NotificationPrefsSchema.optional(),
+}).refine((value) => Object.keys(value).length > 0, {
+  message: 'At least one field is required',
 });
 
 export const CreateVehicleSchema = z.object({

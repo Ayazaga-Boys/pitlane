@@ -9,10 +9,12 @@ import (
 
 // mockSender — Sender interface'in test double'ı
 type mockSender struct {
-	mu       sync.Mutex
-	allMsgs  [][]byte
-	userMsgs map[string][][]byte
-	count    int
+	mu             sync.Mutex
+	allMsgs        [][]byte
+	subscriberMsgs [][]byte
+	lastCell       string
+	userMsgs       map[string][][]byte
+	count          int
 }
 
 func newMockSender(count int) *mockSender {
@@ -31,9 +33,30 @@ func (m *mockSender) SendToAll(msg []byte) {
 	m.mu.Unlock()
 }
 
+func (m *mockSender) SendToSubscribers(h3Cell string, msg []byte) {
+	m.mu.Lock()
+	m.lastCell = h3Cell
+	m.subscriberMsgs = append(m.subscriberMsgs, msg)
+	m.mu.Unlock()
+}
+
 func (m *mockSender) ActiveCount() int { return m.count }
 
-func TestOnCellUpdateBroadcastsToAll(t *testing.T) {
+type mockPublisher struct {
+	mu       sync.Mutex
+	cell     string
+	msgCount int
+}
+
+func (m *mockPublisher) PublishHeatmap(_ context.Context, h3Cell string, _ []byte) error {
+	m.mu.Lock()
+	m.cell = h3Cell
+	m.msgCount++
+	m.mu.Unlock()
+	return nil
+}
+
+func TestOnCellUpdateBroadcastsToSubscribers(t *testing.T) {
 	store := NewStore()
 	bc := NewBroadcaster(store)
 	sender := newMockSender(2)
@@ -43,11 +66,39 @@ func TestOnCellUpdateBroadcastsToAll(t *testing.T) {
 	bc.OnCellUpdate(ctx, "user-1", "89283082803ffff", sender)
 
 	sender.mu.Lock()
-	msgCount := len(sender.allMsgs)
+	msgCount := len(sender.subscriberMsgs)
+	lastCell := sender.lastCell
 	sender.mu.Unlock()
 
 	if msgCount != 1 {
 		t.Errorf("expected 1 broadcast message, got %d", msgCount)
+	}
+	if lastCell != "89283082803ffff" {
+		t.Errorf("expected updated cell to be forwarded, got %s", lastCell)
+	}
+}
+
+func TestOnCellUpdatePublishesWhenPublisherConfigured(t *testing.T) {
+	store := NewStore()
+	bc := NewBroadcaster(store)
+	publisher := &mockPublisher{}
+	bc.SetPublisher(publisher)
+	sender := newMockSender(1)
+
+	ctx := context.Background()
+	_ = store.SetUserCell(ctx, "user-pub", "89283082803ffff")
+	bc.OnCellUpdate(ctx, "user-pub", "89283082803ffff", sender)
+
+	publisher.mu.Lock()
+	msgCount := publisher.msgCount
+	cell := publisher.cell
+	publisher.mu.Unlock()
+
+	if msgCount != 1 {
+		t.Errorf("expected 1 published message, got %d", msgCount)
+	}
+	if cell != "89283082803ffff" {
+		t.Errorf("expected published cell to be forwarded, got %s", cell)
 	}
 }
 
@@ -61,7 +112,7 @@ func TestOnCellUpdatePayloadIsValidJSON(t *testing.T) {
 	bc.OnCellUpdate(ctx, "user-x", "89283082803ffff", sender)
 
 	sender.mu.Lock()
-	raw := sender.allMsgs[0]
+	raw := sender.subscriberMsgs[0]
 	sender.mu.Unlock()
 
 	var payload map[string]any
@@ -89,7 +140,7 @@ func TestOnCellUpdateWithMultipleUsers(t *testing.T) {
 	bc.OnCellUpdate(ctx, "u1", "89283082803ffff", sender)
 
 	sender.mu.Lock()
-	raw := sender.allMsgs[0]
+	raw := sender.subscriberMsgs[0]
 	sender.mu.Unlock()
 
 	var payload map[string]any

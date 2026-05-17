@@ -1,5 +1,5 @@
 {
-  "name": "@pitlane/backend",
+  "name": "@rollpit/backend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,6 +10,7 @@
     "lint": "eslint src --ext .ts",
     "seed:admin": "tsx scripts/seed-admin.ts",
     "seed:dev": "tsx scripts/seed-dev.ts",
+    "seed:sprint2": "tsx scripts/seed-sprint2.ts",
     "smoke:auth": "tsx scripts/smoke-auth.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

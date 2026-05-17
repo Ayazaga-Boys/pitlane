@@ -52,7 +52,7 @@ export function LoginForm() {
           id="email"
           name="email"
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="admin@pitlane.app"
+          placeholder="admin@rollpit.com"
           required
           type="email"
           value={email}

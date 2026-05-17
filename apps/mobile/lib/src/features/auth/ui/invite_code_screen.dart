@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
-import '../../../shared/widgets/pitlane_text_field.dart';
+import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/rollpit_text_field.dart';
 import '../providers/invite_code_provider.dart';
 
 class InviteCodeScreen extends ConsumerStatefulWidget {
@@ -70,7 +70,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
 
               // Logo + slogan
               Text(
-                'Pitlane',
+                'Rollpit',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: AppColors.pitRed,
                       fontWeight: FontWeight.w700,
@@ -88,9 +88,9 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
               const SizedBox(height: AppSpacing.xl3),
 
               // Davet kodu input
-              PitlaneTextField(
+              RollpitTextField(
                 label: 'Davet Kodu',
-                hint: 'Örn: PITLANE',
+                hint: 'Örn: ROLLPIT',
                 controller: _codeController,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.done,
@@ -101,7 +101,7 @@ class _InviteCodeScreenState extends ConsumerState<InviteCodeScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              PitlaneButton(
+              RollpitButton(
                 label: 'Devam et',
                 onPressed: isLoading ? null : _validate,
                 isLoading: isLoading,
