@@ -42,6 +42,11 @@ describe('app routes', () => {
     expect(response.status).toBe(200);
     expect(body.data.app_name).toBe('Rollpit');
     expect(body.data.feature_flags.invite_only).toBe(true);
+    expect(body.data.media.image_variants).toContainEqual(expect.objectContaining({
+      name: 'feed',
+      width: 640,
+      height: 480,
+    }));
   });
 
   it('keeps profile routes protected', async () => {

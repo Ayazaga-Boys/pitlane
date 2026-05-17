@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { getMediaDeliveryConfig } from '../services/media-delivery.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 
 export const configRoutes = new Hono();
@@ -14,7 +15,8 @@ const defaultConfig = {
   limits: {
     max_flares_per_user_day: 5,
     max_help_per_user_hour: 2
-  }
+  },
+  media: getMediaDeliveryConfig(),
 };
 
 configRoutes.get('/', async (c) => {
@@ -49,8 +51,9 @@ configRoutes.get('/', async (c) => {
         ),
         max_help_per_user_hour: Number(
           values.get('max_help_per_user_hour') ?? defaultConfig.limits.max_help_per_user_hour,
-        )
-      }
-    }
+        ),
+      },
+      media: getMediaDeliveryConfig(),
+    },
   });
 });
