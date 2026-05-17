@@ -115,7 +115,7 @@ flutter run \
 - [x] Topluluk mesaj odası
 - [x] Flare sohbet odası
 - [x] Şikayet et + Engelle UI (UF-09)
-- [ ] firebase_messaging foreground/background/terminated handler (UF-13)
+- [x] firebase_messaging foreground/background/terminated handler (UF-13)
 - [x] Push deep link routing (`/help/:id`, `/flares/:id`, `/messages/:peerId`)
 - [x] Cihaz token kayıt — `POST /v1/notifications/devices`
 - [x] Bildirim listesi ekranı
@@ -135,7 +135,7 @@ flutter run \
 - [x] Hesap silme akışı (2 adımlı onay)
 - [x] Veri dışa aktarma butonu
 - [x] Semantics etiketleri eksiksiz (26. doküman checklist)
-- [ ] Patrol E2E testleri (E2E-01..05)
+- [x] Patrol E2E testleri (E2E-01..05)
 
 ---
 
