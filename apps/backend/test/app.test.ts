@@ -46,13 +46,15 @@ describe('app routes', () => {
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const [profileResponse, vehiclesResponse] = await Promise.all([
+    const [profileResponse, vehiclesResponse, exportResponse] = await Promise.all([
       app.request('/v1/profiles/me'),
       app.request('/v1/profiles/me/vehicles'),
+      app.request('/v1/profiles/me/export'),
     ]);
 
     expect(profileResponse.status).toBe(401);
     expect(vehiclesResponse.status).toBe(401);
+    expect(exportResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
