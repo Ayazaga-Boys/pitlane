@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getServerEnv } from "@/lib/env";
 import type { Database } from "@/lib/types/database";
@@ -30,23 +31,16 @@ export function createServerSupabaseClient() {
 }
 
 export function createAdminSupabaseClient() {
-  const cookieStore = cookies();
   const env = getServerEnv();
 
   if (!env.SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for admin-only server actions.");
   }
 
-  return createServerClient<Database>(
+  return createClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
     {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {},
-      },
       auth: {
         autoRefreshToken: false,
         persistSession: false,

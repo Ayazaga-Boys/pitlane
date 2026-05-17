@@ -13,8 +13,8 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pitlane Admin",
-  description: "Pitlane admin paneli: moderasyon, analitik ve işletme doğrulama akışları.",
+  title: "Rollpit Admin",
+  description: "Rollpit admin paneli: moderasyon, analitik ve işletme doğrulama akışları.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

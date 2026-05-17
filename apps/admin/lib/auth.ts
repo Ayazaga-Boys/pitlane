@@ -41,7 +41,7 @@ export const getAdminIdentity = cache(async (): Promise<AdminIdentity> => {
   const profile = profileResult.data ?? null;
   const role = deriveRole(profile, user.app_metadata.role ?? user.user_metadata.role);
 
-  if (role !== "admin") {
+  if (role !== "admin" && role !== "moderator") {
     redirect("/login?error=unauthorized");
   }
 

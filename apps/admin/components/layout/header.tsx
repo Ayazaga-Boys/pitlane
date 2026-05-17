@@ -95,6 +95,7 @@ export function Header({ email }: HeaderProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
   const deferredQuery = useDeferredValue(query);
 
   const suggestions = useMemo(() => {
@@ -111,6 +112,10 @@ export function Header({ email }: HeaderProps) {
       })
       .slice(0, 7);
   }, [deferredQuery]);
+
+  useEffect(() => {
+    setActiveIndex(suggestions.length > 0 ? 0 : -1);
+  }, [suggestions]);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -135,13 +140,15 @@ export function Header({ email }: HeaderProps) {
   function handleSuggestionSelect(href: string) {
     setIsOpen(false);
     setQuery("");
+    setActiveIndex(-1);
     router.push(href);
   }
 
   function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (suggestions.length > 0) {
-      handleSuggestionSelect(suggestions[0].href);
+      const target = suggestions[activeIndex] ?? suggestions[0];
+      handleSuggestionSelect(target.href);
     }
   }
 
@@ -165,13 +172,41 @@ export function Header({ email }: HeaderProps) {
                 aria-expanded={isOpen}
                 aria-label="Panel içinde ara"
                 aria-controls="admin-search-suggestions"
+                aria-activedescendant={activeIndex >= 0 ? `admin-search-option-${suggestions[activeIndex]?.id}` : undefined}
                 className="min-h-14 border-transparent bg-transparent pl-10 pr-md text-base"
                 onChange={(event) => {
                   setQuery(event.target.value);
                   setIsOpen(true);
                 }}
                 onFocus={() => setIsOpen(true)}
+                onKeyDown={(event) => {
+                  if (!isOpen && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+                    setIsOpen(true);
+                    return;
+                  }
+
+                  if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    setActiveIndex((current) => {
+                      if (suggestions.length === 0) return -1;
+                      return current < suggestions.length - 1 ? current + 1 : 0;
+                    });
+                  } else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    setActiveIndex((current) => {
+                      if (suggestions.length === 0) return -1;
+                      return current > 0 ? current - 1 : suggestions.length - 1;
+                    });
+                  } else if (event.key === "Escape") {
+                    setIsOpen(false);
+                  } else if (event.key === "Enter" && isOpen && suggestions.length > 0) {
+                    event.preventDefault();
+                    const target = suggestions[activeIndex] ?? suggestions[0];
+                    handleSuggestionSelect(target.href);
+                  }
+                }}
                 placeholder="Kullanıcı, topluluk, pin veya ekran ara"
+                role="combobox"
                 type="search"
                 value={query}
               />
@@ -180,8 +215,10 @@ export function Header({ email }: HeaderProps) {
 
           {isOpen ? (
             <div
+              aria-label="Arama önerileri"
               className="surface-card absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden border-surface-3 bg-surface-1"
               id="admin-search-suggestions"
+              role="listbox"
             >
               <div className="border-b border-surface-3 px-md py-sm text-xs uppercase tracking-[0.16em] text-text-tertiary">
                 {query.trim() ? "Eşleşen sonuçlar" : "Hızlı geçişler"}
@@ -191,17 +228,23 @@ export function Header({ email }: HeaderProps) {
                 <div className="max-h-[320px] overflow-y-auto p-sm">
                   {suggestions.map((item) => {
                     const active = item.href === pathname;
+                    const highlighted = suggestions[activeIndex]?.id === item.id;
 
                     return (
                       <button
+                        aria-selected={highlighted}
                         key={item.id}
+                        id={`admin-search-option-${item.id}`}
                         className={cn(
                           "focus-ring flex w-full items-start justify-between gap-md rounded-md px-md py-md text-left transition",
+                          highlighted ? "bg-surface-2 text-text-primary" : "",
                           active
                             ? "bg-pit-red/10 text-text-primary"
                             : "text-text-secondary hover:bg-surface-2 hover:text-text-primary",
                         )}
+                        onMouseEnter={() => setActiveIndex(suggestions.findIndex((suggestion) => suggestion.id === item.id))}
                         onClick={() => handleSuggestionSelect(item.href)}
+                        role="option"
                         type="button"
                       >
                         <span className="min-w-0">
@@ -233,7 +276,7 @@ export function Header({ email }: HeaderProps) {
           </button>
 
           <div className="rounded-pill border border-surface-3 bg-surface-2 px-md py-sm text-sm text-text-secondary">
-            {email ?? "admin@pitlane.app"}
+            {email ?? "admin@rollpit.app"}
           </div>
 
           <Button aria-label="Oturumu kapat" className="gap-sm" onClick={handleSignOut} variant="ghost">

@@ -78,9 +78,91 @@ export interface MockReport {
   status: "pending" | "reviewing";
 }
 
+export interface MockHelpRequest {
+  id: string;
+  requester: string;
+  city: string;
+  issueType: "breakdown" | "flat_tire" | "fuel" | "accident" | "other";
+  status: "open" | "matched" | "resolved" | "cancelled";
+  createdAt: string;
+  note: string;
+}
+
+export interface MockInviteCode {
+  code: string;
+  inviterLabel: string;
+  usesCount: number;
+  maxUses: number;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface MockWaitingListEntry {
+  id: string;
+  email: string;
+  vehicleType: "car" | "motorcycle" | "other" | null;
+  city: string | null;
+  invitedAt: string | null;
+  createdAt: string;
+}
+
 export interface AnalyticsPoint {
   label: string;
   value: number;
+}
+
+export interface MockAuditEntry {
+  id: string;
+  createdAt: string;
+  actorLabel: string;
+  actorRole: "admin" | "moderator" | "user" | "unknown";
+  action: "user_banned" | "user_unbanned" | "content_deleted" | "pin_verified" | "pin_rejected" | "config_changed" | "report_resolved";
+  targetType: string;
+  targetId: string;
+  summary: string;
+}
+
+export interface MockSystemNotification {
+  id: string;
+  title: string;
+  body: string;
+  audience: string;
+  createdAt: string;
+}
+
+export interface MockStatusComponent {
+  key: "api" | "realtime" | "push" | "media" | "admin";
+  label: string;
+  status: "operational" | "degraded" | "partial_outage" | "major_outage";
+  note: string;
+}
+
+export interface MockStatusPage {
+  publicUrl: string;
+  incident: {
+    phase: "investigating" | "identified" | "monitoring" | "resolved";
+    message: string;
+    updatedAt: string;
+  };
+  components: MockStatusComponent[];
+}
+
+export interface MockCommunityRulesConfig {
+  version: string;
+  publishedUrl: string;
+  trText: string;
+  enText: string;
+  updatedAt: string;
+}
+
+export interface MockExportRequest {
+  id: string;
+  requesterLabel: string;
+  channel: "app" | "support";
+  status: "queued" | "processing" | "ready" | "expired" | "failed";
+  requestedAt: string;
+  readyAt: string | null;
+  expiresAt: string | null;
 }
 
 export const mockUsers: MockUser[] = [
@@ -158,6 +240,28 @@ export const mockUsers: MockUser[] = [
 ];
 
 export const mockCommunities: MockCommunity[] = [
+  {
+    id: "com_demo_alfistiler",
+    name: "Alfistiler",
+    slug: "alfistiler",
+    city: "Istanbul",
+    members: 47,
+    type: "public",
+    vehicleType: "car",
+    description: "Alfa Romeo odakli topluluk; sehir ici bulusmalar, sahil rotalari ve teknik paylasimlarla ilerliyor.",
+    foundedAt: "2026-01-12",
+    captain: "Mert Caglar",
+    moderationNote: "Yeni buyuyen topluluk. Sohbet tonu sicak ama marka atismalari zaman zaman sertlesiyor.",
+    memberList: [
+      { id: "usr_demo_01", name: "Mert Caglar", role: "captain" },
+      { id: "usr_demo_02", name: "Sena Akin", role: "moderator" },
+      { id: "usr_demo_03", name: "Kaan Efe", role: "member" },
+    ],
+    activeFlares: [
+      { id: "flr_demo_01", title: "Pazar sabahi sahil konvoyu", startsAt: "2026-05-18 09:00", rsvpCount: 19, status: "active" },
+      { id: "flr_demo_02", title: "Atolye kahve bulusmasi", startsAt: "2026-05-21 20:30", rsvpCount: 11, status: "draft" },
+    ],
+  },
   {
     id: "com_01",
     name: "Bogaz Night Riders",
@@ -257,6 +361,15 @@ export const mockPins: MockPin[] = [
 
 export const mockReports: MockReport[] = [
   {
+    id: "rep_demo_01",
+    contentType: "message",
+    reason: "Mesaj icinde agir kufur ve hedef gosteren dil kullanimi",
+    reporter: "alfaromeosever",
+    createdAt: "2026-05-11 18:05",
+    severity: "high",
+    status: "pending",
+  },
+  {
     id: "rep_01",
     contentType: "message",
     reason: "Hakaret ve kisisel saldiri",
@@ -285,6 +398,90 @@ export const mockReports: MockReport[] = [
   },
 ];
 
+export const mockHelpRequests: MockHelpRequest[] = [
+  {
+    id: "help_demo_01",
+    requester: "Mert Koc",
+    city: "Istanbul",
+    issueType: "breakdown",
+    status: "open",
+    createdAt: "2026-05-17 21:40",
+    note: "Araç çalışmıyor, sahil yolunda güvenli alana çekilmiş durumda.",
+  },
+  {
+    id: "help_demo_02",
+    requester: "Sena Akin",
+    city: "Ankara",
+    issueType: "flat_tire",
+    status: "matched",
+    createdAt: "2026-05-17 19:05",
+    note: "Lastik patladı, yakındaki kullanıcı ile eşleşme yapıldı.",
+  },
+  {
+    id: "help_demo_03",
+    requester: "Kaan Efe",
+    city: "Izmir",
+    issueType: "fuel",
+    status: "resolved",
+    createdAt: "2026-05-16 23:18",
+    note: "Yakıt desteği sağlandı, talep kapatıldı.",
+  },
+];
+
+export const mockInviteCodes: MockInviteCode[] = [
+  {
+    code: "ROLLPIT-ALFA-9K3X",
+    inviterLabel: "Mert Çağlar",
+    usesCount: 3,
+    maxUses: 5,
+    expiresAt: "2026-06-01 23:59",
+    createdAt: "2026-05-10 18:20",
+  },
+  {
+    code: "ROLLPIT-BETA-2L7Q",
+    inviterLabel: "Sena Akın",
+    usesCount: 1,
+    maxUses: 5,
+    expiresAt: null,
+    createdAt: "2026-05-12 12:05",
+  },
+  {
+    code: "ROLLPIT-GRID-8M4P",
+    inviterLabel: "Admin havuzu",
+    usesCount: 0,
+    maxUses: 10,
+    expiresAt: "2026-06-15 23:59",
+    createdAt: "2026-05-16 09:40",
+  },
+];
+
+export const mockWaitingList: MockWaitingListEntry[] = [
+  {
+    id: "wait_demo_01",
+    email: "alfaistanbul@example.com",
+    vehicleType: "car",
+    city: "Istanbul",
+    invitedAt: null,
+    createdAt: "2026-05-13 09:20",
+  },
+  {
+    id: "wait_demo_02",
+    email: "riderankara@example.com",
+    vehicleType: "motorcycle",
+    city: "Ankara",
+    invitedAt: "2026-05-16 14:00",
+    createdAt: "2026-05-12 18:05",
+  },
+  {
+    id: "wait_demo_03",
+    email: "garaj35@example.com",
+    vehicleType: "other",
+    city: "Izmir",
+    invitedAt: null,
+    createdAt: "2026-05-11 11:45",
+  },
+];
+
 export const mockAnalytics = {
   mau: [
     { label: "Ocak", value: 320 },
@@ -301,6 +498,34 @@ export const mockAnalytics = {
     { label: "Cuma", value: 14 },
     { label: "Cmt", value: 18 },
     { label: "Paz", value: 10 },
+  ] satisfies AnalyticsPoint[],
+  help: [
+    { label: "Ariza", value: 8 },
+    { label: "Lastik", value: 5 },
+    { label: "Yakit", value: 3 },
+    { label: "Kaza", value: 1 },
+    { label: "Diger", value: 2 },
+  ] satisfies AnalyticsPoint[],
+  communities: [
+    { label: "Ocak", value: 2 },
+    { label: "Subat", value: 3 },
+    { label: "Mart", value: 4 },
+    { label: "Nisan", value: 2 },
+    { label: "Mayis", value: 5 },
+  ] satisfies AnalyticsPoint[],
+  helpResponseTimes: [
+    { label: "Ocak", value: 11 },
+    { label: "Subat", value: 9 },
+    { label: "Mart", value: 7 },
+    { label: "Nisan", value: 6 },
+    { label: "Mayis", value: 5 },
+  ] satisfies AnalyticsPoint[],
+  waitingListGrowth: [
+    { label: "Ocak", value: 18 },
+    { label: "Subat", value: 26 },
+    { label: "Mart", value: 34 },
+    { label: "Nisan", value: 41 },
+    { label: "Mayis", value: 57 },
   ] satisfies AnalyticsPoint[],
 };
 
@@ -319,6 +544,151 @@ export const mockFlags = [
     key: "feature_waiting_list",
     description: "Bekleme listesi dalga davet akışlarını aç",
     enabled: false,
+  },
+];
+
+export const mockAuditEntries: MockAuditEntry[] = [
+  {
+    id: "audit_01",
+    createdAt: "11.05.2026 18:34",
+    actorLabel: "admin@rollpit.test",
+    actorRole: "admin",
+    action: "pin_verified",
+    targetType: "business_pin",
+    targetId: "pin_03",
+    summary: "Pit Cafe Moda için doğrulama tamamlandı.",
+  },
+  {
+    id: "audit_02",
+    createdAt: "11.05.2026 18:12",
+    actorLabel: "admin@rollpit.test",
+    actorRole: "admin",
+    action: "report_resolved",
+    targetType: "report",
+    targetId: "rep_demo_01",
+    summary: "Küfür içeren mesaj raporu için moderasyon akışı başlatıldı.",
+  },
+  {
+    id: "audit_03",
+    createdAt: "11.05.2026 17:48",
+    actorLabel: "admin@rollpit.test",
+    actorRole: "admin",
+    action: "config_changed",
+    targetType: "support_note",
+    targetId: "usr_02",
+    summary: "Kullanıcı için destek notu kaydedildi.",
+  },
+];
+
+export const mockSystemNotifications: MockSystemNotification[] = [
+  {
+    id: "notif_sys_01",
+    title: "Hafta sonu bakım penceresi",
+    body: "Pazar 02:00 - 03:00 arasında kısa süreli bakım çalışması yapılacak.",
+    audience: "Tüm kullanıcılar",
+    createdAt: "11.05.2026 19:10",
+  },
+  {
+    id: "notif_sys_02",
+    title: "Topluluk kuralları güncellendi",
+    body: "Hakaret ve kişisel saldırı maddesi daha net hale getirildi. Lütfen tekrar gözden geçir.",
+    audience: "Tüm kullanıcılar",
+    createdAt: "11.05.2026 16:40",
+  },
+];
+
+export const mockStatusPage: MockStatusPage = {
+  publicUrl: "https://status.rollpit.app",
+  incident: {
+    phase: "investigating",
+    message: "API yanıt sürelerinde dalgalanma gözleniyor. Ekip canlı ortamı izliyor ve kalıcı çözümü hazırlıyor.",
+    updatedAt: "17.05.2026 15:20",
+  },
+  components: [
+    { key: "api", label: "API", status: "degraded", note: "Bazı isteklerde gecikme artışı var." },
+    { key: "realtime", label: "Realtime", status: "operational", note: "WebSocket bağlantıları stabil." },
+    { key: "push", label: "Push Bildirimleri", status: "operational", note: "Bildirim kuyruğu normal hızda." },
+    { key: "media", label: "Medya Hattı", status: "partial_outage", note: "Yüklenen bazı görseller geç işleniyor." },
+    { key: "admin", label: "Admin Panel", status: "operational", note: "Panel giriş ve moderasyon akışları açık." },
+  ],
+};
+
+export const mockCommunityRulesConfig: MockCommunityRulesConfig = {
+  version: "v1.0",
+  publishedUrl: "https://rollpit.app/community-guidelines",
+  updatedAt: "17.05.2026 15:45",
+  trText: `ROLLPIT TOPLULUK KURALLARI
+
+1. SAYGI
+- Hakaret, ayrımcılık, taciz ve tehdit yasaktır.
+- Aile, din ve siyaset eksenli kavga dili topluluğun parçası değildir.
+
+2. GÜVENLİK
+- Sürüş sırasında uygulamayı aktif kullanmak yasaktır.
+- Sokak yarışı çağrısı, tehlikeli sürüş özendirmesi ve sahte SOS içerikleri silinir.
+
+3. DOĞRULUK
+- Sahte yardım çağrısı, sahte etkinlik ve yanlış işletme bilgisi kalıcı yaptırıma kadar gider.
+
+4. MAHREMİYET
+- İzinsiz fotoğraf, plaka, telefon ve canlı konum paylaşımı yasaktır.
+
+5. UYGUNSUZ İÇERİK
+- NSFW, şiddet, yasa dışı ürün/hizmet, telif ihlali ve ağır gore içerikleri yasaktır.
+
+6. SPAM VE TİCARİ KULLANIM
+- Doğrulanmamış ticari tanıtım ve aynı içeriğin tekrar tekrar paylaşılması yasaktır.
+
+7. SONUÇLAR
+- Uyarı → içerik silme → geçici askıya alma → kalıcı ban akışı uygulanır.
+
+8. İTİRAZ
+- privacy@rollpit.app üzerinden 30 gün içinde itiraz edebilirsin.`,
+  enText: `ROLLPIT COMMUNITY GUIDELINES
+
+1. RESPECT
+- No insults, discrimination, harassment, or threats.
+
+2. SAFETY
+- No app use while driving and no promotion of unsafe driving or street racing.
+
+3. AUTHENTICITY
+- Fake help signals, fake events, and false business claims are prohibited.
+
+4. PRIVACY
+- Do not share another person's photo, plate number, phone number, or live location without consent.
+
+5. INAPPROPRIATE CONTENT
+- No NSFW, violence, illegal content, or copyright infringement.
+
+6. SPAM AND COMMERCIAL USE
+- No repeated spam posting and no commercial promotion outside verified business tools.
+
+7. CONSEQUENCES
+- Warning → content removal → temporary suspension → permanent ban.
+
+8. APPEALS
+- Contact privacy@rollpit.app within 30 days for an appeal.`,
+};
+
+export const mockExportRequests: MockExportRequest[] = [
+  {
+    id: "exp_01",
+    requesterLabel: "alfaromesever",
+    channel: "app",
+    status: "ready",
+    requestedAt: "16.05.2026 11:20",
+    readyAt: "16.05.2026 12:05",
+    expiresAt: "18.05.2026 12:05",
+  },
+  {
+    id: "exp_02",
+    requesterLabel: "gizem.track",
+    channel: "support",
+    status: "processing",
+    requestedAt: "17.05.2026 09:10",
+    readyAt: null,
+    expiresAt: null,
   },
 ];
 

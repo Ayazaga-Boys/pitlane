@@ -38,6 +38,17 @@ function statusBadge(status: "pending" | "verified" | "rejected") {
   return { label: "bekliyor", tone: "warning" as const };
 }
 
+function buildRejectionTemplate(name: string) {
+  return [
+    `Merhaba ${name},`,
+    "",
+    "İşletme pin başvurunu inceledik ancak mevcut bilgilerle doğrulama tamamlanamadı.",
+    "Lütfen adres, telefon veya işletme sahipliği belgelerini güncelleyip tekrar başvur.",
+    "",
+    "Rollpit Admin",
+  ].join("\n");
+}
+
 export default async function PinVerifyPage({
   params,
   searchParams,
@@ -54,6 +65,7 @@ export default async function PinVerifyPage({
   const badge = statusBadge(detail.pin.status);
   const verifyAction = verifyBusinessPinAction.bind(null, params.id);
   const rejectAction = rejectBusinessPinAction.bind(null, params.id);
+  const rejectionTemplate = buildRejectionTemplate(detail.pin.owner);
 
   return (
     <PageShell
@@ -139,6 +151,10 @@ export default async function PinVerifyPage({
                 Doğrulama aksiyonu pin kaydını aktif ve doğrulanmış duruma getirir. Reddet aksiyonu ise kaydı pasife alır ve tekrar gözden
                 geçirilene kadar listede reddedildi olarak görünmesini sağlar.
               </p>
+            </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Standart red e-postası</p>
+              <pre className="mt-sm whitespace-pre-wrap text-sm leading-6 text-text-secondary">{rejectionTemplate}</pre>
             </div>
           </div>
         </section>

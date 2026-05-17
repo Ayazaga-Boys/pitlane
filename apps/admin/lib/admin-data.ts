@@ -1,13 +1,34 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
-import type { MockCommunity, MockPin, MockReport, MockUser } from "@/lib/mock-data";
 import type {
+  AnalyticsPoint,
+  MockCommunity,
+  MockHelpRequest,
+  MockInviteCode,
+  MockPin,
+  MockCommunityRulesConfig,
+  MockExportRequest,
+  MockReport,
+  MockStatusPage,
+  MockSystemNotification,
+  MockUser,
+  MockWaitingListEntry,
+} from "@/lib/mock-data";
+import type {
+  AuditLogRow,
   BusinessPinRow,
   CommunityMemberRow,
   CommunityRow,
   FlareRow,
+  HelpRequestRow,
+  InviteCodeRow,
+  MessageRow,
+  NotificationRow,
   ProfileRow,
   ReportRow,
+  RemoteConfigRow,
+  UserRole,
   VehicleRow,
+  WaitingListRow,
 } from "@/lib/types/database";
 
 export interface AdminDataResult<T> {
@@ -23,6 +44,152 @@ export interface AdminPinDetail {
   phone: string | null;
   website: string | null;
   createdAtLabel: string;
+}
+
+export interface AdminUserDetail {
+  user: MockUser;
+  supportNotes: Array<{
+    id: string;
+    note: string;
+    createdAt: string;
+  }>;
+}
+
+export interface AdminReportDetail {
+  report: MockReport;
+  status: ReportRow["status"];
+  actionTaken: ReportRow["action_taken"];
+  contentType: ReportRow["content_type"];
+  description: string | null;
+  reporterLabel: string;
+  targetUserId: string | null;
+  targetLabel: string;
+  contentPreviewTitle: string;
+  contentPreviewBody: string;
+  severityRecommendation: {
+    title: string;
+    description: string;
+    tone: "info" | "warning" | "error";
+    score: number;
+    recommendedAction: string;
+    signals: string[];
+  };
+}
+
+export interface AdminAnalyticsData {
+  summary: {
+    totalProfiles: number;
+    totalFlares: number;
+    openHelpRequests: number;
+    pendingReports: number;
+  };
+  monthlyActiveUsers: AnalyticsPoint[];
+  weeklyFlares: AnalyticsPoint[];
+  helpByIssue: AnalyticsPoint[];
+  communityGrowth: AnalyticsPoint[];
+  helpResponseTimes: AnalyticsPoint[];
+  waitingListGrowth: AnalyticsPoint[];
+}
+
+export interface AdminAuditEntry {
+  id: string;
+  createdAt: string;
+  actorLabel: string;
+  actorRole: UserRole | "unknown";
+  action: AuditLogRow["action"];
+  targetType: string;
+  targetId: string;
+  summary: string;
+}
+
+export interface AdminSystemNotification {
+  id: string;
+  title: string;
+  body: string;
+  audience: string;
+  createdAt: string;
+}
+
+export interface AdminHelpRequest {
+  id: string;
+  requesterLabel: string;
+  city: string;
+  issueType: HelpRequestRow["issue_type"];
+  status: HelpRequestRow["status"];
+  createdAt: string;
+  note: string;
+}
+
+export interface AdminRemoteConfig {
+  key: string;
+  description: string;
+  type: "flag" | "number" | "string";
+  value: boolean | number | string;
+  updatedAt: string | null;
+}
+
+export interface AdminInviteCode {
+  code: string;
+  inviterLabel: string;
+  usesCount: number;
+  maxUses: number;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminWaitingListEntry {
+  id: string;
+  email: string;
+  vehicleType: "car" | "motorcycle" | "other" | null;
+  city: string | null;
+  invitedAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminStatusComponent {
+  key: "api" | "realtime" | "push" | "media" | "admin";
+  label: string;
+  status: "operational" | "degraded" | "partial_outage" | "major_outage";
+  note: string;
+}
+
+export interface AdminStatusPage {
+  publicUrl: string;
+  incident: {
+    phase: "investigating" | "identified" | "monitoring" | "resolved";
+    message: string;
+    updatedAt: string;
+  };
+  components: AdminStatusComponent[];
+}
+
+export interface AdminCommunityRulesConfig {
+  version: string;
+  publishedUrl: string;
+  trText: string;
+  enText: string;
+  updatedAt: string;
+}
+
+export interface AdminExportRequest {
+  id: string;
+  requesterLabel: string;
+  channel: "app" | "support";
+  status: "queued" | "processing" | "ready" | "expired" | "failed";
+  requestedAt: string;
+  readyAt: string | null;
+  expiresAt: string | null;
+}
+
+export interface AdminSupportSearchUser {
+  id: string;
+  displayName: string;
+  username: string;
+  email: string;
+  phone: string | null;
+  role: UserRole;
+  status: "active" | "suspended";
+  createdAt: string;
 }
 
 interface PinRecord
@@ -47,6 +214,8 @@ interface CommunityMembershipRecord extends Pick<CommunityMemberRow, "community_
 
 interface UserReportRecord extends Pick<ReportRow, "id" | "reason" | "status" | "created_at"> {}
 
+interface SupportNoteRecord extends Pick<AuditLogRow, "id" | "created_at" | "metadata"> {}
+
 interface CommunityRecord
   extends Pick<CommunityRow, "id" | "name" | "slug" | "city" | "member_count" | "type" | "vehicle_type" | "description" | "created_at"> {
   owner_profile: Pick<ProfileRow, "username" | "display_name"> | null;
@@ -57,6 +226,51 @@ interface CommunityMemberDetailRecord extends Pick<CommunityMemberRow, "communit
 }
 
 interface CommunityFlareRecord extends Pick<FlareRow, "id" | "community_id" | "title" | "starts_at" | "rsvp_count" | "status"> {}
+
+interface ReportDetailRecord
+  extends Pick<ReportRow, "id" | "content_type" | "content_id" | "reason" | "status" | "created_at" | "description" | "action_taken"> {
+  reporter_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface MessageContentRecord extends Pick<MessageRow, "id" | "sender_id" | "body" | "is_deleted"> {
+  sender_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface FlareContentRecord extends Pick<FlareRow, "id" | "creator_id" | "title" | "description" | "status"> {
+  creator_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface CommunityContentRecord extends Pick<CommunityRow, "id" | "owner_id" | "name" | "description"> {
+  owner_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface BusinessPinContentRecord extends Pick<BusinessPinRow, "id" | "owner_id" | "name" | "address" | "category"> {
+  owner_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface ProfileContentRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio"> {}
+
+interface AuditLogRecord extends Pick<AuditLogRow, "id" | "created_at" | "action" | "target_type" | "target_id" | "metadata"> {
+  actor_profile: Pick<ProfileRow, "username" | "display_name" | "role"> | null;
+}
+
+interface NotificationRecord extends Pick<NotificationRow, "id" | "title" | "body" | "data" | "created_at" | "type"> {}
+interface RemoteConfigRecord extends Pick<RemoteConfigRow, "key" | "value" | "description" | "updated_at"> {}
+interface HelpRequestRecord extends Pick<HelpRequestRow, "id" | "issue_type" | "status" | "created_at"> {
+  requester_profile: Pick<ProfileRow, "username" | "display_name" | "bio"> | null;
+}
+interface InviteCodeRecord extends Pick<InviteCodeRow, "code" | "uses_count" | "max_uses" | "expires_at" | "created_at"> {
+  inviter_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+type WaitingListRecord = Pick<WaitingListRow, "id" | "email" | "vehicle_type" | "city" | "invited_at" | "created_at">;
+
+const defaultStatusComponents: AdminStatusComponent[] = [
+  { key: "api", label: "API", status: "operational", note: "Servis yanıt süreleri normal." },
+  { key: "realtime", label: "Realtime", status: "operational", note: "WebSocket bağlantıları stabil." },
+  { key: "push", label: "Push Bildirimleri", status: "operational", note: "Bildirim akışı normal." },
+  { key: "media", label: "Medya Hattı", status: "operational", note: "Görsel/video işleme kuyruğu açık." },
+  { key: "admin", label: "Admin Panel", status: "operational", note: "Giriş ve yönetim ekranları erişilebilir." },
+];
 
 function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat("tr-TR", {
@@ -74,6 +288,121 @@ function formatDateTime(dateString: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(dateString));
+}
+
+function formatAuditAction(action: AuditLogRow["action"]) {
+  switch (action) {
+    case "user_banned":
+      return "Kullanıcı banlandı";
+    case "user_unbanned":
+      return "Kullanıcı banı kaldırıldı";
+    case "content_deleted":
+      return "İçerik silindi";
+    case "pin_verified":
+      return "Pin doğrulandı";
+    case "pin_rejected":
+      return "Pin reddedildi";
+    case "config_changed":
+      return "Yapılandırma değişti";
+    case "report_resolved":
+      return "Şikayet çözüldü";
+    default:
+      return action;
+  }
+}
+
+function summarizeAuditMetadata(metadata: Record<string, unknown> | null) {
+  if (!metadata) {
+    return "Ek metadata bulunmuyor.";
+  }
+
+  if (typeof metadata.note === "string" && metadata.note.length > 0) {
+    return metadata.note;
+  }
+
+  if (typeof metadata.mode === "string") {
+    return `Moderasyon modu: ${metadata.mode}`;
+  }
+
+  if (typeof metadata.action === "string") {
+    return `Aksiyon: ${metadata.action}`;
+  }
+
+  if (typeof metadata.reason === "string") {
+    return `Neden: ${metadata.reason}`;
+  }
+
+  if (typeof metadata.source === "string") {
+    return `Kaynak: ${metadata.source}`;
+  }
+
+  return "Metadata kaydı var, ancak kısa özet üretilemedi.";
+}
+
+function monthLabel(date: Date) {
+  return new Intl.DateTimeFormat("tr-TR", { month: "short" }).format(date);
+}
+
+function weekdayLabel(date: Date) {
+  return new Intl.DateTimeFormat("tr-TR", { weekday: "short" }).format(date);
+}
+
+function formatIssueType(issueType: HelpRequestRow["issue_type"]) {
+  switch (issueType) {
+    case "breakdown":
+      return "Arıza";
+    case "flat_tire":
+      return "Lastik";
+    case "fuel":
+      return "Yakıt";
+    case "accident":
+      return "Kaza";
+    default:
+      return "Diğer";
+  }
+}
+
+function startOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function buildRecentMonthBuckets(monthCount: number): AnalyticsPoint[] {
+  const now = new Date();
+  return Array.from({ length: monthCount }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (monthCount - index - 1), 1);
+    return { label: monthLabel(date), value: 0 };
+  });
+}
+
+function buildRecentDayBuckets(dayCount: number): AnalyticsPoint[] {
+  const now = startOfDay(new Date());
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = new Date(now);
+    date.setDate(now.getDate() - (dayCount - index - 1));
+    return { label: weekdayLabel(date), value: 0 };
+  });
+}
+
+function incrementBucketByMonth(points: AnalyticsPoint[], value: string) {
+  const target = startOfMonth(new Date(value));
+  const label = monthLabel(target);
+  const bucket = points.find((point) => point.label === label);
+  if (bucket) {
+    bucket.value += 1;
+  }
+}
+
+function incrementBucketByDay(points: AnalyticsPoint[], value: string) {
+  const target = startOfDay(new Date(value));
+  const label = weekdayLabel(target);
+  const bucket = points.find((point) => point.label === label);
+  if (bucket) {
+    bucket.value += 1;
+  }
 }
 
 function shortenId(id: string): string {
@@ -188,6 +517,126 @@ function deriveModerationNote(community: CommunityRecord, memberCount: number, a
   return "Topluluk akışı sakin görünüyor. Şu an ek moderasyon riski işareti bulunmuyor.";
 }
 
+function deriveUserStatus(role: UserRole): MockUser["status"] {
+  return role === "banned" ? "suspended" : "active";
+}
+
+function deriveReportSeverity(reason: ReportRow["reason"]): MockReport["severity"] {
+  return reason === "harassment" ? "high" : reason === "fake" || reason === "inappropriate" ? "medium" : "low";
+}
+
+function hasProfanitySignal(text: string) {
+  const normalized = (text ?? "").toLocaleLowerCase("tr-TR");
+  return ["gerizekali", "aptal", "salak", "siktir", "orospu", "rezil ederim"].some((token) => normalized.includes(token));
+}
+
+function deriveSeverityRecommendation(input: {
+  reason: ReportRow["reason"];
+  contentType: ReportRow["content_type"];
+  contentPreviewBody: string;
+  priorReportsCount: number;
+  targetStatus: "active" | "suspended" | "unknown";
+}): AdminReportDetail["severityRecommendation"] {
+  const signals: string[] = [];
+  let score = 0;
+
+  switch (input.reason) {
+    case "harassment":
+      score += 55;
+      signals.push("Taciz / kişisel saldırı kategorisi");
+      break;
+    case "fake":
+      score += 35;
+      signals.push("Yanıltıcı veya sahte içerik bildirimi");
+      break;
+    case "inappropriate":
+      score += 32;
+      signals.push("Topluluk kurallarına aykırı içerik");
+      break;
+    case "spam":
+      score += 18;
+      signals.push("Spam / tekrar içerik paterni");
+      break;
+    default:
+      score += 12;
+      signals.push("Manuel değerlendirme gerektiren kategori");
+      break;
+  }
+
+  if (input.contentType === "message") {
+    score += 12;
+    signals.push("İhlal özel mesaj veya sohbet akışında geçti");
+  } else if (input.contentType === "flare") {
+    score += 8;
+    signals.push("İhlal etkinlik / flare akışını etkiliyor");
+  } else if (input.contentType === "community") {
+    score += 6;
+    signals.push("İhlal topluluk görünürlüğünü etkiliyor");
+  }
+
+  if (hasProfanitySignal(input.contentPreviewBody)) {
+    score += 15;
+    signals.push("Metinde doğrudan küfür / tehdit tonu algılandı");
+  }
+
+  if (input.priorReportsCount >= 3) {
+    score += 20;
+    signals.push(`Kullanıcı hakkında ${input.priorReportsCount} geçmiş moderasyon kaydı var`);
+  } else if (input.priorReportsCount > 0) {
+    score += 10;
+    signals.push(`Kullanıcı hakkında ${input.priorReportsCount} önceki rapor bulundu`);
+  }
+
+  if (input.targetStatus === "suspended") {
+    score += 12;
+    signals.push("Kullanıcı zaten askıda / daha önce moderasyon görmüş");
+  }
+
+  const boundedScore = Math.min(score, 100);
+
+  if (boundedScore >= 80) {
+    return {
+      title: "Kritik risk",
+      description: "Yüksek zarar potansiyeli ve tekrar sinyali var. İçerik silme ile birlikte kalıcı ban veya en az 7 günlük suspend ilk tercih olmalı.",
+      tone: "error",
+      score: boundedScore,
+      recommendedAction: "İçeriği sil + kalıcı banı değerlendir",
+      signals,
+    };
+  }
+
+  if (boundedScore >= 55) {
+    return {
+      title: "Yüksek risk",
+      description: "İhlal güçlü ve moderasyon kaydı tekrara işaret ediyor. İçerik kaldırma ve 7 gün suspend / sert uyarı akışı önerilir.",
+      tone: "error",
+      score: boundedScore,
+      recommendedAction: "İçeriği sil + 7 gün suspend uygula",
+      signals,
+    };
+  }
+
+  if (boundedScore >= 30) {
+    return {
+      title: "Orta risk",
+      description: "İhlal doğrulanırsa kullanıcıyı uyarma ve gerekirse içeriği kaldırma yeterli olabilir; tekrar kontrolü önemli.",
+      tone: "warning",
+      score: boundedScore,
+      recommendedAction: "Önce uyar, gerekirse içeriği kaldır",
+      signals,
+    };
+  }
+
+  return {
+    title: "Düşük risk",
+    description: "Sinyaller sınırlı görünüyor. Manuel inceleme sonrası uyarı veya dismiss kararı verilebilir.",
+    tone: "info",
+    score: boundedScore,
+    recommendedAction: "Manuel incele, gerekirse dismiss et",
+    signals,
+  };
+}
+
 function toMockPin(pin: PinRecord): MockPin {
   return {
     id: pin.id,
@@ -205,6 +654,7 @@ function buildMockUser(
   vehicles: VehicleRecord[],
   memberships: CommunityMembershipRecord[],
   reportHistory: UserReportRecord[],
+  supportNote: string | null,
 ): MockUser {
   const displayName = user.display_name ?? user.username ?? shortenId(user.id);
   const username = user.username ?? user.id.slice(0, 8);
@@ -218,11 +668,11 @@ function buildMockUser(
     city,
     reports: reportHistory.length,
     createdAt: formatDate(user.created_at),
-    status: "active",
+    status: deriveUserStatus(user.role),
     bio: user.bio ?? "Profil biyografisi henüz girilmemiş.",
     phone: "Kayıtlı değil",
     lastSeenAt: formatDateTime(user.updated_at),
-    supportNote: deriveSupportNote(user, memberships, reportHistory.length),
+    supportNote: supportNote ?? deriveSupportNote(user, memberships, reportHistory.length),
     vehicles: vehicles.map((vehicle) => ({
       id: vehicle.id,
       type: mapVehicleType(vehicle.type),
@@ -406,9 +856,766 @@ export async function getAdminReportsOrMock(mockReports: MockReport[]): Promise<
       };
     });
 
+    if (data.length === 0) {
+      return { data: mockReports, usingMockData: true };
+    }
+
     return { data, usingMockData: false };
   } catch {
     return { data: mockReports, usingMockData: true };
+  }
+}
+
+export async function getAdminAnalyticsOrMock(mockAnalytics: {
+  mau: AnalyticsPoint[];
+  flares: AnalyticsPoint[];
+  help: AnalyticsPoint[];
+  communities: AnalyticsPoint[];
+  helpResponseTimes: AnalyticsPoint[];
+  waitingListGrowth: AnalyticsPoint[];
+}): Promise<AdminDataResult<AdminAnalyticsData>> {
+  const fallback: AdminAnalyticsData = {
+    summary: {
+      totalProfiles: 0,
+      totalFlares: 0,
+      openHelpRequests: 0,
+      pendingReports: 0,
+    },
+    monthlyActiveUsers: mockAnalytics.mau,
+    weeklyFlares: mockAnalytics.flares,
+    helpByIssue: mockAnalytics.help,
+    communityGrowth: mockAnalytics.communities,
+    helpResponseTimes: mockAnalytics.helpResponseTimes,
+    waitingListGrowth: mockAnalytics.waitingListGrowth,
+  };
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const fiveMonthsAgo = startOfMonth(new Date());
+    fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - 4);
+    const sevenDaysAgo = startOfDay(new Date());
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+
+    const [
+      profilesCountResult,
+      flaresCountResult,
+      helpCountResult,
+      reportsCountResult,
+      profilesActivityResult,
+      flaresActivityResult,
+      helpIssueResult,
+      communitiesGrowthResult,
+      helpResolutionResult,
+      waitingListGrowthResult,
+    ] = await Promise.all([
+      supabase.from("profiles").select("id", { count: "exact", head: true }),
+      supabase.from("flares").select("id", { count: "exact", head: true }),
+      supabase.from("help_requests").select("id", { count: "exact", head: true }).eq("status", "open"),
+      supabase.from("reports").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("profiles").select("updated_at").gte("updated_at", fiveMonthsAgo.toISOString()),
+      supabase.from("flares").select("created_at").gte("created_at", sevenDaysAgo.toISOString()),
+      supabase.from("help_requests").select("issue_type").eq("status", "open"),
+      supabase.from("communities").select("created_at").gte("created_at", fiveMonthsAgo.toISOString()),
+      supabase.from("help_requests").select("created_at, resolved_at").not("resolved_at", "is", null),
+      supabase.from("waiting_list").select("created_at").gte("created_at", fiveMonthsAgo.toISOString()),
+    ]);
+
+    if (
+      profilesCountResult.error ||
+      flaresCountResult.error ||
+      helpCountResult.error ||
+      reportsCountResult.error ||
+      profilesActivityResult.error ||
+      flaresActivityResult.error ||
+      helpIssueResult.error ||
+      communitiesGrowthResult.error ||
+      helpResolutionResult.error ||
+      waitingListGrowthResult.error
+    ) {
+      return { data: fallback, usingMockData: true };
+    }
+
+    const monthlyActiveUsers = buildRecentMonthBuckets(5);
+    for (const row of (profilesActivityResult.data as Array<Pick<ProfileRow, "updated_at">>) ?? []) {
+      incrementBucketByMonth(monthlyActiveUsers, row.updated_at);
+    }
+
+    const weeklyFlares = buildRecentDayBuckets(7);
+    for (const row of (flaresActivityResult.data as Array<Pick<FlareRow, "created_at">>) ?? []) {
+      incrementBucketByDay(weeklyFlares, row.created_at);
+    }
+
+    const helpByIssueSeed: Record<HelpRequestRow["issue_type"], number> = {
+      breakdown: 0,
+      flat_tire: 0,
+      fuel: 0,
+      accident: 0,
+      other: 0,
+    };
+    for (const row of (helpIssueResult.data as Array<Pick<HelpRequestRow, "issue_type">>) ?? []) {
+      helpByIssueSeed[row.issue_type] += 1;
+    }
+    const helpByIssue: AnalyticsPoint[] = [
+      { label: "Ariza", value: helpByIssueSeed.breakdown },
+      { label: "Lastik", value: helpByIssueSeed.flat_tire },
+      { label: "Yakit", value: helpByIssueSeed.fuel },
+      { label: "Kaza", value: helpByIssueSeed.accident },
+      { label: "Diger", value: helpByIssueSeed.other },
+    ];
+
+    const communityGrowth = buildRecentMonthBuckets(5);
+    for (const row of (communitiesGrowthResult.data as Array<Pick<CommunityRow, "created_at">>) ?? []) {
+      incrementBucketByMonth(communityGrowth, row.created_at);
+    }
+
+    const helpResponseHours = buildRecentMonthBuckets(5);
+    const helpResponseCounts = buildRecentMonthBuckets(5);
+    for (const row of
+      ((helpResolutionResult.data as Array<Pick<HelpRequestRow, "created_at" | "resolved_at">>) ?? []).filter(
+        (entry): entry is Pick<HelpRequestRow, "created_at" | "resolved_at"> & { resolved_at: string } => Boolean(entry.resolved_at),
+      )) {
+      const resolvedMonthLabel = monthLabel(new Date(row.resolved_at));
+      const target = helpResponseHours.find((entry) => entry.label === resolvedMonthLabel);
+      const counter = helpResponseCounts.find((entry) => entry.label === resolvedMonthLabel);
+      if (!target || !counter) {
+        continue;
+      }
+
+      const diffMs = new Date(row.resolved_at).getTime() - new Date(row.created_at).getTime();
+      const diffHours = Math.max(Math.round(diffMs / (1000 * 60 * 60)), 0);
+      target.value += diffHours;
+      counter.value += 1;
+    }
+
+    const helpResponseTimes = helpResponseHours.map((entry, index) => ({
+      label: entry.label,
+      value: helpResponseCounts[index]?.value ? Math.round(entry.value / helpResponseCounts[index].value) : 0,
+    }));
+
+    const waitingListGrowth = buildRecentMonthBuckets(5);
+    for (const row of (waitingListGrowthResult.data as Array<Pick<WaitingListRow, "created_at">>) ?? []) {
+      incrementBucketByMonth(waitingListGrowth, row.created_at);
+    }
+
+    return {
+      data: {
+        summary: {
+          totalProfiles: profilesCountResult.count ?? 0,
+          totalFlares: flaresCountResult.count ?? 0,
+          openHelpRequests: helpCountResult.count ?? 0,
+          pendingReports: reportsCountResult.count ?? 0,
+        },
+        monthlyActiveUsers,
+        weeklyFlares,
+        helpByIssue,
+        communityGrowth,
+        helpResponseTimes,
+        waitingListGrowth,
+      },
+      usingMockData: false,
+    };
+  } catch {
+    return { data: fallback, usingMockData: true };
+  }
+}
+
+export async function getAdminAuditLogsOrMock(mockEntries: AdminAuditEntry[]): Promise<AdminDataResult<AdminAuditEntry[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("audit_logs")
+      .select("id, created_at, action, target_type, target_id, metadata, actor_profile:profiles!audit_logs_actor_id_fkey(username, display_name, role)")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (result.error || !result.data) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    const data = (result.data as unknown as AuditLogRecord[]).map((entry) => ({
+      id: entry.id,
+      createdAt: formatDateTime(entry.created_at),
+      actorLabel: profileLabel(entry.actor_profile, "Bilinmeyen admin"),
+      actorRole: (entry.actor_profile?.role ?? "unknown") as AdminAuditEntry["actorRole"],
+      action: entry.action,
+      targetType: entry.target_type ?? "unknown",
+      targetId: entry.target_id ?? "-",
+      summary: summarizeAuditMetadata(entry.metadata),
+    }));
+
+    if (data.length === 0) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    return { data, usingMockData: false };
+  } catch {
+    return { data: mockEntries, usingMockData: true };
+  }
+}
+
+export async function getAdminSystemNotificationsOrMock(
+  mockEntries: MockSystemNotification[],
+): Promise<AdminDataResult<AdminSystemNotification[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("notifications")
+      .select("id, title, body, data, created_at, type")
+      .eq("type", "system")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (result.error || !result.data) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    const data = (result.data as unknown as NotificationRecord[]).map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      body: entry.body,
+      audience: typeof entry.data?.audience_label === "string" ? entry.data.audience_label : "Bilinmeyen segment",
+      createdAt: formatDateTime(entry.created_at),
+    }));
+
+    if (data.length === 0) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    return { data, usingMockData: false };
+  } catch {
+    return { data: mockEntries, usingMockData: true };
+  }
+}
+
+export async function getAdminRemoteConfigsOrMock(
+  mockFlags: Array<{ key: string; description: string; enabled: boolean }>,
+): Promise<AdminDataResult<AdminRemoteConfig[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase.from("remote_configs").select("key, value, description, updated_at").order("key");
+
+    if (result.error || !result.data) {
+      return {
+        data: mockFlags.map((flag) => ({
+          key: flag.key,
+          description: flag.description,
+          type: "flag",
+          value: flag.enabled,
+          updatedAt: null,
+        })),
+        usingMockData: true,
+      };
+    }
+
+    const data = (result.data as unknown as RemoteConfigRecord[]).map((entry) => {
+      const rawValue = entry.value;
+      let type: AdminRemoteConfig["type"] = "string";
+      let value: boolean | number | string = "";
+
+      if (typeof rawValue === "boolean") {
+        type = "flag";
+        value = rawValue;
+      } else if (typeof rawValue === "number") {
+        type = "number";
+        value = rawValue;
+      } else if (typeof rawValue === "string") {
+        type = entry.key.includes("feature_") ? "flag" : entry.key.includes("max_") ? "number" : "string";
+        value =
+          type === "flag"
+            ? rawValue === "true"
+            : type === "number"
+              ? Number(rawValue)
+              : rawValue;
+      } else {
+        type = "string";
+        value = JSON.stringify(rawValue ?? "");
+      }
+
+      return {
+        key: entry.key,
+        description: entry.description ?? "Açıklama yok",
+        type,
+        value,
+        updatedAt: entry.updated_at ? formatDateTime(entry.updated_at) : null,
+      };
+    });
+
+    if (data.length === 0) {
+      return {
+        data: mockFlags.map((flag) => ({
+          key: flag.key,
+          description: flag.description,
+          type: "flag",
+          value: flag.enabled,
+          updatedAt: null,
+        })),
+        usingMockData: true,
+      };
+    }
+
+    return { data, usingMockData: false };
+  } catch {
+    return {
+      data: mockFlags.map((flag) => ({
+        key: flag.key,
+        description: flag.description,
+        type: "flag",
+        value: flag.enabled,
+        updatedAt: null,
+      })),
+      usingMockData: true,
+    };
+  }
+}
+
+export async function getAdminHelpRequestsOrMock(
+  mockEntries: MockHelpRequest[],
+): Promise<AdminDataResult<AdminHelpRequest[]>> {
+  const toMockResult = () => ({
+    data: mockEntries.map((entry) => ({
+      id: entry.id,
+      requesterLabel: entry.requester,
+      city: entry.city,
+      issueType: entry.issueType,
+      status: entry.status,
+      createdAt: entry.createdAt,
+      note: entry.note,
+    })),
+    usingMockData: true,
+  });
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("help_requests")
+      .select("id, issue_type, status, created_at, requester_profile:profiles!help_requests_requester_id_fkey(username, display_name, bio)")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (result.error || !result.data) {
+      return toMockResult();
+    }
+
+    const data = (result.data as unknown as HelpRequestRecord[]).map((entry) => ({
+      id: entry.id,
+      requesterLabel: profileLabel(entry.requester_profile, "Bilinmeyen kullanıcı"),
+      city: entry.requester_profile?.bio ? "Profil notundan bak" : "Bilinmiyor",
+      issueType: entry.issue_type,
+      status: entry.status,
+      createdAt: formatDateTime(entry.created_at),
+      note: `${formatIssueType(entry.issue_type)} talebi ${entry.status === "open" ? "aktif" : "kayıtlı"} durumda.`,
+    }));
+
+    if (data.length === 0) {
+      return toMockResult();
+    }
+
+    return { data, usingMockData: false };
+  } catch {
+    return toMockResult();
+  }
+}
+
+export async function getAdminInviteCodesOrMock(
+  mockEntries: MockInviteCode[],
+): Promise<AdminDataResult<AdminInviteCode[]>> {
+  const toMockResult = () => ({
+    data: mockEntries.map((entry) => ({
+      code: entry.code,
+      inviterLabel: entry.inviterLabel,
+      usesCount: entry.usesCount,
+      maxUses: entry.maxUses,
+      expiresAt: entry.expiresAt,
+      createdAt: entry.createdAt,
+    })),
+    usingMockData: true,
+  });
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("invite_codes")
+      .select("code, uses_count, max_uses, expires_at, created_at, inviter_profile:profiles!invite_codes_inviter_id_fkey(username, display_name)")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (result.error || !result.data) {
+      return toMockResult();
+    }
+
+    const data = (result.data as unknown as InviteCodeRecord[]).map((entry) => ({
+      code: entry.code,
+      inviterLabel: profileLabel(entry.inviter_profile, "Admin havuzu"),
+      usesCount: entry.uses_count,
+      maxUses: entry.max_uses,
+      expiresAt: entry.expires_at ? formatDateTime(entry.expires_at) : null,
+      createdAt: formatDateTime(entry.created_at),
+    }));
+
+    if (data.length === 0) {
+      return toMockResult();
+    }
+
+    return { data, usingMockData: false };
+  } catch {
+    return toMockResult();
+  }
+}
+
+export async function getAdminWaitingListOrMock(
+  mockEntries: MockWaitingListEntry[],
+): Promise<AdminDataResult<AdminWaitingListEntry[]>> {
+  const toMockResult = () => ({
+    data: mockEntries.map((entry) => ({
+      id: entry.id,
+      email: entry.email,
+      vehicleType: entry.vehicleType,
+      city: entry.city,
+      invitedAt: entry.invitedAt,
+      createdAt: entry.createdAt,
+    })),
+    usingMockData: true,
+  });
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("waiting_list")
+      .select("id, email, vehicle_type, city, invited_at, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (result.error || !result.data) {
+      return toMockResult();
+    }
+
+    const data = (result.data as WaitingListRecord[]).map((entry) => ({
+      id: entry.id,
+      email: entry.email,
+      vehicleType: entry.vehicle_type,
+      city: entry.city,
+      invitedAt: entry.invited_at ? formatDateTime(entry.invited_at) : null,
+      createdAt: formatDateTime(entry.created_at),
+    }));
+
+    if (data.length === 0) {
+      return toMockResult();
+    }
+
+    return { data, usingMockData: false };
+  } catch {
+    return toMockResult();
+  }
+}
+
+function isStatusValue(value: unknown): value is AdminStatusComponent["status"] {
+  return value === "operational" || value === "degraded" || value === "partial_outage" || value === "major_outage";
+}
+
+function isIncidentPhase(
+  value: unknown,
+): value is AdminStatusPage["incident"]["phase"] {
+  return value === "investigating" || value === "identified" || value === "monitoring" || value === "resolved";
+}
+
+function mapMockStatusPage(mockPage: MockStatusPage): AdminStatusPage {
+  return {
+    publicUrl: mockPage.publicUrl,
+    incident: {
+      phase: mockPage.incident.phase,
+      message: mockPage.incident.message,
+      updatedAt: mockPage.incident.updatedAt,
+    },
+    components: mockPage.components.map((component) => ({
+      key: component.key,
+      label: component.label,
+      status: component.status,
+      note: component.note,
+    })),
+  };
+}
+
+export async function getAdminStatusPageOrMock(
+  mockPage: MockStatusPage,
+): Promise<AdminDataResult<AdminStatusPage>> {
+  const fallback = mapMockStatusPage(mockPage);
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("remote_configs")
+      .select("key, value, description, updated_at")
+      .eq("key", "status_page_state")
+      .maybeSingle();
+
+    if (result.error || !result.data) {
+      return { data: fallback, usingMockData: true };
+    }
+
+    const record = result.data as RemoteConfigRecord;
+    const rawState = record.value;
+
+    if (!rawState || typeof rawState !== "object" || Array.isArray(rawState)) {
+      return { data: fallback, usingMockData: true };
+    }
+
+    const state = rawState as {
+      publicUrl?: unknown;
+      incident?: { phase?: unknown; message?: unknown; updatedAt?: unknown };
+      components?: Array<{ key?: unknown; label?: unknown; status?: unknown; note?: unknown }>;
+    };
+
+    const componentMap = new Map(
+      (state.components ?? [])
+        .filter((component) => typeof component?.key === "string")
+        .map((component) => [component.key as AdminStatusComponent["key"], component]),
+    );
+
+    const components = defaultStatusComponents.map((component) => {
+      const override = componentMap.get(component.key);
+      return {
+        key: component.key,
+        label: typeof override?.label === "string" && override.label.trim().length > 0 ? override.label : component.label,
+        status: isStatusValue(override?.status) ? override.status : component.status,
+        note: typeof override?.note === "string" && override.note.trim().length > 0 ? override.note : component.note,
+      };
+    });
+
+    const incident = state.incident;
+    const updatedAt =
+      typeof incident?.updatedAt === "string" && incident.updatedAt
+        ? formatDateTime(incident.updatedAt)
+        : record.updated_at
+          ? formatDateTime(record.updated_at)
+          : fallback.incident.updatedAt;
+
+    return {
+      data: {
+        publicUrl:
+          typeof state.publicUrl === "string" && state.publicUrl.trim().length > 0 ? state.publicUrl : fallback.publicUrl,
+        incident: {
+          phase: isIncidentPhase(incident?.phase) ? incident.phase : fallback.incident.phase,
+          message:
+            typeof incident?.message === "string" && incident.message.trim().length > 0
+              ? incident.message
+              : fallback.incident.message,
+          updatedAt,
+        },
+        components,
+      },
+      usingMockData: false,
+    };
+  } catch {
+    return { data: fallback, usingMockData: true };
+  }
+}
+
+export async function getAdminCommunityRulesOrMock(
+  mockConfig: MockCommunityRulesConfig,
+): Promise<AdminDataResult<AdminCommunityRulesConfig>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("remote_configs")
+      .select("key, value, description, updated_at")
+      .eq("key", "community_guidelines_v1")
+      .maybeSingle();
+
+    if (result.error || !result.data) {
+      return { data: mockConfig, usingMockData: true };
+    }
+
+    const record = result.data as RemoteConfigRecord;
+    const rawValue = record.value;
+
+    if (!rawValue || typeof rawValue !== "object" || Array.isArray(rawValue)) {
+      return { data: mockConfig, usingMockData: true };
+    }
+
+    const config = rawValue as {
+      version?: unknown;
+      publishedUrl?: unknown;
+      trText?: unknown;
+      enText?: unknown;
+      updatedAt?: unknown;
+    };
+
+    return {
+      data: {
+        version: typeof config.version === "string" && config.version ? config.version : mockConfig.version,
+        publishedUrl:
+          typeof config.publishedUrl === "string" && config.publishedUrl ? config.publishedUrl : mockConfig.publishedUrl,
+        trText: typeof config.trText === "string" && config.trText ? config.trText : mockConfig.trText,
+        enText: typeof config.enText === "string" && config.enText ? config.enText : mockConfig.enText,
+        updatedAt:
+          typeof config.updatedAt === "string" && config.updatedAt
+            ? formatDateTime(config.updatedAt)
+            : record.updated_at
+              ? formatDateTime(record.updated_at)
+              : mockConfig.updatedAt,
+      },
+      usingMockData: false,
+    };
+  } catch {
+    return { data: mockConfig, usingMockData: true };
+  }
+}
+
+export async function getAdminExportRequestsOrMock(
+  mockEntries: MockExportRequest[],
+): Promise<AdminDataResult<AdminExportRequest[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("remote_configs")
+      .select("key, value")
+      .eq("key", "data_export_jobs")
+      .maybeSingle();
+
+    if (result.error || !result.data) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    const record = result.data as Pick<RemoteConfigRecord, "key" | "value">;
+    const rawJobs = record.value;
+
+    if (!Array.isArray(rawJobs)) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    const entries = rawJobs
+      .map((job) => {
+        if (!job || typeof job !== "object" || Array.isArray(job)) return null;
+        const record = job as {
+          id?: unknown;
+          requesterLabel?: unknown;
+          channel?: unknown;
+          status?: unknown;
+          requestedAt?: unknown;
+          readyAt?: unknown;
+          expiresAt?: unknown;
+        };
+
+        if (
+          typeof record.id !== "string" ||
+          typeof record.requesterLabel !== "string" ||
+          (record.channel !== "app" && record.channel !== "support") ||
+          (record.status !== "queued" &&
+            record.status !== "processing" &&
+            record.status !== "ready" &&
+            record.status !== "expired" &&
+            record.status !== "failed") ||
+          typeof record.requestedAt !== "string"
+        ) {
+          return null;
+        }
+
+        return {
+          id: record.id,
+          requesterLabel: record.requesterLabel,
+          channel: record.channel,
+          status: record.status,
+          requestedAt: formatDateTime(record.requestedAt),
+          readyAt: typeof record.readyAt === "string" && record.readyAt ? formatDateTime(record.readyAt) : null,
+          expiresAt: typeof record.expiresAt === "string" && record.expiresAt ? formatDateTime(record.expiresAt) : null,
+        } satisfies AdminExportRequest;
+      })
+      .filter((entry): entry is AdminExportRequest => Boolean(entry));
+
+    if (entries.length === 0) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    return { data: entries, usingMockData: false };
+  } catch {
+    return { data: mockEntries, usingMockData: true };
+  }
+}
+
+export async function getAdminSupportSearchOrMock(
+  query: string,
+  mockUsers: MockUser[],
+): Promise<AdminDataResult<AdminSupportSearchUser[]>> {
+  const normalizedQuery = query.trim().toLocaleLowerCase("tr-TR");
+  const mockEntries = mockUsers
+    .filter((user) => {
+      if (!normalizedQuery) return true;
+      return [user.displayName, user.username, user.phone]
+        .join(" ")
+        .toLocaleLowerCase("tr-TR")
+        .includes(normalizedQuery);
+    })
+    .slice(0, 25)
+    .map((user) => ({
+      id: user.id,
+      displayName: user.displayName,
+      username: user.username,
+      email: `${user.username}@rollpit.test`,
+      phone: user.phone,
+      role: user.role,
+      status: user.status,
+      createdAt: user.createdAt,
+    }));
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [profilesResult, authUsersResult] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, username, display_name, role, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase.auth.admin.listUsers({ page: 1, perPage: 200 }),
+    ]);
+
+    if (profilesResult.error || !profilesResult.data || authUsersResult.error || !authUsersResult.data?.users) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    const authUsers = authUsersResult.data.users as Array<{
+      id: string;
+      email?: string | null;
+      phone?: string | null;
+      banned_until?: string | null;
+      user_metadata?: { phone?: unknown } | null;
+    }>;
+
+    const authMap = new Map(authUsers.map((user) => [user.id, user]));
+
+    const entries = (profilesResult.data as Array<Pick<ProfileRow, "id" | "username" | "display_name" | "role" | "created_at">>)
+      .map((profile) => {
+        const authUser = authMap.get(profile.id);
+        const phone =
+          authUser?.phone ??
+          (typeof authUser?.user_metadata?.phone === "string" ? authUser.user_metadata.phone : null);
+
+        return {
+          id: profile.id,
+          displayName: profile.display_name ?? profile.username ?? "İsimsiz kullanıcı",
+          username: profile.username ?? shortenId(profile.id),
+          email: authUser?.email ?? "E-posta yok",
+          phone,
+          role: profile.role,
+          status: profile.role === "banned" || Boolean(authUser?.banned_until) ? "suspended" : "active",
+          createdAt: formatDate(profile.created_at),
+        } satisfies AdminSupportSearchUser;
+      })
+      .filter((entry) => {
+        if (!normalizedQuery) return true;
+        return [entry.displayName, entry.username, entry.email, entry.phone ?? ""]
+          .join(" ")
+          .toLocaleLowerCase("tr-TR")
+          .includes(normalizedQuery);
+      })
+      .slice(0, 50);
+
+    if (entries.length === 0) {
+      return { data: mockEntries, usingMockData: true };
+    }
+
+    return { data: entries, usingMockData: false };
+  } catch {
+    return { data: mockEntries, usingMockData: true };
   }
 }
 
@@ -463,6 +1670,7 @@ export async function getAdminUsersOrMock(mockUsers: MockUser[]): Promise<AdminD
           vehiclesByUser.get(profile.id) ?? [],
           membershipsByUser.get(profile.id) ?? [],
           reportsByUser.get(profile.id) ?? [],
+          null,
         ),
       ),
       usingMockData: false,
@@ -472,15 +1680,21 @@ export async function getAdminUsersOrMock(mockUsers: MockUser[]): Promise<AdminD
   }
 }
 
-export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]): Promise<AdminDataResult<MockUser | null>> {
+export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]): Promise<AdminDataResult<AdminUserDetail | null>> {
   const mockUser = mockUsers.find((user) => user.id === id);
   if (mockUser) {
-    return { data: mockUser, usingMockData: true };
+    return { data: { user: mockUser, supportNotes: [] }, usingMockData: true };
   }
 
   try {
     const supabase = createAdminSupabaseClient();
-    const [{ data: profile, error: profileError }, { data: vehicles, error: vehiclesError }, { data: memberships, error: membershipsError }, { data: reports, error: reportsError }] =
+    const [
+      { data: profile, error: profileError },
+      { data: vehicles, error: vehiclesError },
+      { data: memberships, error: membershipsError },
+      { data: reports, error: reportsError },
+      { data: supportNotes, error: supportNotesError },
+    ] =
       await Promise.all([
         supabase
           .from("profiles")
@@ -490,19 +1704,40 @@ export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]):
         supabase.from("vehicles").select("id, user_id, type, make, model, year, is_primary").eq("user_id", id),
         supabase.from("community_members").select("community_id, user_id, role, community:communities(id, name, city)").eq("user_id", id),
         supabase.from("reports").select("id, reason, status, created_at").eq("content_type", "profile").eq("content_id", id).order("created_at", { ascending: false }),
+        supabase
+          .from("audit_logs")
+          .select("id, created_at, metadata")
+          .eq("target_type", "support_note")
+          .eq("target_id", id)
+          .order("created_at", { ascending: false })
+          .limit(5),
       ]);
 
-    if (profileError || vehiclesError || membershipsError || reportsError || !profile) {
+    if (profileError || !profile) {
       return { data: null, usingMockData: false };
     }
 
+    const safeVehicles = vehiclesError ? [] : ((vehicles as unknown as VehicleRecord[]) ?? []);
+    const safeMemberships = membershipsError ? [] : ((memberships as unknown as CommunityMembershipRecord[]) ?? []);
+    const safeReports = reportsError ? [] : ((reports as unknown as UserReportRecord[]) ?? []);
+    const mappedSupportNotes = (supportNotesError ? [] : ((supportNotes as unknown as SupportNoteRecord[]) ?? []))
+      .map((entry) => ({
+        id: entry.id,
+        note: typeof entry.metadata?.note === "string" ? entry.metadata.note : "",
+        createdAt: formatDateTime(entry.created_at),
+      }))
+      .filter((entry) => entry.note.length > 0);
+
+    const user = buildMockUser(
+      profile as unknown as UserRecord,
+      safeVehicles,
+      safeMemberships,
+      safeReports,
+      mappedSupportNotes[0]?.note ?? null,
+    );
+
     return {
-      data: buildMockUser(
-        profile as unknown as UserRecord,
-        (vehicles as unknown as VehicleRecord[]) ?? [],
-        (memberships as unknown as CommunityMembershipRecord[]) ?? [],
-        (reports as unknown as UserReportRecord[]) ?? [],
-      ),
+      data: { user, supportNotes: mappedSupportNotes },
       usingMockData: false,
     };
   } catch {
@@ -542,14 +1777,20 @@ export async function getAdminCommunitiesOrMock(mockCommunities: MockCommunity[]
       flaresByCommunity.set(flare.community_id, current);
     }
 
-    return {
-      data: (communities as unknown as CommunityRecord[]).map((community) =>
+    const data = (communities as unknown as CommunityRecord[]).map((community) =>
         buildMockCommunity(
           community,
           membersByCommunity.get(community.id) ?? [],
           flaresByCommunity.get(community.id) ?? [],
         ),
-      ),
+      );
+
+    if (data.length === 0) {
+      return { data: mockCommunities, usingMockData: true };
+    }
+
+    return {
+      data,
       usingMockData: false,
     };
   } catch {
@@ -588,6 +1829,199 @@ export async function getAdminCommunityByIdOrMock(id: string, mockCommunities: M
         (members as unknown as CommunityMemberDetailRecord[]) ?? [],
         (flares as unknown as CommunityFlareRecord[]) ?? [],
       ),
+      usingMockData: false,
+    };
+  } catch {
+    return { data: null, usingMockData: false };
+  }
+}
+
+export async function getAdminReportByIdOrMock(id: string, mockReports: MockReport[]): Promise<AdminDataResult<AdminReportDetail | null>> {
+  const mockReport = mockReports.find((report) => report.id === id);
+  if (mockReport) {
+    const mockMessagePreview =
+      mockReport.id === "rep_demo_01"
+        ? "\"Sen tam bir gerizekalısın, seni bir daha etkinlikte görürsem rezil ederim.\""
+        : mockReport.id === "rep_01"
+          ? "\"Boş yapmayı bırak, ne anlarsın sen sürüşten?\""
+          : mockReport.id === "rep_02"
+            ? "Flare açıklamasında yazan pist günü ile gerçek etkinlik lokasyonu eşleşmiyor."
+            : "Aynı içerik kısa aralıklarla tekrar paylaşılmış görünüyor.";
+
+    const mockTargetLabel =
+      mockReport.id === "rep_demo_01"
+        ? "kaanbiscione"
+        : mockReport.id === "rep_01"
+          ? "pitqueen"
+          : mockReport.id === "rep_02"
+            ? "alpdrive"
+            : "bogaz-night-riders";
+
+    const mockDescription =
+      mockReport.id === "rep_demo_01"
+        ? "Bildiren kullanıcı, özel mesajlaşmada doğrudan küfür ve hedef gösterme dili kullanıldığını belirtti."
+        : mockReport.contentType === "message"
+          ? "Mesaj zinciri içinde kişisel saldırı ve topluluk huzurunu bozan dil raporlandı."
+          : mockReport.contentType === "flare"
+            ? "Etkinlik detaylarının yanıltıcı olduğu ve kullanıcıları yanlış lokasyona yönlendirdiği iddia ediliyor."
+            : "Topluluk akışında spam veya tekrar içerik olduğu bildirildi.";
+
+    const mockSeverityReason = deriveSeverityRecommendation({
+      reason: mockReport.severity === "high" ? "harassment" : mockReport.severity === "medium" ? "fake" : "spam",
+      contentType: mockReport.contentType === "community_post" ? "community" : mockReport.contentType,
+      contentPreviewBody: mockMessagePreview,
+      priorReportsCount: mockReport.id === "rep_demo_01" ? 2 : mockReport.id === "rep_01" ? 1 : 0,
+      targetStatus: mockReport.id === "rep_03" ? "suspended" : "active",
+    });
+
+    return {
+      data: {
+        report: mockReport,
+        status: mockReport.status === "pending" ? "pending" : "reviewed",
+        actionTaken: mockReport.status === "pending" ? "none" : "user_warned",
+        contentType: mockReport.contentType === "community_post" ? "community" : mockReport.contentType,
+        description: mockDescription,
+        reporterLabel: mockReport.reporter,
+        targetUserId: null,
+        targetLabel: mockTargetLabel,
+        contentPreviewTitle:
+          mockReport.contentType === "message"
+            ? "Mesaj içeriği"
+            : mockReport.contentType === "flare"
+              ? "Flare içeriği"
+              : "Topluluk gönderisi",
+        contentPreviewBody: mockMessagePreview,
+        severityRecommendation: mockSeverityReason,
+      },
+      usingMockData: true,
+    };
+  }
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const reportResult = await supabase
+      .from("reports")
+      .select("id, content_type, content_id, reason, status, created_at, description, action_taken, reporter_profile:profiles!reports_reporter_id_fkey(username, display_name)")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (reportResult.error || !reportResult.data) {
+      return { data: null, usingMockData: false };
+    }
+
+    const report = reportResult.data as unknown as ReportDetailRecord;
+    let targetUserId: string | null = null;
+    let targetLabel = "İçerik sahibi bulunamadı";
+    let contentPreviewTitle = "Raporlanan içerik";
+    let contentPreviewBody = "Bu içerik için önizleme bilgisi bulunmuyor.";
+    let targetStatus: "active" | "suspended" | "unknown" = "unknown";
+    let priorReportsCount = 0;
+
+    if (report.content_type === "message") {
+      const messageResult = await supabase
+        .from("messages")
+        .select("id, sender_id, body, is_deleted, sender_profile:profiles!messages_sender_id_fkey(username, display_name)")
+        .eq("id", report.content_id)
+        .maybeSingle();
+      const message = messageResult.data as unknown as MessageContentRecord | null;
+      if (message) {
+        targetUserId = message.sender_id;
+        targetLabel = profileLabel(message.sender_profile, shortenId(message.sender_id));
+        contentPreviewTitle = message.is_deleted ? "Silinmiş mesaj" : "Mesaj içeriği";
+        contentPreviewBody = message.body;
+      }
+    } else if (report.content_type === "flare") {
+      const flareResult = await supabase
+        .from("flares")
+        .select("id, creator_id, title, description, status, creator_profile:profiles!flares_creator_id_fkey(username, display_name)")
+        .eq("id", report.content_id)
+        .maybeSingle();
+      const flare = flareResult.data as unknown as FlareContentRecord | null;
+      if (flare) {
+        targetUserId = flare.creator_id;
+        targetLabel = profileLabel(flare.creator_profile, shortenId(flare.creator_id));
+        contentPreviewTitle = flare.title;
+        contentPreviewBody = flare.description ?? `Flare durumu: ${flare.status}`;
+      }
+    } else if (report.content_type === "community") {
+      const communityResult = await supabase
+        .from("communities")
+        .select("id, owner_id, name, description, owner_profile:profiles!communities_owner_id_fkey(username, display_name)")
+        .eq("id", report.content_id)
+        .maybeSingle();
+      const community = communityResult.data as unknown as CommunityContentRecord | null;
+      if (community) {
+        targetUserId = community.owner_id;
+        targetLabel = profileLabel(community.owner_profile, shortenId(community.owner_id));
+        contentPreviewTitle = community.name;
+        contentPreviewBody = community.description ?? "Topluluk açıklaması bulunmuyor.";
+      }
+    } else if (report.content_type === "business_pin") {
+      const pinResult = await supabase
+        .from("business_pins")
+        .select("id, owner_id, name, address, category, owner_profile:profiles!business_pins_owner_id_fkey(username, display_name)")
+        .eq("id", report.content_id)
+        .maybeSingle();
+      const pin = pinResult.data as unknown as BusinessPinContentRecord | null;
+      if (pin) {
+        targetUserId = pin.owner_id;
+        targetLabel = profileLabel(pin.owner_profile, shortenId(pin.owner_id));
+        contentPreviewTitle = pin.name;
+        contentPreviewBody = `${pin.category} · ${pin.address ?? "Adres yok"}`;
+      }
+    } else if (report.content_type === "profile") {
+      const profileResult = await supabase.from("profiles").select("id, username, display_name, bio").eq("id", report.content_id).maybeSingle();
+      const profile = profileResult.data as unknown as ProfileContentRecord | null;
+      if (profile) {
+        targetUserId = profile.id;
+        targetLabel = profile.display_name ?? profile.username ?? shortenId(profile.id);
+        contentPreviewTitle = "Profil raporu";
+        contentPreviewBody = profile.bio ?? "Profil biyografisi bulunmuyor.";
+      }
+    }
+
+    if (targetUserId) {
+      const [profileStateResult, priorReportsResult] = await Promise.all([
+        supabase.from("profiles").select("role").eq("id", targetUserId).maybeSingle(),
+        supabase.from("reports").select("id", { count: "exact", head: true }).eq("content_type", "profile").eq("content_id", targetUserId),
+      ]);
+
+      const targetProfile = profileStateResult.data as Pick<ProfileRow, "role"> | null;
+      targetStatus = targetProfile?.role === "banned" ? "suspended" : targetProfile ? "active" : "unknown";
+      priorReportsCount = priorReportsResult.count ?? 0;
+    }
+
+    const severity = deriveReportSeverity(report.reason);
+    const mappedReport: MockReport = {
+      id: report.id,
+      contentType: mapContentType(report.content_type),
+      reason: mapReason(report.reason),
+      reporter: report.reporter_profile?.username ?? report.reporter_profile?.display_name ?? "anonim",
+      createdAt: formatDateTime(report.created_at),
+      severity,
+      status: report.status === "pending" ? "pending" : "reviewing",
+    };
+
+    return {
+      data: {
+        report: mappedReport,
+        status: report.status,
+        actionTaken: report.action_taken ?? "none",
+        contentType: report.content_type,
+        description: report.description,
+        reporterLabel: mappedReport.reporter,
+        targetUserId,
+        targetLabel,
+        contentPreviewTitle,
+        contentPreviewBody,
+        severityRecommendation: deriveSeverityRecommendation({
+          reason: report.reason,
+          contentType: report.content_type,
+          contentPreviewBody,
+          priorReportsCount,
+          targetStatus,
+        }),
+      },
       usingMockData: false,
     };
   } catch {

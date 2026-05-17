@@ -3,10 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navigationItems } from "@/lib/navigation";
+import type { UserRole } from "@/lib/types/database";
 import { cn } from "@/lib/utils";
 
-export function Sidebar() {
+export function Sidebar({ role }: { role: UserRole }) {
   const pathname = usePathname();
+  const visibleItems =
+    role === "moderator"
+      ? navigationItems.filter((item) => item.href === "/reports")
+      : navigationItems;
   const isActiveLink = (href: string) => {
     if (href === "/") {
       return pathname === "/";
@@ -21,13 +26,14 @@ export function Sidebar() {
         aria-label="Mobil admin navigasyonu"
         className="surface-panel flex gap-sm overflow-x-auto p-md lg:hidden"
       >
-        {navigationItems.map((item) => {
+        {visibleItems.map((item) => {
           const active = isActiveLink(item.href);
           const Icon = item.icon;
 
           return (
             <Link
               key={item.href}
+              aria-current={active ? "page" : undefined}
               href={item.href}
               className={cn(
                 "focus-ring inline-flex min-h-11 shrink-0 items-center gap-sm rounded-md border px-md py-sm text-sm font-medium transition",
@@ -43,10 +49,10 @@ export function Sidebar() {
         })}
       </nav>
 
-      <aside className="surface-panel sticky top-lg hidden h-[calc(100vh-2rem)] min-w-[280px] flex-col justify-between p-lg lg:flex">
-        <div className="space-y-xl">
+      <aside className="surface-panel sticky top-lg hidden h-[calc(100vh-2rem)] min-w-[280px] overflow-hidden p-lg lg:flex lg:flex-col">
+        <div className="min-h-0 flex-1 space-y-xl overflow-y-auto pr-1">
           <div className="space-y-sm border-b border-surface-3 pb-lg">
-            <p className="font-mono text-xs uppercase tracking-[0.24em] text-pit-red-soft">Pitlane Admin</p>
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-pit-red-soft">Rollpit Admin</p>
             <div>
               <h1 className="text-xl font-semibold text-text-primary">Kontrol Paneli</h1>
               <p className="mt-xs text-sm text-text-secondary">
@@ -56,13 +62,14 @@ export function Sidebar() {
           </div>
 
           <nav aria-label="Admin navigasyonu" className="space-y-sm">
-            {navigationItems.map((item) => {
+            {visibleItems.map((item) => {
               const active = isActiveLink(item.href);
               const Icon = item.icon;
 
               return (
                 <Link
                   key={item.href}
+                  aria-current={active ? "page" : undefined}
                   href={item.href}
                   className={cn(
                     "focus-ring flex min-h-11 items-start gap-md rounded-md border px-md py-md transition",
@@ -82,8 +89,10 @@ export function Sidebar() {
           </nav>
         </div>
 
-        <div className="rounded-md border border-surface-3 bg-surface-2 p-md text-xs leading-5 text-text-secondary">
-          Sadece admin rolü erişebilir. Service role anahtarı yalnızca server tarafında tutulur.
+        <div className="mt-lg rounded-md border border-surface-3 bg-surface-2 p-md text-xs leading-5 text-text-secondary">
+          {role === "moderator"
+            ? "Moderatör görünümü yalnızca şikayet kuyruğu ve içerik aksiyonlarını açar."
+            : "Sadece admin rolü tam erişebilir. Service role anahtarı yalnızca server tarafında tutulur."}
         </div>
       </aside>
     </>

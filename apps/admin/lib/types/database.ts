@@ -1,4 +1,4 @@
-export type UserRole = "user" | "moderator" | "admin";
+export type UserRole = "user" | "moderator" | "admin" | "banned";
 
 export interface ProfileRow {
   id: string;
@@ -30,8 +30,12 @@ export interface FlareRow {
 export interface HelpRequestRow {
   id: string;
   requester_id: string;
+  helper_id: string | null;
   status: "open" | "matched" | "resolved" | "cancelled";
   issue_type: "breakdown" | "flat_tire" | "fuel" | "accident" | "other";
+  description: string | null;
+  resolved_at: string | null;
+  expires_at: string;
   created_at: string;
 }
 
@@ -65,6 +69,65 @@ export interface ReportRow {
   reviewed_by: string | null;
   reviewed_at: string | null;
   action_taken: "none" | "content_deleted" | "user_warned" | "user_banned" | null;
+  created_at: string;
+}
+
+export interface MessageRow {
+  id: string;
+  sender_id: string;
+  dm_peer_id: string | null;
+  community_id: string | null;
+  flare_id: string | null;
+  body: string;
+  media_asset_id: string | null;
+  is_deleted: boolean;
+  created_at: string;
+}
+
+export interface NotificationRow {
+  id: string;
+  user_id: string;
+  type: "help_nearby" | "flare_invite" | "message" | "community_invite" | "rsvp_update" | "system";
+  title: string;
+  body: string;
+  data: Record<string, unknown> | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface PushDeviceRow {
+  id: string;
+  user_id: string;
+  platform: "ios" | "android";
+  token: string;
+  app_build: string | null;
+  last_seen_at: string;
+  created_at: string;
+}
+
+export interface RemoteConfigRow {
+  key: string;
+  value: boolean | number | string | Record<string, unknown> | null;
+  description: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface InviteCodeRow {
+  code: string;
+  inviter_id: string | null;
+  uses_count: number;
+  max_uses: number;
+  expires_at: string | null;
+  created_at: string;
+}
+
+export interface WaitingListRow {
+  id: string;
+  email: string;
+  vehicle_type: "car" | "motorcycle" | "other" | null;
+  city: string | null;
+  invited_at: string | null;
   created_at: string;
 }
 
@@ -186,6 +249,42 @@ export interface Database {
           status: ReportRow["status"];
         };
         Update: Partial<ReportRow>;
+        Relationships: [];
+      };
+      messages: {
+        Row: MessageRow;
+        Insert: Partial<MessageRow> & { id: string; sender_id: string; body: string };
+        Update: Partial<MessageRow>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: NotificationRow;
+        Insert: Partial<NotificationRow> & { user_id: string; type: NotificationRow["type"]; title: string; body: string };
+        Update: Partial<NotificationRow>;
+        Relationships: [];
+      };
+      remote_configs: {
+        Row: RemoteConfigRow;
+        Insert: Partial<RemoteConfigRow> & { key: string; value: RemoteConfigRow["value"] };
+        Update: Partial<RemoteConfigRow>;
+        Relationships: [];
+      };
+      invite_codes: {
+        Row: InviteCodeRow;
+        Insert: Partial<InviteCodeRow> & { code: string };
+        Update: Partial<InviteCodeRow>;
+        Relationships: [];
+      };
+      waiting_list: {
+        Row: WaitingListRow;
+        Insert: Partial<WaitingListRow> & { email: string };
+        Update: Partial<WaitingListRow>;
+        Relationships: [];
+      };
+      push_devices: {
+        Row: PushDeviceRow;
+        Insert: Partial<PushDeviceRow> & { id: string; user_id: string; platform: PushDeviceRow["platform"]; token: string };
+        Update: Partial<PushDeviceRow>;
         Relationships: [];
       };
       audit_logs: {
