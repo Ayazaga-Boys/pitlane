@@ -7,6 +7,7 @@ import { requestLogger } from './middleware/request-logger.js';
 import { rateLimit } from './middleware/rate-limit.js';
 import { mountProtectedRoutes, mountPublicRoutes } from './routes/index.js';
 import { logger } from './lib/logger.js';
+import { checkDatabaseHealth } from './services/health.js';
 import type { AppEnv } from './types/hono.js';
 
 export function createApp() {
@@ -16,7 +17,11 @@ export function createApp() {
   app.use('*', cors({ origin: ['http://localhost:3001', 'https://admin.rollpit.com'] }));
   app.use('*', requestLogger);
 
-  app.get('/health', (c) => c.json({ ok: true, service: 'rollpit-api' }));
+  app.get('/health', async (c) => {
+    const database = await checkDatabaseHealth();
+    const ok = database.status !== 'error';
+    return c.json({ ok, service: 'rollpit-api', database }, ok ? 200 : 503);
+  });
 
   const v1 = new Hono();
   v1.use('*', maintenanceMode);
