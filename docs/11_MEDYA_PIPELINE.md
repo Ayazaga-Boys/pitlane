@@ -122,6 +122,10 @@ router.post('/finalize', async (c) => {
 
   if (!asset) return c.json({ error: 'Asset not found', code: 'NOT_FOUND' }, 404);
 
+  // R2 HEAD ile upload'un gerçekten tamamlandığını doğrula
+  const metadata = await headObject(asset.storage_key);
+  if (!metadata) return c.json({ error: 'Uploaded object not found', code: 'UPLOAD_NOT_FOUND' }, 409);
+
   // Video ise Cloudflare Stream'e bildir (arka planda transcode başlar)
   if (asset.asset_type === 'video') {
     await triggerCloudflareStreamIngest(asset.storage_key);

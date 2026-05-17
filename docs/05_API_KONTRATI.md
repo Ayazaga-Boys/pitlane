@@ -358,6 +358,8 @@ const FinalizeSchema = z.object({
 });
 ```
 
+Not: Backend finalize sırasında R2 `HEAD` doğrulaması yapar. Obje bulunamazsa `409 UPLOAD_NOT_FOUND`, R2 erişim hatasında `502 DOWNSTREAM_ERROR` döner.
+
 ### DELETE /v1/media/:id — Response
 
 ```typescript
