@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableWrapper, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import type { MockUser } from "@/lib/mock-data";
@@ -21,7 +22,12 @@ export function UsersTable({ users }: { users: MockUser[] }) {
             <TR key={user.id}>
               <TD>
                 <div>
-                  <p className="font-medium text-text-primary">{user.displayName}</p>
+                  <Link
+                    className="focus-ring inline-flex rounded-xs text-left font-medium text-text-primary hover:text-pit-red"
+                    href={`/users/${user.id}`}
+                  >
+                    {user.displayName}
+                  </Link>
                   <p className="mt-1 text-xs text-text-tertiary">@{user.username}</p>
                 </div>
               </TD>

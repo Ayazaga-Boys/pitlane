@@ -1,10 +1,13 @@
-export type UserRole = "user" | "moderator" | "admin";
+export type UserRole = "user" | "moderator" | "admin" | "banned";
 
 export interface ProfileRow {
   id: string;
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  bio: string | null;
+  ghost_mode: boolean;
+  is_verified: boolean;
   role: UserRole;
   created_at: string;
   updated_at: string;
@@ -13,17 +16,26 @@ export interface ProfileRow {
 export interface FlareRow {
   id: string;
   creator_id: string;
+  community_id: string | null;
   title: string;
-  status: "draft" | "active" | "cancelled" | "completed";
+  description: string | null;
+  rsvp_count: number;
+  status: "draft" | "active" | "cancelled" | "ended";
   starts_at: string;
+  ends_at: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface HelpRequestRow {
   id: string;
   requester_id: string;
+  helper_id: string | null;
   status: "open" | "matched" | "resolved" | "cancelled";
   issue_type: "breakdown" | "flat_tire" | "fuel" | "accident" | "other";
+  description: string | null;
+  resolved_at: string | null;
+  expires_at: string;
   created_at: string;
 }
 
@@ -32,8 +44,136 @@ export interface BusinessPinRow {
   owner_id: string;
   name: string;
   category: "garage" | "repair" | "parts" | "fuel" | "cafe" | "other";
+  h3_cell: string;
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  logo_url: string | null;
+  cover_url: string | null;
   is_active: boolean;
   is_verified: boolean;
+  campaign_text: string | null;
+  campaign_ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReportRow {
+  id: string;
+  reporter_id: string;
+  content_type: "message" | "flare" | "community" | "profile" | "business_pin";
+  content_id: string;
+  reason: "spam" | "harassment" | "inappropriate" | "fake" | "other";
+  description: string | null;
+  status: "pending" | "reviewed" | "dismissed";
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  action_taken: "none" | "content_deleted" | "user_warned" | "user_banned" | null;
+  created_at: string;
+}
+
+export interface MessageRow {
+  id: string;
+  sender_id: string;
+  dm_peer_id: string | null;
+  community_id: string | null;
+  flare_id: string | null;
+  body: string;
+  media_asset_id: string | null;
+  is_deleted: boolean;
+  created_at: string;
+}
+
+export interface NotificationRow {
+  id: string;
+  user_id: string;
+  type: "help_nearby" | "flare_invite" | "message" | "community_invite" | "rsvp_update" | "system";
+  title: string;
+  body: string;
+  data: Record<string, unknown> | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface PushDeviceRow {
+  id: string;
+  user_id: string;
+  platform: "ios" | "android";
+  token: string;
+  app_build: string | null;
+  last_seen_at: string;
+  created_at: string;
+}
+
+export interface RemoteConfigRow {
+  key: string;
+  value: boolean | number | string | Record<string, unknown> | null;
+  description: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface InviteCodeRow {
+  code: string;
+  inviter_id: string | null;
+  uses_count: number;
+  max_uses: number;
+  expires_at: string | null;
+  created_at: string;
+}
+
+export interface WaitingListRow {
+  id: string;
+  email: string;
+  vehicle_type: "car" | "motorcycle" | "other" | null;
+  city: string | null;
+  invited_at: string | null;
+  created_at: string;
+}
+
+export interface VehicleRow {
+  id: string;
+  user_id: string;
+  type: "car" | "motorcycle" | "other";
+  make: string;
+  model: string;
+  year: number | null;
+  color: string | null;
+  photo_url: string | null;
+  is_primary: boolean;
+  created_at: string;
+}
+
+export interface CommunityRow {
+  id: string;
+  owner_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  cover_url: string | null;
+  type: "public" | "private" | "secret";
+  vehicle_type: "car" | "motorcycle" | "all";
+  city: string | null;
+  member_count: number;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommunityMemberRow {
+  community_id: string;
+  user_id: string;
+  role: "captain" | "moderator" | "member";
+  joined_at: string;
+}
+
+export interface AuditLogRow {
+  id: string;
+  actor_id: string;
+  action: "user_banned" | "user_unbanned" | "content_deleted" | "pin_verified" | "pin_rejected" | "config_changed" | "report_resolved";
+  target_type: string | null;
+  target_id: string | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -65,10 +205,92 @@ export interface Database {
           owner_id: string;
           name: string;
           category: BusinessPinRow["category"];
+          h3_cell: string;
+          address?: string | null;
           is_active: boolean;
           is_verified: boolean;
         };
         Update: Partial<BusinessPinRow>;
+        Relationships: [];
+      };
+      vehicles: {
+        Row: VehicleRow;
+        Insert: Partial<VehicleRow> & { id: string; user_id: string; type: VehicleRow["type"]; make: string; model: string };
+        Update: Partial<VehicleRow>;
+        Relationships: [];
+      };
+      communities: {
+        Row: CommunityRow;
+        Insert: Partial<CommunityRow> & {
+          id: string;
+          owner_id: string;
+          name: string;
+          slug: string;
+          type: CommunityRow["type"];
+          vehicle_type: CommunityRow["vehicle_type"];
+        };
+        Update: Partial<CommunityRow>;
+        Relationships: [];
+      };
+      community_members: {
+        Row: CommunityMemberRow;
+        Insert: CommunityMemberRow;
+        Update: Partial<CommunityMemberRow>;
+        Relationships: [];
+      };
+      reports: {
+        Row: ReportRow;
+        Insert: Partial<ReportRow> & {
+          id: string;
+          reporter_id: string;
+          content_type: ReportRow["content_type"];
+          content_id: string;
+          reason: ReportRow["reason"];
+          status: ReportRow["status"];
+        };
+        Update: Partial<ReportRow>;
+        Relationships: [];
+      };
+      messages: {
+        Row: MessageRow;
+        Insert: Partial<MessageRow> & { id: string; sender_id: string; body: string };
+        Update: Partial<MessageRow>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: NotificationRow;
+        Insert: Partial<NotificationRow> & { user_id: string; type: NotificationRow["type"]; title: string; body: string };
+        Update: Partial<NotificationRow>;
+        Relationships: [];
+      };
+      remote_configs: {
+        Row: RemoteConfigRow;
+        Insert: Partial<RemoteConfigRow> & { key: string; value: RemoteConfigRow["value"] };
+        Update: Partial<RemoteConfigRow>;
+        Relationships: [];
+      };
+      invite_codes: {
+        Row: InviteCodeRow;
+        Insert: Partial<InviteCodeRow> & { code: string };
+        Update: Partial<InviteCodeRow>;
+        Relationships: [];
+      };
+      waiting_list: {
+        Row: WaitingListRow;
+        Insert: Partial<WaitingListRow> & { email: string };
+        Update: Partial<WaitingListRow>;
+        Relationships: [];
+      };
+      push_devices: {
+        Row: PushDeviceRow;
+        Insert: Partial<PushDeviceRow> & { id: string; user_id: string; platform: PushDeviceRow["platform"]; token: string };
+        Update: Partial<PushDeviceRow>;
+        Relationships: [];
+      };
+      audit_logs: {
+        Row: AuditLogRow;
+        Insert: Partial<AuditLogRow> & { actor_id: string; action: AuditLogRow["action"] };
+        Update: Partial<AuditLogRow>;
         Relationships: [];
       };
     };
