@@ -122,6 +122,10 @@ router.post('/finalize', async (c) => {
 
   if (!asset) return c.json({ error: 'Asset not found', code: 'NOT_FOUND' }, 404);
 
+  // R2 HEAD ile upload'un gerçekten tamamlandığını doğrula
+  const metadata = await headObject(asset.storage_key);
+  if (!metadata) return c.json({ error: 'Uploaded object not found', code: 'UPLOAD_NOT_FOUND' }, 409);
+
   // Video ise Cloudflare Stream'e bildir (arka planda transcode başlar)
   if (asset.asset_type === 'video') {
     await triggerCloudflareStreamIngest(asset.storage_key);
@@ -153,11 +157,17 @@ router.post('/webhook/stream', async (c) => {
   }
 
   const event = JSON.parse(body);
-  if (event.meta?.loaded === 'live') {
+  if (event.readyToStream || event.status?.state === 'ready') {
     await getSupabaseAdmin()
       .from('media_assets')
-      .update({ status: 'ready', cf_stream_id: event.uid })
-      .eq('storage_key', event.meta.source_key);
+      .update({
+        status: 'ready',
+        cf_stream_id: event.uid,
+        duration_sec: Math.round(event.duration ?? 0),
+        width: event.input?.width,
+        height: event.input?.height,
+      })
+      .eq('id', event.meta.asset_id);
   }
 
   return c.json({ ok: true });
@@ -287,7 +297,7 @@ async function deleteMediaAsset(assetId: string, userId: string) {
 
   if (!asset) throw new Error('Not found');
 
-  // R2'den sil
+  // R2'den sil (404 idempotent kabul edilir)
   await deleteObject(asset.storage_key);
 
   // Cloudflare Images'dan sil
@@ -304,3 +314,5 @@ async function deleteMediaAsset(assetId: string, userId: string) {
   await sb.from('media_assets').delete().eq('id', assetId);
 }
 ```
+
+V1 backend davranışı: `DELETE /v1/media/:id` sahiplik kontrolü yapar, R2 objesini siler ve `media_assets` kaydını kaldırır. Cloudflare Images/Stream silme çağrıları `CF_IMAGES_API_TOKEN` / `CF_STREAM_API_TOKEN` operasyon kontratıyla ayrıca bağlanır.

@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import {
   CreateVehicleSchema,
+  DeleteProfileSchema,
   UpdateProfileSchema,
   UpdateVehicleSchema,
   UsernameParamSchema,
@@ -8,12 +9,13 @@ import {
 } from '../schemas/profile.schema.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import { serviceUnavailable, validationError } from '../lib/http.js';
+import { buildUserExportArchive } from '../services/user-export.js';
 import type { AppEnv } from '../types/hono.js';
 
 export const profileRoutes = new Hono<AppEnv>();
 
 const PROFILE_PRIVATE_SELECT =
-  'id,username,display_name,avatar_url,bio,ghost_mode,is_verified,role,notification_prefs,created_at,updated_at';
+  'id,username,display_name,avatar_url,bio,ghost_mode,is_verified,role,notification_prefs,deletion_requested_at,delete_after,deletion_reason,created_at,updated_at';
 
 profileRoutes.get('/me', async (c) => {
   const userId = c.get('userId') as string;
@@ -29,6 +31,22 @@ profileRoutes.get('/me', async (c) => {
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
   if (!data) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
   return c.json({ data });
+});
+
+profileRoutes.get('/me/export', async (c) => {
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  try {
+    const archive = await buildUserExportArchive(supabase, userId);
+    const date = archive.generated_at.slice(0, 10);
+    c.header('Content-Disposition', `attachment; filename="rollpit-export-${date}.json"`);
+    return c.json({ data: archive });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Export failed';
+    return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
+  }
 });
 
 profileRoutes.get('/:username', async (c) => {
@@ -67,6 +85,60 @@ profileRoutes.patch('/me', async (c) => {
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  return c.json({ data });
+});
+
+profileRoutes.delete('/me', async (c) => {
+  const body = await c.req.json().catch(() => ({}));
+  const parsed = DeleteProfileSchema.safeParse(body);
+  if (!parsed.success) return validationError(c, parsed.error);
+
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const now = new Date();
+  const deleteAfter = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      ghost_mode: true,
+      deletion_requested_at: now.toISOString(),
+      delete_after: deleteAfter.toISOString(),
+      deletion_reason: parsed.data.reason,
+    })
+    .eq('id', userId)
+    .select('id,deletion_requested_at,delete_after,ghost_mode')
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+
+  await supabase.from('push_devices').delete().eq('user_id', userId);
+
+  return c.json({ data });
+});
+
+profileRoutes.post('/me/deletion/cancel', async (c) => {
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      deletion_requested_at: null,
+      delete_after: null,
+      deletion_reason: null,
+    })
+    .eq('id', userId)
+    .select('id,deletion_requested_at,delete_after,ghost_mode')
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+
   return c.json({ data });
 });
 

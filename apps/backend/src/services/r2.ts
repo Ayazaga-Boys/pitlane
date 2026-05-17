@@ -11,8 +11,13 @@ interface R2Config {
 
 interface GenerateUploadUrlInput {
   storageKey: string;
-  method?: 'PUT';
+  method?: 'PUT' | 'DELETE' | 'HEAD';
   expiresInSeconds?: number;
+}
+
+export interface R2ObjectMetadata {
+  contentType?: string;
+  sizeBytes?: number;
 }
 
 export function isR2Configured(): boolean {
@@ -75,6 +80,37 @@ export function generateR2UploadUrl(input: GenerateUploadUrlInput): string {
   query.set('X-Amz-Signature', signature);
 
   return `${endpoint.origin}${canonicalUri}?${toCanonicalQuery(query)}`;
+}
+
+export async function deleteR2Object(storageKey: string): Promise<void> {
+  const url = generateR2UploadUrl({ storageKey, method: 'DELETE' });
+  const response = await fetch(url, { method: 'DELETE' });
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`R2 delete failed with status ${response.status}`);
+  }
+}
+
+export async function headR2Object(storageKey: string): Promise<R2ObjectMetadata | null> {
+  const url = generateR2UploadUrl({ storageKey, method: 'HEAD' });
+  const response = await fetch(url, { method: 'HEAD' });
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`R2 head failed with status ${response.status}`);
+  }
+
+  const sizeHeader = response.headers.get('content-length');
+  const contentType = response.headers.get('content-type') ?? undefined;
+  const metadata: R2ObjectMetadata = {};
+
+  if (contentType) metadata.contentType = contentType;
+  if (sizeHeader) {
+    const sizeBytes = Number(sizeHeader);
+    if (Number.isSafeInteger(sizeBytes) && sizeBytes > 0) metadata.sizeBytes = sizeBytes;
+  }
+
+  return metadata;
 }
 
 function getR2Config(): R2Config {

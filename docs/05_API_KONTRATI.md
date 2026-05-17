@@ -28,13 +28,44 @@ Backend sadece Supabase'in döndürdüğü JWT'yi doğrular.
 GET    /v1/profiles/me                 — Kendi profilim
 GET    /v1/profiles/:username          — Public profil
 PATCH  /v1/profiles/me                 — Kendi profilini güncelle
-DELETE /v1/profiles/me                 — Hesap sil (GDPR/KVKK)
+DELETE /v1/profiles/me                 — 30 günlük hesap silme penceresi başlat (KVKK/GDPR)
+POST   /v1/profiles/me/deletion/cancel — Hesap silme penceresini iptal et
 POST   /v1/profiles/me/ghost-mode      — Hayalet mod toggle
 GET    /v1/profiles/me/vehicles        — Araç listesi
 POST   /v1/profiles/me/vehicles        — Araç ekle
 PATCH  /v1/profiles/me/vehicles/:id    — Araç güncelle
 DELETE /v1/profiles/me/vehicles/:id    — Araç sil
-GET    /v1/profiles/me/export          — Veri dışa aktarma talebi (GDPR)
+GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi (KVKK/GDPR)
+```
+
+### GET /v1/profiles/me/export — Response
+
+```typescript
+type UserExportResponse = {
+  data: {
+    format_version: 1;
+    generated_at: string;
+    user_id: string;
+    profile: Profile;
+    vehicles: Vehicle[];
+    communities: {
+      owned: Community[];
+      memberships: CommunityMember[];
+    };
+    flares: {
+      created: Flare[];
+      rsvps: FlareRsvp[];
+    };
+    business_pins: BusinessPin[];
+    help_requests: HelpRequest[];
+    messages: Message[];
+    media_assets: MediaAsset[];
+    reports: Report[];
+    notifications: Notification[];
+    blocks: Block[];
+    push_devices: PushDevice[];
+  };
+};
 ```
 
 ### PATCH /v1/profiles/me — Zod Şeması
@@ -58,6 +89,40 @@ const UpdateProfileSchema = z.object({
     quiet_hours_end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
   }).optional(),
 });
+```
+
+### DELETE /v1/profiles/me — Zod Şeması
+
+```typescript
+const DeleteProfileSchema = z.object({
+  reason: z.string().trim().max(300).optional(),
+}).default({});
+```
+
+### DELETE /v1/profiles/me — Response
+
+```typescript
+type DeleteProfileResponse = {
+  data: {
+    id: string;
+    deletion_requested_at: string;
+    delete_after: string; // deletion_requested_at + 30 gün
+    ghost_mode: true;
+  };
+};
+```
+
+### POST /v1/profiles/me/deletion/cancel — Response
+
+```typescript
+type CancelProfileDeletionResponse = {
+  data: {
+    id: string;
+    deletion_requested_at: null;
+    delete_after: null;
+    ghost_mode: boolean;
+  };
+};
 ```
 
 ### POST /v1/profiles/me/vehicles — Zod Şeması
@@ -292,6 +357,30 @@ const FinalizeSchema = z.object({
   asset_id: z.string().uuid(),
 });
 ```
+
+Not: Backend finalize sırasında R2 `HEAD` doğrulaması yapar. Obje bulunamazsa `409 UPLOAD_NOT_FOUND`, R2 erişim hatasında `502 DOWNSTREAM_ERROR` döner.
+
+### DELETE /v1/media/:id — Response
+
+```typescript
+type DeleteMediaResponse = {
+  data: {
+    id: string;
+    deleted: true;
+  };
+};
+```
+
+Not: Endpoint sahiplik kontrolünden sonra R2 objesini siler ve `media_assets` kaydını kaldırır. Cloudflare Images/Stream tarafındaki ek silme çağrıları ilgili token kontratları netleşince aynı akışa bağlanır.
+
+### POST /v1/media/webhook/stream — Cloudflare Stream
+
+- Public route; kullanıcı JWT istemez.
+- `CF_STREAM_WEBHOOK_SECRET` ile `Webhook-Signature: time=...,sig1=...` doğrulanır.
+- İmza kaynağı raw body olarak `{time}.{body}` formatıdır.
+- Webhook `meta.asset_id` / `meta.media_asset_id` veya `meta.source_key` / `meta.storage_key` ile `media_assets` kaydını bulur.
+- `status.state = "ready"` veya `readyToStream = true` → `status = "ready"`.
+- `status.state = "error"` → `status = "failed"`.
 
 ---
 

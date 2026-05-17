@@ -113,7 +113,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 ### Sprint 6 — Medya & Güvenlik (Hafta 11-12)
 - [ ] `POST /v1/media/upload-url` (R2 presigned URL)
 - [ ] `POST /v1/media/finalize`
-- [ ] Cloudflare Stream webhook handler (imza doğrulama)
+- [x] Cloudflare Stream webhook handler (imza doğrulama)
 - [ ] Cloudflare Images varyant konfigürasyonu
 - [ ] Supabase migration: `blocks`, `media_assets`, `reports`, `audit_logs`
 - [ ] Engelleme endpoint'leri (`POST /v1/blocks/:userId`, `DELETE`, `GET`)
@@ -126,7 +126,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Fly.io production deploy + auto-rollback (23. doküman Bölüm 12)
 - [ ] Status sayfası setup (statuspage.io veya Cachet)
 
-> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Cloudflare Images kopyalama, Stream ingest/webhook ve R2 delete/head doğrulamaları sonraki medya adımı olarak açık.
+> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Finalize sırasında R2 HEAD doğrulaması, `DELETE /v1/media/:id` için R2 object delete + DB row delete eklendi. Cloudflare Stream webhook imza doğrulama + ready/failed status update eklendi. Cloudflare Images kopyalama ve Stream ingest başlatma sonraki medya adımı olarak açık.
 
 ---
 

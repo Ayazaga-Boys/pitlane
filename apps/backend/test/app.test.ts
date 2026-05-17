@@ -7,13 +7,22 @@ describe('app routes', () => {
   });
 
   it('serves health without auth', async () => {
+    const previousUrl = process.env.SUPABASE_URL;
+    const previousServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     const app = createApp();
     const response = await app.request('/health');
+
+    process.env.SUPABASE_URL = previousUrl;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = previousServiceRoleKey;
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
       service: 'rollpit-api',
+      database: { status: 'not_configured' },
     });
   });
 
@@ -37,13 +46,19 @@ describe('app routes', () => {
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const [profileResponse, vehiclesResponse] = await Promise.all([
+    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse] = await Promise.all([
       app.request('/v1/profiles/me'),
       app.request('/v1/profiles/me/vehicles'),
+      app.request('/v1/profiles/me/export'),
+      app.request('/v1/profiles/me', { method: 'DELETE' }),
+      app.request('/v1/profiles/me/deletion/cancel', { method: 'POST' }),
     ]);
 
     expect(profileResponse.status).toBe(401);
     expect(vehiclesResponse.status).toBe(401);
+    expect(exportResponse.status).toBe(401);
+    expect(deleteResponse.status).toBe(401);
+    expect(cancelDeletionResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
@@ -105,13 +120,31 @@ describe('app routes', () => {
 
   it('keeps media routes protected', async () => {
     const app = createApp();
-    const [uploadResponse, finalizeResponse] = await Promise.all([
+    const [uploadResponse, finalizeResponse, deleteResponse] = await Promise.all([
       app.request('/v1/media/upload-url', { method: 'POST' }),
       app.request('/v1/media/finalize', { method: 'POST' }),
+      app.request('/v1/media/00000000-0000-4000-8000-000000000001', { method: 'DELETE' }),
     ]);
 
     expect(uploadResponse.status).toBe(401);
     expect(finalizeResponse.status).toBe(401);
+    expect(deleteResponse.status).toBe(401);
+  });
+
+  it('exposes Cloudflare Stream webhook without user auth', async () => {
+    const previousSecret = process.env.CF_STREAM_WEBHOOK_SECRET;
+    delete process.env.CF_STREAM_WEBHOOK_SECRET;
+
+    const app = createApp();
+    const response = await app.request('/v1/media/webhook/stream', { method: 'POST', body: '{}' });
+
+    if (previousSecret === undefined) {
+      delete process.env.CF_STREAM_WEBHOOK_SECRET;
+    } else {
+      process.env.CF_STREAM_WEBHOOK_SECRET = previousSecret;
+    }
+
+    expect(response.status).toBe(503);
   });
 
   it('keeps message routes protected', async () => {
