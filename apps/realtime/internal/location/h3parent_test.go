@@ -3,6 +3,8 @@ package location
 import (
 	"strconv"
 	"testing"
+
+	h3 "github.com/uber/h3-go/v4"
 )
 
 // Geçerli H3 parent-child çiftleri (doğrulanmış bit manipülasyon ile):
@@ -69,5 +71,27 @@ func TestH3CellToParentResolutionField(t *testing.T) {
 	res := int((idx >> h3ResOffset) & 0xF)
 	if res != 8 {
 		t.Errorf("expected parent resolution 8, got %d", res)
+	}
+}
+
+func TestCellWithinKRing(t *testing.T) {
+	origin := h3.CellFromString("8929a15b3a3ffff")
+	neighbors, err := h3.GridRing(origin, 1)
+	if err != nil {
+		t.Fatalf("grid ring failed: %v", err)
+	}
+	if len(neighbors) == 0 {
+		t.Fatal("expected at least one neighbor")
+	}
+
+	target := h3.CellToString(neighbors[0])
+	if !CellWithinKRing("8929a15b3a3ffff", target, 1) {
+		t.Fatal("expected neighbor to be inside k=1")
+	}
+	if CellWithinKRing("8929a15b3a3ffff", target, 0) {
+		t.Fatal("expected neighbor to be outside k=0")
+	}
+	if CellWithinKRing("bad-cell", target, 1) {
+		t.Fatal("expected invalid origin to be outside k-ring")
 	}
 }

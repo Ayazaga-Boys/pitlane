@@ -23,7 +23,7 @@ linters-settings:
     excludes:
       - G404 # math/rand — WS token için değil
   goimports:
-    local-prefixes: github.com/Ayazaga-Boys/pitlane
+    local-prefixes: github.com/Ayazaga-Boys/rollpit
 
 issues:
   exclude-rules:
@@ -34,4 +34,4 @@ issues:
 
 run:
   timeout: 5m
-  go: "1.22"
+  go: "1.24"

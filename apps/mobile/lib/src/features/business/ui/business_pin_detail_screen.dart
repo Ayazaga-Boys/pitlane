@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../models/business_pin.dart';
 import '../providers/business_pin_provider.dart';
 
@@ -109,7 +109,7 @@ class _BusinessPinDetailContent extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppSpacing.xl2),
-        PitlaneButton(
+        RollpitButton(
           label: 'Yol Tarifi Al',
           icon: Icons.directions_outlined,
           onPressed: () {

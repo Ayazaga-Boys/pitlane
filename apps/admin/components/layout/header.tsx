@@ -275,8 +275,8 @@ export function Header({ email }: HeaderProps) {
             <Bell aria-hidden="true" className="size-4" />
           </button>
 
-          <div className="rounded-pill border border-surface-3 bg-surface-2 px-md py-sm text-sm text-text-secondary">
-            {email ?? "admin@rollpit.app"}
+          <div className="hidden rounded-pill border border-surface-3 bg-surface-2 px-md py-sm text-sm text-text-secondary sm:block">
+            {email ?? "admin@rollpit.com"}
           </div>
 
           <Button aria-label="Oturumu kapat" className="gap-sm" onClick={handleSignOut} variant="ghost">

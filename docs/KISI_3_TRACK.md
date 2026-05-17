@@ -1,5 +1,5 @@
 # 👤 KİŞİ 3 — Track Paketi
-> Full-stack · Mid/Senior · Pitlane Projesi
+> Full-stack · Mid/Senior · Rollpit Projesi
 
 ## Senin Sorumluluk Alanın
 
@@ -61,7 +61,7 @@ Admin paneli, uygulamanın "arka kapısı"dır. Şunları yaparsın:
 ### Faz 0 — Hazırlık (1 Hafta)
 - [ ] Admin monorepo kurulumu (`apps/admin/`)
 - [ ] `pnpm install` + Next.js 14 boş proje ayağa kaldır
-- [ ] Vercel projesi oluştur (`pitlane-admin`)
+- [ ] Vercel projesi oluştur (`rollpit-admin`)
 - [ ] Supabase bağlantısı (admin service role ile — sadece bu panelde kullanılır)
 - [ ] shadcn/ui kurulumu (`npx shadcn-ui@latest init`)
 - [ ] **Tailwind tokens'ı `15_TASARIM_SISTEMI.md` ile hizala** (renk, spacing, radius)

@@ -13,10 +13,10 @@ export function createApp() {
   const app = new Hono();
 
   app.use('*', secureHeaders());
-  app.use('*', cors({ origin: ['http://localhost:3001', 'https://admin.pitlane.app'] }));
+  app.use('*', cors({ origin: ['http://localhost:3001', 'https://admin.rollpit.com'] }));
   app.use('*', requestLogger);
 
-  app.get('/health', (c) => c.json({ ok: true, service: 'pitlane-api' }));
+  app.get('/health', (c) => c.json({ ok: true, service: 'rollpit-api' }));
 
   const v1 = new Hono();
   v1.use('*', maintenanceMode);

@@ -1,4 +1,4 @@
-enum PitlaneNotificationType {
+enum RollpitNotificationType {
   helpNearby('help_nearby', 'Yardım'),
   flareInvite('flare_invite', 'Flare'),
   flareStarting('flare_starting', 'Flare'),
@@ -6,21 +6,21 @@ enum PitlaneNotificationType {
   communityMessage('community_message', 'Topluluk'),
   system('system', 'Sistem');
 
-  const PitlaneNotificationType(this.apiValue, this.label);
+  const RollpitNotificationType(this.apiValue, this.label);
 
   final String apiValue;
   final String label;
 
-  static PitlaneNotificationType fromApiValue(String? value) {
-    for (final type in PitlaneNotificationType.values) {
+  static RollpitNotificationType fromApiValue(String? value) {
+    for (final type in RollpitNotificationType.values) {
       if (type.apiValue == value) return type;
     }
-    return PitlaneNotificationType.system;
+    return RollpitNotificationType.system;
   }
 }
 
-class PitlaneNotification {
-  const PitlaneNotification({
+class RollpitNotification {
+  const RollpitNotification({
     required this.id,
     required this.type,
     required this.title,
@@ -30,16 +30,16 @@ class PitlaneNotification {
     this.isRead = false,
   });
 
-  factory PitlaneNotification.fromJson(Map<String, dynamic> json) {
+  factory RollpitNotification.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
     final deepLinkFromData = data is Map<String, dynamic>
         ? data['deep_link'] as String? ??
             _deepLinkFromNotificationData(json['type'] as String?, data)
         : null;
 
-    return PitlaneNotification(
+    return RollpitNotification(
       id: json['id'] as String? ?? '',
-      type: PitlaneNotificationType.fromApiValue(json['type'] as String?),
+      type: RollpitNotificationType.fromApiValue(json['type'] as String?),
       title: json['title'] as String? ?? '',
       body: json['body'] as String? ?? '',
       deepLink: json['deep_link'] as String? ?? deepLinkFromData,
@@ -51,15 +51,15 @@ class PitlaneNotification {
   }
 
   final String id;
-  final PitlaneNotificationType type;
+  final RollpitNotificationType type;
   final String title;
   final String body;
   final String? deepLink;
   final String createdAtLabel;
   final bool isRead;
 
-  PitlaneNotification copyWith({bool? isRead}) {
-    return PitlaneNotification(
+  RollpitNotification copyWith({bool? isRead}) {
+    return RollpitNotification(
       id: id,
       type: type,
       title: title,
@@ -74,18 +74,18 @@ class PitlaneNotification {
     String? type,
     Map<String, dynamic> data,
   ) {
-    return switch (PitlaneNotificationType.fromApiValue(type)) {
-      PitlaneNotificationType.helpNearby =>
+    return switch (RollpitNotificationType.fromApiValue(type)) {
+      RollpitNotificationType.helpNearby =>
         data['help_id'] == null ? null : '/help/${data['help_id']}',
-      PitlaneNotificationType.flareInvite ||
-      PitlaneNotificationType.flareStarting =>
+      RollpitNotificationType.flareInvite ||
+      RollpitNotificationType.flareStarting =>
         data['flare_id'] == null ? null : '/flares/${data['flare_id']}',
-      PitlaneNotificationType.dmNew =>
+      RollpitNotificationType.dmNew =>
         data['peer_id'] == null ? null : '/messages/${data['peer_id']}',
-      PitlaneNotificationType.communityMessage => data['community_id'] == null
+      RollpitNotificationType.communityMessage => data['community_id'] == null
           ? null
           : '/communities/${data['community_id']}/messages',
-      PitlaneNotificationType.system => null,
+      RollpitNotificationType.system => null,
     };
   }
 }

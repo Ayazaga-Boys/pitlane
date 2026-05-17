@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../models/moderation.dart';
 import '../providers/moderation_provider.dart';
 
@@ -64,9 +64,9 @@ class _ModerationSheet extends ConsumerWidget {
                   ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            PitlaneButton(
+            RollpitButton(
               label: 'Şikayet et',
-              variant: PitlaneButtonVariant.secondary,
+              variant: RollpitButtonVariant.secondary,
               icon: Icons.flag_outlined,
               onPressed: () {
                 Navigator.of(context).pop();
@@ -75,9 +75,9 @@ class _ModerationSheet extends ConsumerWidget {
             ),
             if (canBlock) ...[
               const SizedBox(height: AppSpacing.md),
-              PitlaneButton(
+              RollpitButton(
                 label: 'Engelle',
-                variant: PitlaneButtonVariant.destructive,
+                variant: RollpitButtonVariant.destructive,
                 icon: Icons.block,
                 onPressed: () {
                   Navigator.of(context).pop();

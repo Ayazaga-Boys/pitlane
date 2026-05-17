@@ -45,9 +45,9 @@ import (
     "syscall"
     "time"
 
-    "github.com/pitlane/realtime/internal/config"
-    "github.com/pitlane/realtime/internal/hub"
-    "github.com/pitlane/realtime/internal/location"
+    "github.com/rollpit/realtime/internal/config"
+    "github.com/rollpit/realtime/internal/hub"
+    "github.com/rollpit/realtime/internal/location"
     "github.com/rs/zerolog"
     "github.com/rs/zerolog/log"
 )
@@ -105,9 +105,9 @@ import (
     "time"
 
     "github.com/gorilla/websocket"
-    "github.com/pitlane/realtime/internal/auth"
-    "github.com/pitlane/realtime/internal/config"
-    "github.com/pitlane/realtime/internal/location"
+    "github.com/rollpit/realtime/internal/auth"
+    "github.com/rollpit/realtime/internal/config"
+    "github.com/rollpit/realtime/internal/location"
     "github.com/rs/zerolog/log"
 )
 
@@ -511,7 +511,7 @@ func VerifySupabaseJWT(tokenStr, secret string) (string, error) {
 ## go.mod
 
 ```
-module github.com/pitlane/realtime
+module github.com/rollpit/realtime
 
 go 1.22
 

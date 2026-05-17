@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/notifications_repository.dart';
-import '../models/pitlane_notification.dart';
+import '../models/rollpit_notification.dart';
 
-class NotificationsNotifier extends AsyncNotifier<List<PitlaneNotification>> {
+class NotificationsNotifier extends AsyncNotifier<List<RollpitNotification>> {
   @override
-  Future<List<PitlaneNotification>> build() {
+  Future<List<RollpitNotification>> build() {
     return ref.read(notificationsRepositoryProvider).listNotifications();
   }
 
@@ -17,7 +17,7 @@ class NotificationsNotifier extends AsyncNotifier<List<PitlaneNotification>> {
   }
 
   Future<void> markAllRead() async {
-    final notifications = state.valueOrNull ?? const <PitlaneNotification>[];
+    final notifications = state.valueOrNull ?? const <RollpitNotification>[];
     state = AsyncData(
       notifications.map((item) => item.copyWith(isRead: true)).toList(),
     );
@@ -25,7 +25,7 @@ class NotificationsNotifier extends AsyncNotifier<List<PitlaneNotification>> {
   }
 
   Future<void> markRead(String id) async {
-    final notifications = state.valueOrNull ?? const <PitlaneNotification>[];
+    final notifications = state.valueOrNull ?? const <RollpitNotification>[];
     state = AsyncData(
       notifications
           .map((item) => item.id == id ? item.copyWith(isRead: true) : item)
@@ -36,7 +36,7 @@ class NotificationsNotifier extends AsyncNotifier<List<PitlaneNotification>> {
 }
 
 final notificationsProvider =
-    AsyncNotifierProvider<NotificationsNotifier, List<PitlaneNotification>>(
+    AsyncNotifierProvider<NotificationsNotifier, List<RollpitNotification>>(
   NotificationsNotifier.new,
 );
 

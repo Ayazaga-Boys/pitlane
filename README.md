@@ -1,6 +1,6 @@
-# Pitlane
+# Rollpit
 
-Pitlane is a map-first social app for car and motorcycle communities.
+Rollpit is a map-first social app for car and motorcycle communities.
 
 ## Monorepo
 
@@ -17,7 +17,7 @@ docs/          Product, architecture, sprint, and track docs
 
 ```bash
 pnpm install
-pnpm --filter @pitlane/backend dev
+pnpm --filter @rollpit/backend dev
 
 cd apps/mobile
 flutter pub get

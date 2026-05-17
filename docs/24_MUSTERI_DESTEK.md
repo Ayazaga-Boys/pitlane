@@ -10,12 +10,12 @@
 | Kanal | Hedef Kitle | Yanıt Süresi |
 |---|---|---|
 | Uygulama içi "Geri bildirim gönder" | Tüm kullanıcılar | 24 saat |
-| `support@pitlane.app` | Tüm kullanıcılar | 24 saat |
+| `support@rollpit.com` | Tüm kullanıcılar | 24 saat |
 | Twitter/X mention | Public sorunlar | 4 saat (mesai içi) |
 | App Store / Play Store yorum | Yorum bırakanlar | Haftalık batch |
-| `business@pitlane.app` | İşletme hesapları | 12 saat |
-| `privacy@pitlane.app` | KVKK/GDPR talepleri | 30 gün (yasal süre) |
-| `security@pitlane.app` | Güvenlik açığı bildirimi | 48 saat |
+| `business@rollpit.com` | İşletme hesapları | 12 saat |
+| `privacy@rollpit.com` | KVKK/GDPR talepleri | 30 gün (yasal süre) |
+| `security@rollpit.com` | Güvenlik açığı bildirimi | 48 saat |
 
 ---
 
@@ -70,14 +70,14 @@ CM eskaledir:
 ```
 Merhaba [Kullanıcı Adı],
 
-Pitlane'i tercih ettiğin için teşekkürler! Sorununu inceledim.
+Rollpit'i tercih ettiğin için teşekkürler! Sorununu inceledim.
 
 [Çözüm/yönerge]
 
 Daha fazla yardıma ihtiyacın varsa hiç çekinmeden yaz.
 
 İyi yolculuklar 🏍️🚗
-[CM İsmi] - Pitlane Ekibi
+[CM İsmi] - Rollpit Ekibi
 ```
 
 ### T2: Hesap Kurtarma
@@ -95,7 +95,7 @@ deneyebilir misin?
 Hâlâ çalışmıyorsa, hesabına ait e-postayı bana özel mesajla
 yazarsan manuel olarak yardımcı olabilirim.
 
-Pitlane Ekibi
+Rollpit Ekibi
 ```
 
 ### T3: Bildirim Sorunu
@@ -105,15 +105,15 @@ Merhaba,
 
 Bildirim almama sorunu için:
 
-1. Ayarlar → Bildirimler → Pitlane → tüm toggle'lar açık mı?
-2. (iOS) Ayarlar → Bildirimler → Pitlane → "Sürekli Teslim" açık mı?
-3. (Android) Pil optimizasyonu Pitlane için kapalı mı?
+1. Ayarlar → Bildirimler → Rollpit → tüm toggle'lar açık mı?
+2. (iOS) Ayarlar → Bildirimler → Rollpit → "Sürekli Teslim" açık mı?
+3. (Android) Pil optimizasyonu Rollpit için kapalı mı?
 4. "Sessiz Modu" veya "Rahatsız Etme" açık mı?
 
 Bu adımlardan sonra yine sorun yaşarsan ekran görüntüsü gönderirsen
 bakacağız.
 
-Pitlane Ekibi
+Rollpit Ekibi
 ```
 
 ### T4: Yanlışlıkla Banlandığını İddia Eden
@@ -129,7 +129,7 @@ Bu süre içinde topluluk kurallarımızı (link: ...) inceleyebilirsin.
 Sonuç hakkında en geç [TARİH] tarihinde sana e-posta ile dönüş yapacağız.
 
 Saygılarımızla,
-Pitlane Moderasyon Ekibi
+Rollpit Moderasyon Ekibi
 ```
 
 ### T5: Veri Dışa Aktarma (KVKK)
@@ -142,9 +142,9 @@ KVKK kapsamında verilerinin kopyasını talep ettin. Talebini aldık.
 İşlem 24 saat içinde tamamlanacak ve sonuçlar e-posta ile sana
 ulaştırılacak. Link 48 saat geçerli olacak.
 
-Daha fazla bilgi için: pitlane.app/legal/privacy
+Daha fazla bilgi için: rollpit.com/legal/privacy
 
-Pitlane Ekibi
+Rollpit Ekibi
 ```
 
 ### T6: İşletme Doğrulama Reddi
@@ -158,9 +158,9 @@ Merhaba [İşletme Sahibi],
 - [Eksiklik 2]
 
 Eksiklikleri tamamladıktan sonra başvurunu yeniden gönderebilirsin.
-Yardıma ihtiyacın varsa: business@pitlane.app
+Yardıma ihtiyacın varsa: business@rollpit.com
 
-Pitlane Ekibi
+Rollpit Ekibi
 ```
 
 ### T7: Sahte SOS / Ban Açıklaması
@@ -174,9 +174,9 @@ Hesabın şu sebeple kalıcı olarak askıya alındı:
 Bu Topluluk Kuralları'mızın 3. maddesini ihlal eder. Sahte yardım
 çağrıları gerçek acil durumlardaki yanıt süresini olumsuz etkiler.
 
-İtiraz: privacy@pitlane.app (30 gün içinde)
+İtiraz: privacy@rollpit.com (30 gün içinde)
 
-Pitlane Moderasyon
+Rollpit Moderasyon
 ```
 
 ### T8: Apple/Play Store Yorumu (Olumsuz)
@@ -184,15 +184,15 @@ Pitlane Moderasyon
 ```
 Merhaba [Kullanıcı Adı],
 
-Pitlane'i denediğin için teşekkürler. Yaşadığın sorun için üzgünüm.
+Rollpit'i denediğin için teşekkürler. Yaşadığın sorun için üzgünüm.
 
 [Sorunun cevabı + adımlar]
 
-Konuyu çözmek için bize support@pitlane.app adresinden ulaşırsan
+Konuyu çözmek için bize support@rollpit.com adresinden ulaşırsan
 hızlı yardımcı olabiliriz. Şikayetin haklı bulunursa yorumunu güncellemeyi
 düşünür müsün?
 
-Pitlane Ekibi
+Rollpit Ekibi
 ```
 
 ---
@@ -204,14 +204,14 @@ Pitlane Ekibi
 ```
 Hi [Name],
 
-Thanks for choosing Pitlane! I looked into your issue.
+Thanks for choosing Rollpit! I looked into your issue.
 
 [Solution]
 
 Let me know if you need anything else.
 
 Ride safe 🏍️🚗
-[CM Name] - Pitlane Team
+[CM Name] - Rollpit Team
 ```
 
 ### T7-EN: Suspension Notice
@@ -224,9 +224,9 @@ Your account has been permanently suspended for the following reason:
 
 This violates section 3 of our Community Guidelines.
 
-You may appeal: privacy@pitlane.app (within 30 days).
+You may appeal: privacy@rollpit.com (within 30 days).
 
-Pitlane Moderation
+Rollpit Moderation
 ```
 
 ---
@@ -247,18 +247,18 @@ Pitlane Moderation
 
 ---
 
-## 7. SSS (Public — `pitlane.app/help`)
+## 7. SSS (Public — `rollpit.com/help`)
 
 ### Hesap & Giriş
 
 **Q: Davet kodu nereden alabilirim?**
-A: Bekleme listesine kayıt ol (pitlane.app), kapasite açıldıkça kod gönderiyoruz.
+A: Bekleme listesine kayıt ol (rollpit.com), kapasite açıldıkça kod gönderiyoruz.
 
 **Q: OTP kodu gelmiyor.**
-A: Spam klasörüne bak. 60 sn sonra yeniden gönder. Hâlâ gelmiyorsa: support@pitlane.app
+A: Spam klasörüne bak. 60 sn sonra yeniden gönder. Hâlâ gelmiyorsa: support@rollpit.com
 
 **Q: E-posta adresimi nasıl değiştiririm?**
-A: Şu an uygulama içinden değiştirilemez. support@pitlane.app yaz, manuel yapalım.
+A: Şu an uygulama içinden değiştirilemez. support@rollpit.com yaz, manuel yapalım.
 
 **Q: Apple ile giriş yapamıyorum.**
 A: iOS 13+ gerekli. Apple ID'nde 2FA açık olmalı.
@@ -307,7 +307,7 @@ A: V1.0'da ücretsiz. İleride uygun fiyatlı bir plan getirebiliriz; mevcut iş
 ### Bildirim
 
 **Q: Bildirim gelmiyor.**
-A: Sistem ayarları → Bildirimler → Pitlane → tüm toggle'lar açık. Pil optimizasyonu kapalı (Android).
+A: Sistem ayarları → Bildirimler → Rollpit → tüm toggle'lar açık. Pil optimizasyonu kapalı (Android).
 
 **Q: Hangi bildirimleri kapatabilirim?**
 A: Ayarlar → Bildirimler → kategori bazında toggle.
@@ -326,7 +326,7 @@ A: O kullanıcının profilinde "..." → Engelle. Mesaj/etkinlikteyse "..." →
 ### Teknik
 
 **Q: Uygulama çakılıyor.**
-A: 1) Tekrar başlat. 2) En son sürüm mü? 3) Cihaz yer kontrolü. 4) support@pitlane.app + sürüm bilgisi.
+A: 1) Tekrar başlat. 2) En son sürüm mü? 3) Cihaz yer kontrolü. 4) support@rollpit.com + sürüm bilgisi.
 
 **Q: Ne kadar veri tüketiyor?**
 A: Aktif kullanımda saatte ~10-20 MB. Wi-Fi öneririz.
@@ -361,7 +361,7 @@ A: Konum servisi açık olunca etkili. Hayalet mod ile azaltabilirsin.
 ### Anket Sorusu
 
 ```
-0-10 arası: Pitlane'i bir arkadaşına ne kadar olası tavsiye edersin?
+0-10 arası: Rollpit'i bir arkadaşına ne kadar olası tavsiye edersin?
 
 [Cevap]
 ─────────────────────
@@ -393,7 +393,7 @@ Hedef: > 40 (sağlıklı topluluk).
 - ⭐⭐⭐⭐⭐ : "Teşekkürler!" + emoji
 - ⭐⭐⭐⭐ : Spesifik teşekkür + öneri varsa "ekibimize ileteceğim"
 - ⭐⭐⭐ : Ne eksik, çözüm önerisi
-- ⭐⭐ : Sorun analizi + support@pitlane.app davet
+- ⭐⭐ : Sorun analizi + support@rollpit.com davet
 - ⭐ : Kişisel + acil yanıt + iletişim daveti
 
 ### Yanıt Süresi
@@ -424,8 +424,8 @@ CM her hafta:
 
 V1.0'da yok. Gelecekte düşünülen:
 - Discord sunucusu (resmi)
-- Subreddit (`r/Pitlane`)
-- Pitlane Forum (özel — karmaşık tartışma)
+- Subreddit (`r/Rollpit`)
+- Rollpit Forum (özel — karmaşık tartışma)
 
 ---
 
@@ -454,5 +454,5 @@ CM için:
 ## 15. Mevzuata Uyum (Tüketici Mevzuatı)
 
 - Türkiye Tüketici Hakem Heyeti talepleri: 30 gün içinde yanıt zorunlu.
-- Resmi yazışma için: privacy@pitlane.app + posta adresi.
-- Müşteri Şikayeti Çözümleme Politikası web'de yayınlı: pitlane.app/legal/complaints
+- Resmi yazışma için: privacy@rollpit.com + posta adresi.
+- Müşteri Şikayeti Çözümleme Politikası web'de yayınlı: rollpit.com/legal/complaints

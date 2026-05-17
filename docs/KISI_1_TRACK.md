@@ -1,5 +1,5 @@
 # 👤 KİŞİ 1 — Track Paketi (Burak)
-> Full-stack · Mid/Senior · Pitlane Projesi
+> Full-stack · Mid/Senior · Rollpit Projesi
 
 ## Senin Sorumluluk Alanın
 
@@ -35,7 +35,7 @@
 - ✅ Supabase Flutter bağlantısı
 - ✅ Auth ekranları (invite code, login, OTP) — **Furkan'a devredildi**
 - ✅ AppColors, AppSpacing, AppTheme
-- ✅ PitlaneButton, PitlaneTextField, MainShell
+- ✅ RollpitButton, RollpitTextField, MainShell
 - ✅ Go: hub, client, message yapısı
 - ✅ Go: JWT doğrulama (dev bypass dahil)
 - ✅ Go: In-memory location store + TTL
@@ -47,21 +47,20 @@
 
 ### Sprint 2 — Harita & Canlı Konum (Şimdiki Sprint)
 
-**Erol'dan `GET /v1/map/heatmap` endpoint'ini bekle**
-
-- [ ] Flutter: `h3_dart` paketini ekle, `location_utils.dart` gerçek implementasyona çevir
-- [ ] Flutter: `geolocator` ile konum stream'i başlat
-- [ ] Flutter: Konum izni akışı (`permission_handler`)
-- [ ] Flutter: Google Maps entegrasyonu (API key Erol'dan)
-- [ ] Flutter: WebSocket servisi (`WsService`) — Go'ya bağlan
-- [ ] Flutter: H3 hücre → WS'e gönder (ham GPS değil!)
-- [ ] Flutter: Isı haritası overlay (H3 Polygon, heatmap gradient)
-- [ ] Flutter: Hayalet mod toggle (UI + WS ghost_on sinyali)
-- [ ] Flutter: Harita filtreleri (araç tipi, pin tipi)
-- [ ] Go: Valkey bağlantısı ekle (şu an in-memory, swap et)
-- [ ] Go: Pub/Sub yayın mantığı (hücre bazlı)
-- [ ] Go: k-ring genişletme (yakınlık sorgusu)
-- [ ] Go: Prometheus metrics (`pitlane_ws_active_connections`)
+- [x] Flutter: `h3_dart` paketini ekle, `location_utils.dart` gerçek implementasyona çevir
+- [x] Flutter: `geolocator` ile konum stream'i başlat
+- [x] Flutter: Konum izni akışı (`permission_handler`)
+- [x] Flutter: Google Maps entegrasyonu
+- [x] Flutter: WebSocket servisi (`WsService`) — Go'ya bağlan
+- [x] Flutter: H3 hücre → WS'e gönder (ham GPS değil!)
+- [x] Flutter: Isı haritası overlay (H3 Polygon, heatmap gradient)
+- [x] Flutter: Hayalet mod toggle (UI + WS ghost_on sinyali)
+- [x] Flutter: Harita filtreleri (araç tipi, pin tipi)
+- [x] Flutter: Harita pin endpoint standardı `/v1/map/*?h3cell=&k=` olarak sabitlendi
+- [x] Go: Valkey bağlantısı ekle (VALKEY_ADDR varsa production store, yoksa in-memory fallback)
+- [x] Go: Pub/Sub yayın mantığı (Valkey varsa instance'lar arası heatmap fan-out)
+- [x] Go: k-ring genişletme (server-side gerçek grid-disk yakınlık sorgusu)
+- [x] Go: Prometheus metrics (`rollpit_ws_active_connections`)
 
 ---
 
@@ -69,17 +68,17 @@
 
 > Furkan formu yazar, sen haritaya SOS pinlerini eklersin
 
-- [ ] Flutter: Haritada açık yardım pinlerini göster
-- [ ] Flutter: SOS butonu → Furkan'ın form ekranına yönlendir
-- [ ] Go: Help request açılınca k-ring 2 yayını
+- [x] Flutter: Haritada açık yardım pinlerini göster
+- [x] Flutter: SOS butonu → Furkan'ın form ekranına yönlendir
+- [x] Go: Help request açılınca k-ring 2 yayını
 
 ---
 
-### Sprint 6 — Go Performans (Hafta 11-12)
+### Sprint 6 — Go Performans (Hafta 11-12) ✅ TAMAMLANDI
 
-- [ ] Go: k6 ile 10k bağlantı load test
-- [ ] Go: Sentry entegrasyonu
-- [ ] Go: go.sum + go mod tidy son kontrol
+- [x] Go: k6 ile 10k bağlantı load test — **PASSED** p(95)=4ms, 0 hata, 10k eşzamanlı bağlantı
+- [x] Go: Sentry entegrasyonu — `SENTRY_DSN` env, hub panic recovery, server fatal + shutdown capture
+- [x] Go: go.sum + go mod tidy son kontrol — temiz, Go 1.25'e güncellendi (sentry-go@v0.46.2)
 
 ---
 
@@ -88,9 +87,7 @@
 | Kim | Ne | Ne Zaman |
 |---|---|---|
 | **Erol** | Supabase OTP email aktif etsin | Şimdi |
-| **Erol** | Google Maps API key | Sprint 2 başı |
-| **Erol** | `GET /v1/map/heatmap` endpoint | Sprint 2 başı |
-| **Furkan** | Profil tamamlama ekranı | Sprint 1 sonu |
+| **Erol** | `/v1/map/pins`, `/v1/map/flares`, `/v1/map/help` prod davranışını aynı response standardında tutması | Sprint 2 |
 
 ---
 
@@ -101,7 +98,7 @@
 cd apps/realtime && go run ./cmd/realtime
 
 # Terminal 2 — Backend (Erol'un)
-cd apps/backend && pnpm --filter @pitlane/backend dev
+cd apps/backend && pnpm --filter @rollpit/backend dev
 
 # Terminal 3 — Flutter
 cd apps/mobile && flutter run \

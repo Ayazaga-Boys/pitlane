@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../models/snap_camera.dart';
 import '../providers/snap_camera_provider.dart';
 
@@ -111,17 +111,17 @@ class _SnapCameraContent extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: PitlaneButton(
+                child: RollpitButton(
                   label: 'Hızı Yenile',
                   icon: Icons.speed_outlined,
-                  variant: PitlaneButtonVariant.secondary,
+                  variant: RollpitButtonVariant.secondary,
                   onPressed: () =>
                       ref.read(snapCameraProvider.notifier).refreshSpeed(),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: PitlaneButton(
+                child: RollpitButton(
                   label: state.mode == SnapMode.photo ? 'Çek' : 'Kaydet',
                   icon: state.mode == SnapMode.photo
                       ? Icons.camera_alt_outlined
@@ -359,10 +359,10 @@ class _PreviewActions extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: PitlaneButton(
+              child: RollpitButton(
                 label: 'Yeniden Çek',
                 icon: Icons.refresh,
-                variant: PitlaneButtonVariant.secondary,
+                variant: RollpitButtonVariant.secondary,
                 onPressed: isUploading
                     ? null
                     : ref.read(snapCameraProvider.notifier).retake,
@@ -370,7 +370,7 @@ class _PreviewActions extends ConsumerWidget {
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
-              child: PitlaneButton(
+              child: RollpitButton(
                 label: 'Paylaş',
                 icon: Icons.upload_outlined,
                 isLoading: isUploading,

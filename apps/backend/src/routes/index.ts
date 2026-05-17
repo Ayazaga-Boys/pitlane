@@ -7,6 +7,8 @@ import { flareRoutes } from './flares.js';
 import { helpRoutes } from './help.js';
 import { helpRequestRoutes } from './help-requests.js';
 import { mapRoutes } from './map.js';
+import { mediaRoutes } from './media.js';
+import { messageRoutes } from './messages.js';
 import { notificationRoutes } from './notifications.js';
 import { pinRoutes } from './pins.js';
 import { profileRoutes } from './profiles.js';
@@ -25,6 +27,8 @@ export function mountProtectedRoutes(app: Hono<AppEnv>) {
   app.route('/help', helpRoutes);
   app.route('/help-requests', helpRequestRoutes);
   app.route('/map', mapRoutes);
+  app.route('/media', mediaRoutes);
+  app.route('/messages', messageRoutes);
   app.route('/notifications', notificationRoutes);
   app.route('/pins', pinRoutes);
   app.route('/profiles', profileRoutes);

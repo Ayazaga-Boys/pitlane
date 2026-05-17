@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -120,7 +120,7 @@ class SettingsScreen extends ConsumerWidget {
             const _SettingsTile(
               icon: Icons.dark_mode_outlined,
               title: 'Tema',
-              subtitle: 'Pitlane dark tema',
+              subtitle: 'Rollpit dark tema',
               onTap: null,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -133,7 +133,7 @@ class SettingsScreen extends ConsumerWidget {
                 context,
                 title: 'Gizlilik politikası',
                 body:
-                    'Pitlane konum verisini H3 hücreleriyle işler; ham GPS paylaşımı yapılmaz. Veri dışa aktarma ve hesap silme haklarına Ayarlar üzerinden erişebilirsin.',
+                    'Rollpit konum verisini H3 hücreleriyle işler; ham GPS paylaşımı yapılmaz. Veri dışa aktarma ve hesap silme haklarına Ayarlar üzerinden erişebilirsin.',
               ),
             ),
             _SettingsTile(
@@ -144,7 +144,7 @@ class SettingsScreen extends ConsumerWidget {
                 context,
                 title: 'Kullanım koşulları',
                 body:
-                    'Pitlane topluluk güvenliği, sürüş sırasında dikkat ve iyi niyetli paylaşım ilkeleriyle çalışır.',
+                    'Rollpit topluluk güvenliği, sürüş sırasında dikkat ve iyi niyetli paylaşım ilkeleriyle çalışır.',
               ),
             ),
             _SettingsTile(
@@ -153,7 +153,7 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: 'Kullanılan paketlerin lisansları',
               onTap: () => showLicensePage(
                 context: context,
-                applicationName: 'Pitlane',
+                applicationName: 'Rollpit',
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -313,7 +313,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            PitlaneButton(
+            RollpitButton(
               label: 'Tamam',
               onPressed: () => Navigator.of(context).pop(),
             ),

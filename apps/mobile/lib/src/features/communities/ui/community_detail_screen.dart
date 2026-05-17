@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../models/community.dart';
 import '../models/community_detail.dart';
 import '../providers/communities_provider.dart';
@@ -50,11 +50,11 @@ class _CommunityDetailContent extends ConsumerWidget {
       children: [
         _CommunityHeader(community: community),
         const SizedBox(height: AppSpacing.xl),
-        PitlaneButton(
+        RollpitButton(
           label: detail.isJoined ? 'Ayrıl' : 'Katıl',
           variant: detail.isJoined
-              ? PitlaneButtonVariant.secondary
-              : PitlaneButtonVariant.primary,
+              ? RollpitButtonVariant.secondary
+              : RollpitButtonVariant.primary,
           isLoading: isLoading,
           onPressed: isLoading
               ? null
@@ -63,9 +63,9 @@ class _CommunityDetailContent extends ConsumerWidget {
                   .toggleMembership(),
         ),
         const SizedBox(height: AppSpacing.md),
-        PitlaneButton(
+        RollpitButton(
           label: 'Topluluk sohbeti',
-          variant: PitlaneButtonVariant.secondary,
+          variant: RollpitButtonVariant.secondary,
           onPressed: () =>
               context.push('/communities/${community.id}/messages'),
         ),
@@ -75,9 +75,9 @@ class _CommunityDetailContent extends ConsumerWidget {
           trailing: '${detail.flares.length}',
         ),
         const SizedBox(height: AppSpacing.md),
-        PitlaneButton(
+        RollpitButton(
           label: 'Flare oluştur',
-          variant: PitlaneButtonVariant.secondary,
+          variant: RollpitButtonVariant.secondary,
           onPressed: () => context.push(
             '/flares/create?communityId=${community.id}',
           ),

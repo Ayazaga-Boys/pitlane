@@ -1,6 +1,6 @@
 # 25 — Gelir Modeli & Para Kazanma
 
-> Pitlane'in **reklamsız** kalabilmesi için gelir kanalları ve fiyatlandırma yapısı.
+> Rollpit'in **reklamsız** kalabilmesi için gelir kanalları ve fiyatlandırma yapısı.
 > Marka değeri olan "kullanıcıyı satmama" sözünden ödün vermeden büyümek.
 
 ---
@@ -9,7 +9,7 @@
 
 ### Söz
 
-Pitlane:
+Rollpit:
 - Banner reklam **YOK**
 - Influencer-içeriği gibi gizli reklam **YOK**
 - Kullanıcı verisini reklam ağlarına satma **YOK**
@@ -76,17 +76,17 @@ V1.0'da **YOK**. 6-12. ay aralığında değerlendirilir, sonra eklenir.
 
 | Plan | Aylık | Yıllık |
 |---|---|---|
-| **Free (Pitlane)** | 0 TL | — |
-| **Pitlane+** | 39 TL | 349 TL (-%25) |
+| **Free (Rollpit)** | 0 TL | — |
+| **Rollpit+** | 39 TL | 349 TL (-%25) |
 
-### Pitlane+ Özellikleri (Taslak)
+### Rollpit+ Özellikleri (Taslak)
 
 - ⭐ "Pioneer" rozeti
 - 🎨 Özel snap kamera filtreleri (10+ ek)
 - 📊 Gelişmiş istatistik (toplam km, en sık olduğun ilçe, en aktif gün)
 - 🎯 Genişletilmiş yardım yarıçapı (k-ring 2 → k-ring 3)
 - 📱 5 → 20 davet kodu (büyüme aracı)
-- 🎁 Pitlane sticker pack (uygulama içi)
+- 🎁 Rollpit sticker pack (uygulama içi)
 - 🚀 Erken erişim (yeni özellikler önce buraya)
 - 📈 İşletmesi olmayanlar için "Profil görünüm" sayacı
 - 🌍 Şehir filtresi: birden fazla şehir takip et
@@ -104,17 +104,17 @@ V1.0'da **YOK**. 6-12. ay aralığında değerlendirilir, sonra eklenir.
 ### Sponsorlu Flare
 
 Faz 2'de:
-- Otomotiv markası (Honda, Yamaha, BMW vb.) "Pitlane Resmi" flare'i oluşturabilir.
+- Otomotiv markası (Honda, Yamaha, BMW vb.) "Rollpit Resmi" flare'i oluşturabilir.
 - Aylık 1-3 büyük etkinlik
 - Marka harita üzerinde özel ikon ile görünür
 - Fiyat: 25.000 - 100.000 TL/etkinlik
 
-### Etkinlik Sponsorlukları (Pitlane → Kullanıcı)
+### Etkinlik Sponsorlukları (Rollpit → Kullanıcı)
 
-Pitlane şirketi olarak:
+Rollpit şirketi olarak:
 - Türkiye Motosiklet Festivali resmi sponsor
 - Klasik araba rallileri sponsor
-- Sponsorluk Pitlane brand awareness'a yatırım
+- Sponsorluk Rollpit brand awareness'a yatırım
 
 > Bu **gelir** değil, **gider** kalemi. Bütçesi `21_BUYUME_PAZARLAMA.md` içinde.
 
@@ -122,7 +122,7 @@ Pitlane şirketi olarak:
 
 - Acil yardım çağrılarında "Yetkili Tofaş Servisi'ni ara" seçeneği
 - Tofaş referans başına ücret öder (lead generation)
-- Pitlane kullanıcı için ücretsiz, opsiyonel
+- Rollpit kullanıcı için ücretsiz, opsiyonel
 
 ---
 
@@ -142,7 +142,7 @@ V1.0'da yok. Gelecekte:
 Çok uzun vadeli. Kullanıcılar arası ikinci el parça/araç ilanları:
 - İlan ücretsiz
 - Satış sonrası %3-5 komisyon (ödeme escrow ile)
-- "Pitlane Verified" satıcı rozeti (Premium üyeler için)
+- "Rollpit Verified" satıcı rozeti (Premium üyeler için)
 
 > Bu çok ileri vade; PMF + güven altyapısı olmadan denenmez.
 
@@ -234,7 +234,7 @@ V1.0'da yok. Gelecekte:
 - Avrupa öncülüğü
 - Pazaryeri açılımı
 
-> Pitlane bağımsız büyümeyi tercih edebilir. Funding **mecbur değil**.
+> Rollpit bağımsız büyümeyi tercih edebilir. Funding **mecbur değil**.
 
 ---
 

@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
-import '../../../shared/widgets/pitlane_text_field.dart';
+import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/rollpit_text_field.dart';
 import '../../map/providers/location_provider.dart';
 import '../constants/flare_constants.dart';
 import '../models/flare.dart';
@@ -191,7 +191,7 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
                   ),
             ),
             const SizedBox(height: AppSpacing.xl2),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Başlık',
               hint: 'Sahil cruise',
               controller: _titleController,
@@ -201,7 +201,7 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
               autofocus: true,
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Açıklama',
               hint: 'Kısa rota ve buluşma notu',
               controller: _descriptionController,
@@ -209,7 +209,7 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
               textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'H3 hücresi',
               hint: '89283082803ffff',
               controller: _h3CellController,
@@ -245,7 +245,7 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
               onTap: _pickEndsAt,
             ),
             const SizedBox(height: AppSpacing.lg),
-            PitlaneTextField(
+            RollpitTextField(
               label: 'Kapak bağlantısı',
               hint: 'İstersen boş bırak',
               controller: _coverUrlController,
@@ -255,7 +255,7 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: AppSpacing.xl),
-            PitlaneButton(
+            RollpitButton(
               label: 'Yayınla',
               onPressed: isLoading ? null : _submit,
               isLoading: isLoading,

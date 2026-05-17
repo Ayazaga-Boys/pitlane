@@ -6,7 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../features/help/models/help_request.dart';
 import '../../../features/help/providers/help_request_provider.dart';
-import '../../../shared/widgets/pitlane_button.dart';
+import '../../../shared/widgets/rollpit_button.dart';
 import '../providers/location_provider.dart';
 
 Future<void> showSosSheet(BuildContext context, WidgetRef ref) {
@@ -105,7 +105,7 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
                       color: AppColors.error,
                     )),
             const SizedBox(height: AppSpacing.xs),
-            Text('Sorun türünü seç, yakındaki Pitlane üyeleri görsün.',
+            Text('Sorun türünü seç, yakındaki Rollpit üyeleri görsün.',
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
@@ -168,7 +168,7 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
                   style: const TextStyle(color: AppColors.error, fontSize: 13)),
             ],
             const SizedBox(height: AppSpacing.lg),
-            PitlaneButton(
+            RollpitButton(
               label: 'Yardım İste',
               onPressed: isLoading ? null : _send,
               isLoading: isLoading,

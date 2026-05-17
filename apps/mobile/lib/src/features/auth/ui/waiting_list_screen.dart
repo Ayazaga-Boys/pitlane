@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/pitlane_button.dart';
-import '../../../shared/widgets/pitlane_text_field.dart';
+import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/rollpit_text_field.dart';
 import '../providers/invite_code_provider.dart';
 
 class WaitingListScreen extends ConsumerStatefulWidget {
@@ -107,7 +107,7 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Pitlane yakında kapılarını açıyor.',
+                'Rollpit yakında kapılarını açıyor.',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -121,7 +121,7 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
               ),
               const SizedBox(height: AppSpacing.xl2),
 
-              PitlaneTextField(
+              RollpitTextField(
                 label: 'E-posta',
                 hint: 'ornek@email.com',
                 controller: _emailController,
@@ -166,7 +166,7 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
               ),
               const SizedBox(height: AppSpacing.xl2),
 
-              PitlaneButton(
+              RollpitButton(
                 label: 'Listeye Katıl',
                 onPressed: isLoading ? null : _submit,
                 isLoading: isLoading,
@@ -210,9 +210,9 @@ class _SuccessView extends StatelessWidget {
                     ),
               ),
               const SizedBox(height: AppSpacing.xl2),
-              PitlaneButton(
+              RollpitButton(
                 label: 'Davet kodum var',
-                variant: PitlaneButtonVariant.ghost,
+                variant: RollpitButtonVariant.ghost,
                 onPressed: onBack,
               ),
             ],

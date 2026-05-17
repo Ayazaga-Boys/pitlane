@@ -1,8 +1,8 @@
 # 21 — Büyüme & Pazarlama Stratejisi
 
-> Hedef: Türkiye'deki **tüm** otomobil ve motosiklet sahiplerini Pitlane'e taşımak.
+> Hedef: Türkiye'deki **tüm** otomobil ve motosiklet sahiplerini Rollpit'e taşımak.
 > Mevcut: ~25M tescilli araç (otomobil 14.5M, motosiklet 5.5M, kamyonet/diğer 5M, TÜİK 2024).
-> Pitlane V1.0 hedefi: 90 günde 25k MAU. 12 ayda 250k MAU. 36 ayda 2M MAU.
+> Rollpit V1.0 hedefi: 90 günde 25k MAU. 12 ayda 250k MAU. 36 ayda 2M MAU.
 
 ---
 
@@ -10,7 +10,7 @@
 
 ### Birincil Segmentler
 
-| # | Segment | Tahmini Büyüklük | Öncelik | Neden Pitlane? |
+| # | Segment | Tahmini Büyüklük | Öncelik | Neden Rollpit? |
 |---|---|---|---|---|
 | 1 | Tutkulu motorcular (18-35) | ~800k aktif | 🔴 Çok yüksek | Cruise / yardımlaşma kültürü güçlü |
 | 2 | Modifiye/performans araç sahipleri | ~600k | 🔴 Çok yüksek | Topluluk + showcase ihtiyacı |
@@ -52,7 +52,7 @@ Neden?
 
 **Kanal:**
 - Kapalı beta kullanıcılarına 5 davet kodu (viral)
-- Pitlane Instagram + TikTok hesapları
+- Rollpit Instagram + TikTok hesapları
 - 2 büyük YouTube otomotiv kanalı (sponsored long-form)
 
 **Sürüm:** TestFlight + Internal Testing (Apple Public Beta opsiyonel).
@@ -84,7 +84,7 @@ Neden?
 
 ### Faz 4 — Türkiye Hâkim (Yıl 2-3)
 
-**Hedef:** 2M MAU, "yola çıkan herkes Pitlane'i biliyor".
+**Hedef:** 2M MAU, "yola çıkan herkes Rollpit'i biliyor".
 
 - TV reklam (TRT Spor + niş otomotiv kanalları)
 - Akaryakıt zinciri ortaklığı (BP, Shell — pin entegrasyonu)
@@ -99,7 +99,7 @@ Neden?
 
 - Her aktif kullanıcıya 5 kod.
 - Kod kullanılınca davet eden bilgilendirilir.
-- 10 kişi davet eden → "Pitlane Pioneer" rozet.
+- 10 kişi davet eden → "Rollpit Pioneer" rozet.
 - 50 kişi → 1 yıl ücretsiz Premium (Faz 2 premium varsa).
 
 **Tablo:**
@@ -132,25 +132,25 @@ CREATE TABLE public.waiting_list (
 
 ---
 
-## 4. İçerik Stratejisi (Pitlane Sosyal Medyaları)
+## 4. İçerik Stratejisi (Rollpit Sosyal Medyaları)
 
-### Instagram (`@pitlane.app`)
+### Instagram (`@rollpit.com`)
 
 **Format:**
 - Reels: kullanıcı flare anları, klasik araba showcase, motorcu cruise
-- Carousel: "Bu hafta Pitlane'de" — etkinlik özetleri
+- Carousel: "Bu hafta Rollpit'de" — etkinlik özetleri
 - Story: günlük canlı yardım talepleri (anonim, izinli)
 
 **Sıklık:** Haftada 5 reel + 3 carousel + günlük story.
 
-### TikTok (`@pitlane`)
+### TikTok (`@rollpit`)
 
 **Format:**
-- "Pitlane'in en büyüleyici flare'leri" (haftalık)
+- "Rollpit'in en büyüleyici flare'leri" (haftalık)
 - Acil yardım gerçek hikayeleri (kullanıcı izniyle)
 - Snap kamera filtre demo'ları
 
-### YouTube (`Pitlane`)
+### YouTube (`Rollpit`)
 
 - Aylık long-form: kullanıcı röportajı, etkinlik aftermovie.
 - Shorts: günde 1, snap içerikleri.
@@ -182,7 +182,7 @@ CREATE TABLE public.waiting_list (
 
 ### Basın Kiti
 
-`pitlane.app/press` adresinde:
+`rollpit.com/press` adresinde:
 - Logo varyantları (PNG, SVG, ZIP)
 - Ekran görüntüleri (yüksek çözünürlük)
 - Kurucu özgeçmiş + fotoğraf
@@ -203,8 +203,8 @@ CREATE TABLE public.waiting_list (
 | Hafta sonu cruise organizasyonları | ~50-200 | 1.000 TL/etkinlik |
 
 **Sponsorluk paketi:**
-- Pitlane stand
-- "Pitlane'i indir" QR kod kartları
+- Rollpit stand
+- "Rollpit'i indir" QR kod kartları
 - Etkinlik kapakları + flare'i
 - Aktif desteğe karşılık 100 davet kodu
 
@@ -282,7 +282,7 @@ CREATE TABLE public.waiting_list (
 
 ```
 Başlık (TR):
-Pitlane — Araç & Moto Sosyal
+Rollpit — Araç & Moto Sosyal
 
 Alt başlık:
 Otomobil tutkunları için harita
@@ -299,7 +299,7 @@ Birincil: Sosyal Ağ
 ### EN — App Store (Faz 4, Avrupa açılımı)
 
 ```
-Title: Pitlane — Car & Moto Social
+Title: Rollpit — Car & Moto Social
 Subtitle: Live map for motorheads
 Keywords: car, motorcycle, biker, cruise, meetup, community, map, modified, classic, mechanic, garage, roadside
 ```
@@ -430,6 +430,6 @@ PostHog'da public dashboard:
 
 > "Asfaltta yalnız değilsin."
 
-Pitlane bir uygulamadan fazlasıdır. Türkiye'nin yola çıkan her bireyini birbirine bağlayan dijital sokaktır. Yardım eli, etkinlik mekanı, hikaye paylaşım yeridir. Reklam yok, manipülasyon yok, sadece tutkunlar.
+Rollpit bir uygulamadan fazlasıdır. Türkiye'nin yola çıkan her bireyini birbirine bağlayan dijital sokaktır. Yardım eli, etkinlik mekanı, hikaye paylaşım yeridir. Reklam yok, manipülasyon yok, sadece tutkunlar.
 
 Bu manifesto her sosyal post'ta, her PR yazısında, her içerikte arka planda olmalı.

@@ -170,8 +170,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
 
 // ─── App ────────────────────────────────────────────────────────────────────
 
-class PitlaneApp extends ConsumerWidget {
-  const PitlaneApp({super.key});
+class RollpitApp extends ConsumerWidget {
+  const RollpitApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -179,9 +179,13 @@ class PitlaneApp extends ConsumerWidget {
     // Supabase oturumu açılınca WS'e otomatik bağlan
     ref.watch(wsConnectionProvider);
     ref.watch(pushNotificationControllerProvider);
+    ref.listen(pushDeepLinkEventsProvider, (_, next) {
+      final deepLink = next.valueOrNull;
+      if (deepLink != null) router.push(deepLink);
+    });
 
     return MaterialApp.router(
-      title: 'Pitlane',
+      title: 'Rollpit',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       routerConfig: router,

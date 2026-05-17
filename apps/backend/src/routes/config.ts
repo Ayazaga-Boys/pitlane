@@ -4,7 +4,7 @@ import { getServiceSupabaseClient } from '../services/supabase.js';
 export const configRoutes = new Hono();
 
 const defaultConfig = {
-  app_name: 'Pitlane',
+  app_name: 'Rollpit',
   min_supported_app_version: '1.0.0',
   feature_flags: {
     invite_only: true,

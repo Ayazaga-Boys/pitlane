@@ -61,7 +61,7 @@
 | OTP 3 yanlış deneme | 5 dk lock + sayaç |
 | Apple/Google iptal | Auth seçim ekranına geri |
 | İnternet yok | "Bağlantı yok" banner, retry butonu |
-| Konum izni reddedildi | "Pitlane'i tam kullanmak için..." rationale + Ayarlar deep link |
+| Konum izni reddedildi | "Rollpit'i tam kullanmak için..." rationale + Ayarlar deep link |
 | Bildirim izni reddedildi | Devam edilebilir, ama uyarı: "Yardım çağrısı bildirimi alamayacaksın" |
 
 ---
