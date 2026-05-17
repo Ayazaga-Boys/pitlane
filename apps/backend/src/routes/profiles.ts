@@ -8,6 +8,7 @@ import {
 } from '../schemas/profile.schema.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import { serviceUnavailable, validationError } from '../lib/http.js';
+import { buildUserExportArchive } from '../services/user-export.js';
 import type { AppEnv } from '../types/hono.js';
 
 export const profileRoutes = new Hono<AppEnv>();
@@ -29,6 +30,22 @@ profileRoutes.get('/me', async (c) => {
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
   if (!data) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
   return c.json({ data });
+});
+
+profileRoutes.get('/me/export', async (c) => {
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  try {
+    const archive = await buildUserExportArchive(supabase, userId);
+    const date = archive.generated_at.slice(0, 10);
+    c.header('Content-Disposition', `attachment; filename="rollpit-export-${date}.json"`);
+    return c.json({ data: archive });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Export failed';
+    return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
+  }
 });
 
 profileRoutes.get('/:username', async (c) => {

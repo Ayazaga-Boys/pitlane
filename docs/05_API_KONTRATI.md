@@ -34,7 +34,37 @@ GET    /v1/profiles/me/vehicles        — Araç listesi
 POST   /v1/profiles/me/vehicles        — Araç ekle
 PATCH  /v1/profiles/me/vehicles/:id    — Araç güncelle
 DELETE /v1/profiles/me/vehicles/:id    — Araç sil
-GET    /v1/profiles/me/export          — Veri dışa aktarma talebi (GDPR)
+GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi (KVKK/GDPR)
+```
+
+### GET /v1/profiles/me/export — Response
+
+```typescript
+type UserExportResponse = {
+  data: {
+    format_version: 1;
+    generated_at: string;
+    user_id: string;
+    profile: Profile;
+    vehicles: Vehicle[];
+    communities: {
+      owned: Community[];
+      memberships: CommunityMember[];
+    };
+    flares: {
+      created: Flare[];
+      rsvps: FlareRsvp[];
+    };
+    business_pins: BusinessPin[];
+    help_requests: HelpRequest[];
+    messages: Message[];
+    media_assets: MediaAsset[];
+    reports: Report[];
+    notifications: Notification[];
+    blocks: Block[];
+    push_devices: PushDevice[];
+  };
+};
 ```
 
 ### PATCH /v1/profiles/me — Zod Şeması
