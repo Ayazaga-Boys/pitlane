@@ -40,14 +40,21 @@ export async function middleware(request: NextRequest) {
 
   const role = resolveRole(profileResult.data ?? null, user.app_metadata.role ?? user.user_metadata.role);
 
-  if (role !== "admin") {
+  if (role !== "admin" && role !== "moderator") {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("error", "unauthorized");
     return NextResponse.redirect(redirectUrl);
   }
 
   if (isLoginPage) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL(role === "moderator" ? "/reports" : "/", request.url));
+  }
+
+  if (role === "moderator") {
+    const moderatorAllowed = pathname === "/reports" || pathname.startsWith("/reports/");
+    if (!moderatorAllowed) {
+      return NextResponse.redirect(new URL("/reports", request.url));
+    }
   }
 
   return response;

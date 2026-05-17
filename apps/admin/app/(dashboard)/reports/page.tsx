@@ -1,18 +1,25 @@
-import { MockDataBanner } from "@/components/dashboard/mock-data-banner";
+import { DataStateBanner } from "@/components/dashboard/data-state-banner";
 import { PageShell } from "@/components/dashboard/page-shell";
 import { ReportsTable } from "@/components/reports/reports-table";
 import { mockReports } from "@/lib/mock-data";
+import { getAdminReportsOrMock } from "@/lib/admin-data";
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  const { data: reports, usingMockData } = await getAdminReportsOrMock(mockReports);
+
   return (
     <PageShell
       eyebrow="Sprint 3 hazırlık"
       title="Şikayetler"
-      description="Moderasyon kuyruğunun öncelik mantığı ve liste düzeni mock raporlarla çalışıyor."
+      description="Moderasyon kuyruğu service-role erişimi varsa gerçek rapor verisini, yoksa mock listeyi gösterir."
     >
-      <MockDataBanner label="Reports tablosu hazır olana kadar sahte moderasyon kuyruğu aktif" />
+      <DataStateBanner
+        usingMockData={usingMockData}
+        mockLabel="Gerçek rapor listesi için service-role erişimi bekleniyor; şimdilik mock moderasyon kuyruğu aktif."
+        liveLabel="Gerçek rapor verisi aktif. Şikayet kuyruğu Supabase üzerinden okunuyor."
+      />
       <div className="surface-panel p-xl">
-        <ReportsTable reports={mockReports} />
+        <ReportsTable reports={reports} />
       </div>
     </PageShell>
   );
