@@ -358,6 +358,15 @@ const FinalizeSchema = z.object({
 });
 ```
 
+### POST /v1/media/webhook/stream — Cloudflare Stream
+
+- Public route; kullanıcı JWT istemez.
+- `CF_STREAM_WEBHOOK_SECRET` ile `Webhook-Signature: time=...,sig1=...` doğrulanır.
+- İmza kaynağı raw body olarak `{time}.{body}` formatıdır.
+- Webhook `meta.asset_id` / `meta.media_asset_id` veya `meta.source_key` / `meta.storage_key` ile `media_assets` kaydını bulur.
+- `status.state = "ready"` veya `readyToStream = true` → `status = "ready"`.
+- `status.state = "error"` → `status = "failed"`.
+
 ---
 
 ## Bildirimler

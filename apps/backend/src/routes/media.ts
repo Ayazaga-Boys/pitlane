@@ -1,14 +1,72 @@
 import { Hono } from 'hono';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 import { FinalizeMediaSchema, MediaIdParamSchema, UploadUrlSchema } from '../schemas/media.schema.js';
+import {
+  getCloudflareStreamAssetReference,
+  getCloudflareStreamAssetStatus,
+  parseCloudflareStreamWebhook,
+  toMediaAssetMetrics,
+  verifyCloudflareStreamSignature,
+} from '../services/cloudflare-stream.js';
 import { createMediaStorageKey, generateR2UploadUrl, isR2Configured } from '../services/r2.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
 export const mediaRoutes = new Hono<AppEnv>();
+export const mediaWebhookRoutes = new Hono();
 
 const MEDIA_ASSET_SELECT =
   'id,uploader_id,asset_type,storage_key,cf_image_id,cf_stream_id,width,height,duration_sec,size_bytes,status,created_at';
+
+mediaWebhookRoutes.post('/webhook/stream', async (c) => {
+  const secret = process.env.CF_STREAM_WEBHOOK_SECRET;
+  if (!secret) return serviceUnavailable(c);
+
+  const signature = c.req.header('Webhook-Signature');
+  const body = await c.req.text();
+  if (!verifyCloudflareStreamSignature({ body, header: signature, secret })) {
+    return c.json({ code: 'UNAUTHORIZED', error: 'Invalid Cloudflare Stream signature' }, 401);
+  }
+
+  const event = parseCloudflareStreamWebhook(body);
+  if (!event) return c.json({ code: 'VALIDATION_ERROR', error: 'Invalid Cloudflare Stream payload' }, 422);
+
+  const reference = getCloudflareStreamAssetReference(event);
+  if (!reference) {
+    return c.json({ data: { processed: false, reason: 'missing_media_reference' } });
+  }
+
+  const status = getCloudflareStreamAssetStatus(event);
+  if (status === 'pending') {
+    return c.json({ data: { processed: false, state: event.status?.state ?? 'pending' } });
+  }
+
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const update = Object.fromEntries(
+    Object.entries({
+      status,
+      cf_stream_id: event.uid,
+      ...toMediaAssetMetrics(event),
+    }).filter(([, value]) => value !== undefined),
+  );
+
+  let query = supabase
+    .from('media_assets')
+    .update(update)
+    .select(MEDIA_ASSET_SELECT);
+
+  query = reference.type === 'id'
+    ? query.eq('id', reference.value)
+    : query.eq('storage_key', reference.value);
+
+  const { data, error } = await query.maybeSingle();
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Media asset not found' }, 404);
+
+  return c.json({ data });
+});
 
 mediaRoutes.post('/upload-url', async (c) => {
   const body = await c.req.json().catch(() => null);

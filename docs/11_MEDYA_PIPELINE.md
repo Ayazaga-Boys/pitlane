@@ -153,11 +153,17 @@ router.post('/webhook/stream', async (c) => {
   }
 
   const event = JSON.parse(body);
-  if (event.meta?.loaded === 'live') {
+  if (event.readyToStream || event.status?.state === 'ready') {
     await getSupabaseAdmin()
       .from('media_assets')
-      .update({ status: 'ready', cf_stream_id: event.uid })
-      .eq('storage_key', event.meta.source_key);
+      .update({
+        status: 'ready',
+        cf_stream_id: event.uid,
+        duration_sec: Math.round(event.duration ?? 0),
+        width: event.input?.width,
+        height: event.input?.height,
+      })
+      .eq('id', event.meta.asset_id);
   }
 
   return c.json({ ok: true });

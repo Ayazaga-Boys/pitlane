@@ -129,6 +129,22 @@ describe('app routes', () => {
     expect(finalizeResponse.status).toBe(401);
   });
 
+  it('exposes Cloudflare Stream webhook without user auth', async () => {
+    const previousSecret = process.env.CF_STREAM_WEBHOOK_SECRET;
+    delete process.env.CF_STREAM_WEBHOOK_SECRET;
+
+    const app = createApp();
+    const response = await app.request('/v1/media/webhook/stream', { method: 'POST', body: '{}' });
+
+    if (previousSecret === undefined) {
+      delete process.env.CF_STREAM_WEBHOOK_SECRET;
+    } else {
+      process.env.CF_STREAM_WEBHOOK_SECRET = previousSecret;
+    }
+
+    expect(response.status).toBe(503);
+  });
+
   it('keeps message routes protected', async () => {
     const app = createApp();
     const response = await app.request('/v1/messages/dms');
