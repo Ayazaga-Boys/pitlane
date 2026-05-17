@@ -126,7 +126,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Fly.io production deploy + auto-rollback (23. doküman Bölüm 12)
 - [ ] Status sayfası setup (statuspage.io veya Cachet)
 
-> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Cloudflare Stream webhook imza doğrulama + ready/failed status update eklendi. Cloudflare Images kopyalama, Stream ingest başlatma ve R2 delete/head doğrulamaları sonraki medya adımı olarak açık.
+> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). `DELETE /v1/media/:id` R2 object delete + DB row delete olarak eklendi. Cloudflare Stream webhook imza doğrulama + ready/failed status update eklendi. Cloudflare Images kopyalama, Stream ingest başlatma ve R2 head doğrulamaları sonraki medya adımı olarak açık.
 
 ---
 

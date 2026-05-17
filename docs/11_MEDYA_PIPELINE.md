@@ -293,7 +293,7 @@ async function deleteMediaAsset(assetId: string, userId: string) {
 
   if (!asset) throw new Error('Not found');
 
-  // R2'den sil
+  // R2'den sil (404 idempotent kabul edilir)
   await deleteObject(asset.storage_key);
 
   // Cloudflare Images'dan sil
@@ -310,3 +310,5 @@ async function deleteMediaAsset(assetId: string, userId: string) {
   await sb.from('media_assets').delete().eq('id', assetId);
 }
 ```
+
+V1 backend davranışı: `DELETE /v1/media/:id` sahiplik kontrolü yapar, R2 objesini siler ve `media_assets` kaydını kaldırır. Cloudflare Images/Stream silme çağrıları `CF_IMAGES_API_TOKEN` / `CF_STREAM_API_TOKEN` operasyon kontratıyla ayrıca bağlanır.

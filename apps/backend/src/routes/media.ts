@@ -8,7 +8,7 @@ import {
   toMediaAssetMetrics,
   verifyCloudflareStreamSignature,
 } from '../services/cloudflare-stream.js';
-import { createMediaStorageKey, generateR2UploadUrl, isR2Configured } from '../services/r2.js';
+import { createMediaStorageKey, deleteR2Object, generateR2UploadUrl, isR2Configured } from '../services/r2.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
@@ -154,4 +154,44 @@ mediaRoutes.get('/:id', async (c) => {
   if (!data) return c.json({ code: 'NOT_FOUND', error: 'Media asset not found' }, 404);
 
   return c.json({ data });
+});
+
+mediaRoutes.delete('/:id', async (c) => {
+  const params = MediaIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data: asset, error: findError } = await supabase
+    .from('media_assets')
+    .select(MEDIA_ASSET_SELECT)
+    .eq('id', params.data.id)
+    .eq('uploader_id', userId)
+    .maybeSingle();
+
+  if (findError) return c.json({ code: 'INTERNAL_ERROR', error: findError.message }, 500);
+  if (!asset) return c.json({ code: 'NOT_FOUND', error: 'Media asset not found' }, 404);
+
+  if (!isR2Configured()) {
+    return c.json({ code: 'SERVICE_UNAVAILABLE', error: 'Cloudflare R2 is not configured' }, 503);
+  }
+
+  try {
+    await deleteR2Object((asset as { storage_key: string }).storage_key);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'R2 delete failed';
+    return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
+  }
+
+  const { error: deleteError } = await supabase
+    .from('media_assets')
+    .delete()
+    .eq('id', params.data.id)
+    .eq('uploader_id', userId);
+
+  if (deleteError) return c.json({ code: 'INTERNAL_ERROR', error: deleteError.message }, 500);
+
+  return c.json({ data: { id: params.data.id, deleted: true } });
 });
