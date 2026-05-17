@@ -179,6 +179,10 @@ class RollpitApp extends ConsumerWidget {
     // Supabase oturumu açılınca WS'e otomatik bağlan
     ref.watch(wsConnectionProvider);
     ref.watch(pushNotificationControllerProvider);
+    ref.listen(pushDeepLinkEventsProvider, (_, next) {
+      final deepLink = next.valueOrNull;
+      if (deepLink != null) router.push(deepLink);
+    });
 
     return MaterialApp.router(
       title: 'Rollpit',

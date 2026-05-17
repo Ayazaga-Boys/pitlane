@@ -35,6 +35,8 @@ dependencies:
   go_router: ^14.0.0
   supabase_flutter: ^2.5.0
   dio: ^5.4.0
+  firebase_core: ^3.0.0
+  firebase_messaging: ^15.0.0
   web_socket_channel: ^3.0.0
   intl: ^0.20.2
 
@@ -55,6 +57,14 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  patrol: ^4.5.0
+  patrol_cli: ^4.3.1
+
+patrol:
+  android:
+    package_name: app.rollpit.rollpit
+  ios:
+    bundle_id: app.rollpit.rollpit
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
