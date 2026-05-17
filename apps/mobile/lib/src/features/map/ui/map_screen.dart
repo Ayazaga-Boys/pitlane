@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
+import '../data/ws_service.dart';
 import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/map_pins_provider.dart';
@@ -27,6 +30,7 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen>
     with WidgetsBindingObserver {
   GoogleMapController? _mapController;
+  StreamSubscription<WsHelpEvent>? _helpEventSub;
   bool _showPermissionRationale = false;
 
   static const _istanbul = CameraPosition(
@@ -50,11 +54,16 @@ class _MapScreenState extends ConsumerState<MapScreen>
         _goToMyLocation();
       }
     });
+    _helpEventSub = ref.read(wsServiceProvider).helpEventStream.listen((event) {
+      if (!mounted) return;
+      _showHelpEventSnackBar(event);
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _helpEventSub?.cancel();
     super.dispose();
   }
 
@@ -133,6 +142,30 @@ class _MapScreenState extends ConsumerState<MapScreen>
       );
     }
   }
+
+  void _showHelpEventSnackBar(WsHelpEvent event) {
+    if (event.type != WsHelpEventType.nearby) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(_helpEventMessage(event.issueType)),
+        action: SnackBarAction(
+          label: 'Aç',
+          onPressed: () => context.go('/help/${event.helpId}'),
+        ),
+      ),
+    );
+  }
+
+  String _helpEventMessage(String? issueType) => switch (issueType) {
+        'breakdown' => 'Yakında arıza yardımı istendi.',
+        'flat_tire' => 'Yakında lastik yardımı istendi.',
+        'fuel' => 'Yakında yakıt yardımı istendi.',
+        'accident' => 'Yakında kaza yardımı istendi.',
+        _ => 'Yakında yeni yardım talebi var.',
+      };
 
   @override
   Widget build(BuildContext context) {
