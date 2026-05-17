@@ -8,7 +8,7 @@ import {
   toMediaAssetMetrics,
   verifyCloudflareStreamSignature,
 } from '../services/cloudflare-stream.js';
-import { createMediaStorageKey, deleteR2Object, generateR2UploadUrl, isR2Configured } from '../services/r2.js';
+import { createMediaStorageKey, deleteR2Object, generateR2UploadUrl, headR2Object, isR2Configured } from '../services/r2.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
@@ -120,16 +120,46 @@ mediaRoutes.post('/finalize', async (c) => {
   const supabase = getServiceSupabaseClient();
   if (!supabase) return serviceUnavailable(c);
 
-  const { data, error } = await supabase
+  const { data: asset, error } = await supabase
     .from('media_assets')
-    .update({ status: 'ready' })
+    .select(MEDIA_ASSET_SELECT)
+    .eq('id', parsed.data.asset_id)
+    .eq('uploader_id', userId)
+    .eq('status', 'pending')
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!asset) return c.json({ code: 'NOT_FOUND', error: 'Media asset not found' }, 404);
+
+  if (!isR2Configured()) {
+    return c.json({ code: 'SERVICE_UNAVAILABLE', error: 'Cloudflare R2 is not configured' }, 503);
+  }
+
+  let objectMetadata;
+  try {
+    objectMetadata = await headR2Object((asset as { storage_key: string }).storage_key);
+  } catch (headError) {
+    const message = headError instanceof Error ? headError.message : 'R2 head failed';
+    return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
+  }
+
+  if (!objectMetadata) {
+    return c.json({ code: 'UPLOAD_NOT_FOUND', error: 'Uploaded object was not found in R2' }, 409);
+  }
+
+  const { data, error: updateError } = await supabase
+    .from('media_assets')
+    .update({
+      status: 'ready',
+      ...(objectMetadata.sizeBytes ? { size_bytes: objectMetadata.sizeBytes } : {}),
+    })
     .eq('id', parsed.data.asset_id)
     .eq('uploader_id', userId)
     .eq('status', 'pending')
     .select(MEDIA_ASSET_SELECT)
     .maybeSingle();
 
-  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (updateError) return c.json({ code: 'INTERNAL_ERROR', error: updateError.message }, 500);
   if (!data) return c.json({ code: 'NOT_FOUND', error: 'Media asset not found' }, 404);
 
   return c.json({ data });
