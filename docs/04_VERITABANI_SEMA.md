@@ -235,7 +235,7 @@ CREATE TABLE public.help_requests (
   vehicle_id    UUID REFERENCES public.vehicles(id),
   issue_type    TEXT NOT NULL CHECK (issue_type IN ('breakdown','flat_tire','fuel','accident','other')),
   description   TEXT CHECK (char_length(description) <= 300),
-  status        TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','helper_found','resolved','cancelled')),
+  status        TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','helper_found','resolved','cancelled','expired')),
   helper_id     UUID REFERENCES public.profiles(id),
   resolved_at   TIMESTAMPTZ,
   expires_at    TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '2 hours',
