@@ -480,7 +480,8 @@ POST /v1/blocks/:userId
    │
    ▼
 [DELETE /v1/profiles/me]
-   ↳ profile.role = 'pending_deletion'
+   ↳ deletion_requested_at ve delete_after set edilir
+   ↳ ghost_mode = true
    ↳ Trigger.dev job 30 gün sonra çalışacak şekilde planlanır
    ↳ E-posta: "Hesabın 30 gün içinde silinecek. Vazgeçmek için: <link>"
    │

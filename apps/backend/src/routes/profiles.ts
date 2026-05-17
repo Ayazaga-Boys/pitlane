@@ -120,6 +120,28 @@ profileRoutes.delete('/me', async (c) => {
   return c.json({ data });
 });
 
+profileRoutes.post('/me/deletion/cancel', async (c) => {
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      deletion_requested_at: null,
+      delete_after: null,
+      deletion_reason: null,
+    })
+    .eq('id', userId)
+    .select('id,deletion_requested_at,delete_after,ghost_mode')
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+
+  return c.json({ data });
+});
+
 profileRoutes.post('/me/ghost-mode', async (c) => {
   const body = await c.req.json().catch(() => null);
   const enabled = typeof body?.enabled === 'boolean' ? body.enabled : undefined;

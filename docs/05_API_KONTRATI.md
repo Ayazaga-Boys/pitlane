@@ -29,6 +29,7 @@ GET    /v1/profiles/me                 — Kendi profilim
 GET    /v1/profiles/:username          — Public profil
 PATCH  /v1/profiles/me                 — Kendi profilini güncelle
 DELETE /v1/profiles/me                 — 30 günlük hesap silme penceresi başlat (KVKK/GDPR)
+POST   /v1/profiles/me/deletion/cancel — Hesap silme penceresini iptal et
 POST   /v1/profiles/me/ghost-mode      — Hayalet mod toggle
 GET    /v1/profiles/me/vehicles        — Araç listesi
 POST   /v1/profiles/me/vehicles        — Araç ekle
@@ -107,6 +108,19 @@ type DeleteProfileResponse = {
     deletion_requested_at: string;
     delete_after: string; // deletion_requested_at + 30 gün
     ghost_mode: true;
+  };
+};
+```
+
+### POST /v1/profiles/me/deletion/cancel — Response
+
+```typescript
+type CancelProfileDeletionResponse = {
+  data: {
+    id: string;
+    deletion_requested_at: null;
+    delete_after: null;
+    ghost_mode: boolean;
   };
 };
 ```

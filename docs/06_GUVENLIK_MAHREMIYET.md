@@ -207,10 +207,15 @@ app.use('/v1/*', limiter);
 ```typescript
 // src/routes/profiles.ts — DELETE /v1/profiles/me
 async function deleteAccount(userId: string) {
-  // 1. Supabase Auth'dan sil (cascade: profiles, mesajlar anonim olur)
-  await supabaseAdmin.auth.admin.deleteUser(userId);
-  // 2. Valkey'den konum kaydını sil
+  // 1. 30 günlük soft-delete penceresi başlat
+  await supabaseAdmin.from('profiles').update({
+    ghost_mode: true,
+    deletion_requested_at: new Date().toISOString(),
+    delete_after: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  }).eq('id', userId);
+  // 2. Valkey'den konum kaydını ve push cihazlarını sil
   await redisClient.del(`loc:user:${userId}`);
+  await supabaseAdmin.from('push_devices').delete().eq('user_id', userId);
   // 3. Trigger.dev job: 30 gün sonra medya dosyalarını R2'den sil
   await triggerClient.sendEvent({
     name: 'user.delete.media',
