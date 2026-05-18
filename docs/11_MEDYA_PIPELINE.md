@@ -187,6 +187,8 @@ Cloudflare Images dashboard'ında şu varyantlar tanımlanır:
 | `full`   | 1920 | 1080 | contain | Tam ekran görüntüleme |
 | `square` | 400  | 400  | cover | Topluluk cover |
 
+Backend bu canonical listeyi `GET /v1/config` içinde `media.image_variants` olarak döndürür. Client sabit isimleri kullanır; Cloudflare dashboard/API tarafında aynı isimlerle variant oluşturulmalıdır.
+
 Flutter'da URL yapısı:
 
 ```dart

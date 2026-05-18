@@ -452,10 +452,23 @@ type ConfigResponse = {
     feature_help_enabled:      boolean;
     feature_business_pins:     boolean;
     max_flares_per_user_day:   number;
+    media: {
+      cloudflare_images_account_hash: string | null;
+      cloudflare_stream_cdn_base: string | null;
+      image_variants: Array<{
+        name: 'thumb' | 'feed' | 'full' | 'square';
+        width: number;
+        height: number;
+        fit: 'cover' | 'contain';
+        usage: string;
+      }>;
+    };
     [key: string]: unknown;
   };
 };
 ```
+
+V1 canonical Cloudflare Images varyantları: `thumb` (120x120 cover), `feed` (640x480 contain), `full` (1920x1080 contain), `square` (400x400 cover).
 
 ---
 
