@@ -41,7 +41,9 @@ final _routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/auth/invite-code',
     redirect: (context, state) {
       // AUTH BYPASS — domain + Resend kurulunca kaldır
-      return '/map';
+      // Sadece auth rotalarını bypass et, diğerlerine izin ver
+      if (state.matchedLocation.startsWith('/auth')) return '/map';
+      return null;
     },
     routes: [
       // ── Auth ──────────────────────────────────────────────────────────────
