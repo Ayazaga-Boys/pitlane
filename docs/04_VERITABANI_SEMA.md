@@ -209,6 +209,15 @@ CREATE TABLE public.business_pins (
   cover_url        TEXT,
   is_verified      BOOLEAN NOT NULL DEFAULT FALSE,
   is_active        BOOLEAN NOT NULL DEFAULT TRUE,
+  tax_document_key TEXT,
+  tax_document_content_type TEXT CHECK (
+    tax_document_content_type IS NULL
+    OR tax_document_content_type IN ('application/pdf','image/jpeg','image/png','image/webp')
+  ),
+  verification_status TEXT NOT NULL DEFAULT 'not_submitted'
+    CHECK (verification_status IN ('not_submitted','pending','verified','rejected')),
+  verification_submitted_at TIMESTAMPTZ,
+  verified_at      TIMESTAMPTZ,
   campaign_text    TEXT CHECK (char_length(campaign_text) <= 200),
   campaign_ends_at TIMESTAMPTZ,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -217,6 +226,7 @@ CREATE TABLE public.business_pins (
 
 CREATE INDEX idx_bp_h3     ON public.business_pins(h3_cell);
 CREATE INDEX idx_bp_active ON public.business_pins(is_active) WHERE is_active = TRUE;
+CREATE INDEX idx_bp_verification_status ON public.business_pins(verification_status);
 ALTER TABLE public.business_pins ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "bp_select" ON public.business_pins FOR SELECT USING (is_active = TRUE);
 CREATE POLICY "bp_insert" ON public.business_pins FOR INSERT WITH CHECK (auth.uid() = owner_id);

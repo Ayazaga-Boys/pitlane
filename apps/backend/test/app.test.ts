@@ -82,9 +82,15 @@ describe('app routes', () => {
 
   it('keeps pin routes protected', async () => {
     const app = createApp();
-    const response = await app.request('/v1/pins');
+    const [response, taxUploadResponse, taxFinalizeResponse] = await Promise.all([
+      app.request('/v1/pins'),
+      app.request('/v1/pins/00000000-0000-4000-8000-000000000001/tax-document/upload-url', { method: 'POST' }),
+      app.request('/v1/pins/00000000-0000-4000-8000-000000000001/tax-document/finalize', { method: 'POST' }),
+    ]);
 
     expect(response.status).toBe(401);
+    expect(taxUploadResponse.status).toBe(401);
+    expect(taxFinalizeResponse.status).toBe(401);
   });
 
   it('keeps help routes protected', async () => {

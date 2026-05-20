@@ -38,6 +38,14 @@ export function createMediaStorageKey(input: {
   return `${folder}/${input.userId}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
 }
 
+export function createBusinessTaxDocumentStorageKey(input: {
+  userId: string;
+  pinId: string;
+  contentType: string;
+}): string {
+  return `business-tax-documents/${input.pinId}/${input.userId}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
+}
+
 export function generateR2UploadUrl(input: GenerateUploadUrlInput): string {
   const config = getR2Config();
   const endpoint = new URL(config.endpoint);
@@ -157,6 +165,8 @@ function extensionForContentType(contentType: string): string {
       return 'webp';
     case 'video/mp4':
       return 'mp4';
+    case 'application/pdf':
+      return 'pdf';
     default:
       return 'bin';
   }

@@ -222,6 +222,8 @@ GET    /v1/pins/:id                     — Detay
 PATCH  /v1/pins/:id                     — Güncelle (sahip)
 POST   /v1/pins/:id/campaign            — Kampanya başlat
 DELETE /v1/pins/:id/campaign            — Kampanyayı sonlandır
+POST   /v1/pins/:id/tax-document/upload-url — Vergi belgesi için R2 upload URL
+POST   /v1/pins/:id/tax-document/finalize   — Vergi belgesini pending doğrulamaya al
 ```
 
 ### POST /v1/pins — Zod Şeması
@@ -247,6 +249,31 @@ const StartCampaignSchema = z.object({
   campaign_ends_at: z.string().datetime(),
 });
 ```
+
+### POST /v1/pins/:id/tax-document/upload-url — Zod Şeması
+
+```typescript
+const TaxDocumentUploadUrlSchema = z.object({
+  filename: z.string().min(1).max(200),
+  content_type: z.enum(['application/pdf','image/jpeg','image/png','image/webp']),
+  size_bytes: z.number().int().positive().max(15 * 1024 * 1024),
+});
+```
+
+Response: `upload_url`, `storage_key`, `expires_in_seconds`. Client dosyayı doğrudan R2'ye PUT eder.
+
+### POST /v1/pins/:id/tax-document/finalize — Zod Şeması
+
+```typescript
+const TaxDocumentFinalizeSchema = z.object({
+  storage_key: z.string().min(1).max(500),
+  content_type: z.enum(['application/pdf','image/jpeg','image/png','image/webp']),
+});
+```
+
+Backend R2 `HEAD` doğrulaması yapar. Obje yoksa `409 UPLOAD_NOT_FOUND`, R2 hatasında
+`502 DOWNSTREAM_ERROR` döner. Başarılı olursa `business_pins.verification_status = 'pending'`
+ve `is_verified = false` set edilir. Admin panel doğrulama sonrası `verified/rejected` durumuna taşır.
 
 ---
 

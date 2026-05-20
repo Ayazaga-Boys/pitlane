@@ -8,7 +8,13 @@ import { UploadUrlSchema } from '../src/schemas/media.schema.js';
 import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
-import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
+import {
+  CreatePinSchema,
+  StartCampaignSchema,
+  TaxDocumentFinalizeSchema,
+  TaxDocumentUploadUrlSchema,
+  UpdatePinSchema,
+} from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 
 describe('auth schemas', () => {
@@ -140,6 +146,28 @@ describe('pin schemas', () => {
       campaign_text: 'Bugun fren bakımında indirim',
       campaign_ends_at: tooLateEnd,
     }).success).toBe(false);
+  });
+
+  it('accepts tax document uploads with bounded content types', () => {
+    expect(TaxDocumentUploadUrlSchema.safeParse({
+      filename: 'vergi-levhasi.pdf',
+      content_type: 'application/pdf',
+      size_bytes: 2_000_000,
+    }).success).toBe(true);
+    expect(TaxDocumentUploadUrlSchema.safeParse({
+      filename: 'vergi.exe',
+      content_type: 'application/octet-stream',
+      size_bytes: 2_000_000,
+    }).success).toBe(false);
+  });
+
+  it('accepts tax document finalize payloads', () => {
+    const parsed = TaxDocumentFinalizeSchema.parse({
+      storage_key: 'business-tax-documents/pin/user/doc.pdf',
+      content_type: 'application/pdf',
+    });
+
+    expect(parsed.content_type).toBe('application/pdf');
   });
 });
 
