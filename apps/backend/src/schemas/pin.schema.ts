@@ -39,3 +39,16 @@ export const StartCampaignSchema = z.object({
     message: 'campaign_ends_at must be within the next 30 days',
   }),
 });
+
+export const TAX_DOCUMENT_CONTENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'] as const;
+
+export const TaxDocumentUploadUrlSchema = z.object({
+  filename: z.string().trim().min(1).max(200),
+  content_type: z.enum(TAX_DOCUMENT_CONTENT_TYPES),
+  size_bytes: z.number().int().positive().max(15 * 1024 * 1024),
+});
+
+export const TaxDocumentFinalizeSchema = z.object({
+  storage_key: z.string().min(1).max(500),
+  content_type: z.enum(TAX_DOCUMENT_CONTENT_TYPES),
+});

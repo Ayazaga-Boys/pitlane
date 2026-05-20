@@ -35,7 +35,7 @@ GET    /v1/profiles/me/vehicles        — Araç listesi
 POST   /v1/profiles/me/vehicles        — Araç ekle
 PATCH  /v1/profiles/me/vehicles/:id    — Araç güncelle
 DELETE /v1/profiles/me/vehicles/:id    — Araç sil
-GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi (KVKK/GDPR)
+GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi için 48 saatlik indirme URL'i
 ```
 
 ### GET /v1/profiles/me/export — Response
@@ -43,30 +43,17 @@ GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi (KVK
 ```typescript
 type UserExportResponse = {
   data: {
-    format_version: 1;
     generated_at: string;
-    user_id: string;
-    profile: Profile;
-    vehicles: Vehicle[];
-    communities: {
-      owned: Community[];
-      memberships: CommunityMember[];
-    };
-    flares: {
-      created: Flare[];
-      rsvps: FlareRsvp[];
-    };
-    business_pins: BusinessPin[];
-    help_requests: HelpRequest[];
-    messages: Message[];
-    media_assets: MediaAsset[];
-    reports: Report[];
-    notifications: Notification[];
-    blocks: Block[];
-    push_devices: PushDevice[];
+    expires_at: string;  // generated_at + 48 saat
+    storage_key: string; // R2 private key
+    download_url: string; // Presigned GET URL
   };
 };
 ```
+
+`download_url` içindeki JSON arşiv `profile`, `vehicles`, `communities`, `flares`, `business_pins`,
+`help_requests`, `messages`, `media_assets`, `reports`, `notifications`, `blocks` ve `push_devices`
+alanlarını içerir. R2 yapılandırılmamışsa endpoint `503 SERVICE_UNAVAILABLE` döner.
 
 ### PATCH /v1/profiles/me — Zod Şeması
 
@@ -162,7 +149,9 @@ type HeatmapResponse = {
 ```
 
 > Not: Canlı konum güncellemeleri HTTP değil, Go WebSocket servisi üzerinden gelir.
-> WebSocket protokolünün tam detayı bu dosyanın altındaki "WebSocket Kontratı" bölümündedir.
+> Backend bu endpoint'te `heatmap:snapshot` Valkey kaydını okur; snapshot yoksa `loc:*`
+> kullanıcı hücrelerini res-8 parent'a gruplayarak sayar. WebSocket protokolünün tam detayı bu
+> dosyanın altındaki "WebSocket Kontratı" bölümündedir.
 
 ---
 
@@ -235,6 +224,8 @@ GET    /v1/pins/:id                     — Detay
 PATCH  /v1/pins/:id                     — Güncelle (sahip)
 POST   /v1/pins/:id/campaign            — Kampanya başlat
 DELETE /v1/pins/:id/campaign            — Kampanyayı sonlandır
+POST   /v1/pins/:id/tax-document/upload-url — Vergi belgesi için R2 upload URL
+POST   /v1/pins/:id/tax-document/finalize   — Vergi belgesini pending doğrulamaya al
 ```
 
 ### POST /v1/pins — Zod Şeması
@@ -260,6 +251,31 @@ const StartCampaignSchema = z.object({
   campaign_ends_at: z.string().datetime(),
 });
 ```
+
+### POST /v1/pins/:id/tax-document/upload-url — Zod Şeması
+
+```typescript
+const TaxDocumentUploadUrlSchema = z.object({
+  filename: z.string().min(1).max(200),
+  content_type: z.enum(['application/pdf','image/jpeg','image/png','image/webp']),
+  size_bytes: z.number().int().positive().max(15 * 1024 * 1024),
+});
+```
+
+Response: `upload_url`, `storage_key`, `expires_in_seconds`. Client dosyayı doğrudan R2'ye PUT eder.
+
+### POST /v1/pins/:id/tax-document/finalize — Zod Şeması
+
+```typescript
+const TaxDocumentFinalizeSchema = z.object({
+  storage_key: z.string().min(1).max(500),
+  content_type: z.enum(['application/pdf','image/jpeg','image/png','image/webp']),
+});
+```
+
+Backend R2 `HEAD` doğrulaması yapar. Obje yoksa `409 UPLOAD_NOT_FOUND`, R2 hatasında
+`502 DOWNSTREAM_ERROR` döner. Başarılı olursa `business_pins.verification_status = 'pending'`
+ve `is_verified = false` set edilir. Admin panel doğrulama sonrası `verified/rejected` durumuna taşır.
 
 ---
 
@@ -358,7 +374,7 @@ const FinalizeSchema = z.object({
 });
 ```
 
-Not: Backend finalize sırasında R2 `HEAD` doğrulaması yapar. Obje bulunamazsa `409 UPLOAD_NOT_FOUND`, R2 erişim hatasında `502 DOWNSTREAM_ERROR` döner.
+Not: Backend finalize sırasında R2 `HEAD` doğrulaması yapar. Obje bulunamazsa `409 UPLOAD_NOT_FOUND`, R2 erişim hatasında `502 DOWNSTREAM_ERROR` döner. `CF_IMAGES_API_TOKEN` tanımlıysa fotoğraflar Cloudflare Images'a URL import ile kopyalanır ve `cf_image_id` set edilir. `CF_STREAM_API_TOKEN` tanımlıysa videolar Cloudflare Stream `/stream/copy` ingest'e gönderilir; webhook hazır durumunu `ready`/`failed` olarak günceller.
 
 ### DELETE /v1/media/:id — Response
 
@@ -371,7 +387,7 @@ type DeleteMediaResponse = {
 };
 ```
 
-Not: Endpoint sahiplik kontrolünden sonra R2 objesini siler ve `media_assets` kaydını kaldırır. Cloudflare Images/Stream tarafındaki ek silme çağrıları ilgili token kontratları netleşince aynı akışa bağlanır.
+Not: Endpoint sahiplik kontrolünden sonra R2 objesini siler ve `media_assets` kaydını kaldırır. İlgili Cloudflare token'ları tanımlıysa `cf_image_id` ve `cf_stream_id` için Cloudflare Images/Stream delete çağrıları da yapılır.
 
 ### POST /v1/media/webhook/stream — Cloudflare Stream
 
@@ -469,6 +485,44 @@ type ConfigResponse = {
 ```
 
 V1 canonical Cloudflare Images varyantları: `thumb` (120x120 cover), `feed` (640x480 contain), `full` (1920x1080 contain), `square` (400x400 cover).
+
+---
+
+## Internal Jobs
+
+```
+POST /v1/internal/jobs/retention/run — Retention cleanup çalıştır
+POST /v1/internal/jobs/profile-deletion/run — 30 günü dolan hesap silme taleplerini anonimleştir
+```
+
+Auth: `Authorization: Bearer <INTERNAL_JOB_SECRET>`; bu yoksa fallback olarak `TRIGGER_SECRET_KEY` kabul edilir.
+
+```typescript
+type RetentionCleanupResponse = {
+  data: {
+    expired_help_requests: number;
+    deleted_unread_notifications: number;
+    deleted_read_notifications: number;
+    deleted_resolved_help_requests: number;
+    deleted_ended_flares: number;
+  };
+};
+```
+
+```typescript
+type ProfileDeletionCleanupResponse = {
+  data: {
+    processed_profiles: number;
+    anonymized_profiles: number;
+    deleted_push_devices: number;
+    deleted_vehicles: number;
+    deleted_notifications: number;
+    deleted_blocks: number;
+    deleted_community_memberships: number;
+    deleted_flare_rsvps: number;
+  };
+};
+```
 
 ---
 

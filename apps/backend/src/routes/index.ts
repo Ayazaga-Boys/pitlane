@@ -6,6 +6,7 @@ import { configRoutes } from './config.js';
 import { flareRoutes } from './flares.js';
 import { helpRoutes } from './help.js';
 import { helpRequestRoutes } from './help-requests.js';
+import { internalJobRoutes } from './internal-jobs.js';
 import { mapRoutes } from './map.js';
 import { mediaRoutes, mediaWebhookRoutes } from './media.js';
 import { messageRoutes } from './messages.js';
@@ -18,6 +19,7 @@ import type { AppEnv } from '../types/hono.js';
 export function mountPublicRoutes(app: Hono) {
   app.route('/auth', authRoutes);
   app.route('/config', configRoutes);
+  app.route('/internal/jobs', internalJobRoutes);
   app.route('/media', mediaWebhookRoutes);
 }
 

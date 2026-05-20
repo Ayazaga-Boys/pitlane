@@ -82,9 +82,15 @@ describe('app routes', () => {
 
   it('keeps pin routes protected', async () => {
     const app = createApp();
-    const response = await app.request('/v1/pins');
+    const [response, taxUploadResponse, taxFinalizeResponse] = await Promise.all([
+      app.request('/v1/pins'),
+      app.request('/v1/pins/00000000-0000-4000-8000-000000000001/tax-document/upload-url', { method: 'POST' }),
+      app.request('/v1/pins/00000000-0000-4000-8000-000000000001/tax-document/finalize', { method: 'POST' }),
+    ]);
 
     expect(response.status).toBe(401);
+    expect(taxUploadResponse.status).toBe(401);
+    expect(taxFinalizeResponse.status).toBe(401);
   });
 
   it('keeps help routes protected', async () => {
@@ -152,6 +158,25 @@ describe('app routes', () => {
     expect(response.status).toBe(503);
   });
 
+  it('keeps internal job routes protected', async () => {
+    const previousSecret = process.env.INTERNAL_JOB_SECRET;
+    const previousTriggerSecret = process.env.TRIGGER_SECRET_KEY;
+    process.env.INTERNAL_JOB_SECRET = 'job-secret';
+    delete process.env.TRIGGER_SECRET_KEY;
+
+    const app = createApp();
+    const [retentionResponse, profileDeletionResponse] = await Promise.all([
+      app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/profile-deletion/run', { method: 'POST' }),
+    ]);
+
+    restoreEnv('INTERNAL_JOB_SECRET', previousSecret);
+    restoreEnv('TRIGGER_SECRET_KEY', previousTriggerSecret);
+
+    expect(retentionResponse.status).toBe(401);
+    expect(profileDeletionResponse.status).toBe(401);
+  });
+
   it('keeps message routes protected', async () => {
     const app = createApp();
     const response = await app.request('/v1/messages/dms');
@@ -167,3 +192,11 @@ describe('app routes', () => {
     expect(response.status).toBe(503);
   });
 });
+
+function restoreEnv(key: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
+  }
+}
