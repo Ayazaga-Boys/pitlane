@@ -108,7 +108,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] 2 saat sonra otomatik `expired` cron
 - [x] İşletme pin CRUD + kampanya endpoint'i
 - [x] Vergi belgesi yüklemesi (R2 privat bucket)
-- [ ] İşletme doğrulama akışı (admin panel için flag)
+- [x] İşletme doğrulama akışı (admin panel için flag)
 
 ### Sprint 6 — Medya & Güvenlik (Hafta 11-12)
 - [x] `POST /v1/media/upload-url` (R2 presigned URL)
@@ -126,7 +126,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Fly.io production deploy + auto-rollback (23. doküman Bölüm 12)
 - [ ] Status sayfası setup (statuspage.io veya Cachet)
 
-> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Finalize sırasında R2 HEAD doğrulaması, Cloudflare Images URL import ve Cloudflare Stream `/stream/copy` ingest eklendi. `DELETE /v1/media/:id` R2 + Cloudflare Images/Stream delete çağrılarını yapıyor. Cloudflare Stream webhook imza doğrulama + ready/failed status update eklendi. Cloudflare Images varyant isimleri `GET /v1/config` kontratına sabitlendi. Retention cleanup helper'ları ve `POST /v1/internal/jobs/retention/run` internal endpoint'i eklendi; Trigger.dev schedule bağlama işi açık. Hesap silme için 30 günü dolan profilleri anonimleştiren `POST /v1/internal/jobs/profile-deletion/run` internal endpoint'i eklendi; e-posta/undelete ve Trigger.dev schedule bağlama işi açık. Veri export endpoint'i JSON arşivi R2'ye yazıp 48 saatlik presigned indirme URL'i dönecek hale getirildi; Trigger.dev async job wrapper'ı açık. İşletme vergi belgesi için R2 upload-url/finalize endpoint'leri ve `verification_status` flag'i eklendi; admin panel onay aksiyonu açık.
+> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Finalize sırasında R2 HEAD doğrulaması, Cloudflare Images URL import ve Cloudflare Stream `/stream/copy` ingest eklendi. `DELETE /v1/media/:id` R2 + Cloudflare Images/Stream delete çağrılarını yapıyor. Cloudflare Stream webhook imza doğrulama + ready/failed status update eklendi. Cloudflare Images varyant isimleri `GET /v1/config` kontratına sabitlendi. Retention cleanup helper'ları ve `POST /v1/internal/jobs/retention/run` internal endpoint'i eklendi; Trigger.dev schedule bağlama işi açık. Hesap silme için 30 günü dolan profilleri anonimleştiren `POST /v1/internal/jobs/profile-deletion/run` internal endpoint'i eklendi; e-posta/undelete ve Trigger.dev schedule bağlama işi açık. Veri export endpoint'i JSON arşivi R2'ye yazıp 48 saatlik presigned indirme URL'i dönecek hale getirildi; Trigger.dev async job wrapper'ı açık. İşletme vergi belgesi için R2 upload-url/finalize endpoint'leri ve `verification_status` flag'i eklendi; admin panel onay/red aksiyonu flag'i `verified/rejected` olarak güncelliyor.
 
 ---
 

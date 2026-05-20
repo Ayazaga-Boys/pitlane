@@ -60,6 +60,8 @@ export async function verifyBusinessPinAction(pinId: string) {
   const payload: BusinessPinUpdate = {
     is_verified: true,
     is_active: true,
+    verification_status: "verified",
+    verified_at: new Date().toISOString(),
   };
   const updateResult = await adminClient
     .from("business_pins")
@@ -92,6 +94,8 @@ export async function rejectBusinessPinAction(pinId: string) {
   const payload: BusinessPinUpdate = {
     is_verified: false,
     is_active: false,
+    verification_status: "rejected",
+    verified_at: null,
   };
   const updateResult = await adminClient
     .from("business_pins")
