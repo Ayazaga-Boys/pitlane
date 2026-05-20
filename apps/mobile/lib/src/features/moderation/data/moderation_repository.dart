@@ -59,7 +59,15 @@ class ModerationRepository {
 
   Map<String, String> _authHeaders() {
     final token = _supabase.auth.currentSession?.accessToken;
-    if (token == null) throw const UnauthorizedException();
+    if (token == null) {
+      if (AppConstants.isDev) {
+        return {
+          'x-dev-user-id': 'dev-user-bypass',
+          'x-dev-user-email': 'dev@rollpit.test',
+        };
+      }
+      throw const UnauthorizedException();
+    }
     return {'Authorization': 'Bearer $token'};
   }
 }

@@ -40,8 +40,14 @@ final _routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/auth/invite-code',
     redirect: (context, state) {
-      // AUTH BYPASS — domain + Resend kurulunca kaldır
-      return '/map';
+      final container = ProviderScope.containerOf(context);
+      final user = container.read(currentUserProvider);
+      final loc = state.matchedLocation;
+      final isAuth = loc.startsWith('/auth');
+
+      if (user == null && !isAuth) return '/auth/invite-code';
+      if (user != null && isAuth) return '/map';
+      return null;
     },
     routes: [
       // ── Auth ──────────────────────────────────────────────────────────────
