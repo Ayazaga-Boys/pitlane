@@ -152,6 +152,21 @@ describe('app routes', () => {
     expect(response.status).toBe(503);
   });
 
+  it('keeps internal retention job protected', async () => {
+    const previousSecret = process.env.INTERNAL_JOB_SECRET;
+    const previousTriggerSecret = process.env.TRIGGER_SECRET_KEY;
+    process.env.INTERNAL_JOB_SECRET = 'job-secret';
+    delete process.env.TRIGGER_SECRET_KEY;
+
+    const app = createApp();
+    const response = await app.request('/v1/internal/jobs/retention/run', { method: 'POST' });
+
+    restoreEnv('INTERNAL_JOB_SECRET', previousSecret);
+    restoreEnv('TRIGGER_SECRET_KEY', previousTriggerSecret);
+
+    expect(response.status).toBe(401);
+  });
+
   it('keeps message routes protected', async () => {
     const app = createApp();
     const response = await app.request('/v1/messages/dms');
@@ -167,3 +182,11 @@ describe('app routes', () => {
     expect(response.status).toBe(503);
   });
 });
+
+function restoreEnv(key: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
+  }
+}

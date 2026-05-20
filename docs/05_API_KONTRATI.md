@@ -472,6 +472,28 @@ V1 canonical Cloudflare Images varyantları: `thumb` (120x120 cover), `feed` (64
 
 ---
 
+## Internal Jobs
+
+```
+POST /v1/internal/jobs/retention/run — Retention cleanup çalıştır
+```
+
+Auth: `Authorization: Bearer <INTERNAL_JOB_SECRET>`; bu yoksa fallback olarak `TRIGGER_SECRET_KEY` kabul edilir.
+
+```typescript
+type RetentionCleanupResponse = {
+  data: {
+    expired_help_requests: number;
+    deleted_unread_notifications: number;
+    deleted_read_notifications: number;
+    deleted_resolved_help_requests: number;
+    deleted_ended_flares: number;
+  };
+};
+```
+
+---
+
 ## Hata Modeli
 
 ```typescript
