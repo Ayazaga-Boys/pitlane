@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDeletedProfileUsername } from '../src/jobs/profile-deletion.js';
 import { getRetentionCutoffs } from '../src/jobs/retention.js';
+import { parseSentryDsn } from '../src/services/sentry.js';
 import { createUserExportStorageKey } from '../src/services/user-export.js';
 import { normalizeLocationCellsToHeatmapCounts } from '../src/services/valkey.js';
 
@@ -35,5 +36,11 @@ describe('retention jobs', () => {
     ]);
 
     expect(counts['8828308281fffff']).toBe(2);
+  });
+
+  it('builds sentry envelope endpoint from dsn', () => {
+    expect(parseSentryDsn('https://public@example.sentry.io/123')?.endpoint)
+      .toBe('https://example.sentry.io/api/123/envelope/');
+    expect(parseSentryDsn('not-a-dsn')).toBeNull();
   });
 });

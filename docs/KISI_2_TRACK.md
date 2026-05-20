@@ -55,7 +55,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [x] Hono app iskeleti (`app.ts`, middleware mount)
 - [x] `requireAuth` middleware (JWT doğrulama)
 - [x] Rate limit middleware (5. doküman Bölüm "Rate Limiting" — kategori bazlı limitler)
-- [ ] Global error handler + Sentry capture
+- [x] Global error handler + Sentry capture
 - [x] Pino logger (yapısal alanlar — 22. doküman)
 - [x] Maintenance modu middleware (`MAINTENANCE_MODE` env, 22. doküman Bölüm 11)
 - [x] Supabase migration: `profiles`, `vehicles` tabloları

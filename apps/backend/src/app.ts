@@ -8,6 +8,7 @@ import { rateLimit } from './middleware/rate-limit.js';
 import { mountProtectedRoutes, mountPublicRoutes } from './routes/index.js';
 import { logger } from './lib/logger.js';
 import { checkDatabaseHealth } from './services/health.js';
+import { captureException } from './services/sentry.js';
 import type { AppEnv } from './types/hono.js';
 
 export function createApp() {
@@ -37,6 +38,11 @@ export function createApp() {
 
   app.onError((error, c) => {
     logger.error({ err: error, path: c.req.path, method: c.req.method }, 'Unhandled request error');
+    void captureException({
+      error,
+      path: c.req.path,
+      method: c.req.method,
+    });
     return c.json({ code: 'INTERNAL_ERROR', error: 'Internal server error' }, 500);
   });
 
