@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDeletedProfileUsername } from '../src/jobs/profile-deletion.js';
 import { getRetentionCutoffs } from '../src/jobs/retention.js';
 import { createUserExportStorageKey } from '../src/services/user-export.js';
+import { normalizeLocationCellsToHeatmapCounts } from '../src/services/valkey.js';
 
 describe('retention jobs', () => {
   it('calculates canonical retention cutoffs', () => {
@@ -24,5 +25,15 @@ describe('retention jobs', () => {
       '00000000-0000-4000-8000-000000000001',
       new Date('2026-05-20T13:45:30.000Z'),
     )).toBe('exports/00000000-0000-4000-8000-000000000001/rollpit-export-20260520T134530Z.json');
+  });
+
+  it('groups realtime location cells into res-8 heatmap counts', () => {
+    const counts = normalizeLocationCellsToHeatmapCounts([
+      '89283082803ffff',
+      '8928308280fffff',
+      'bad-cell',
+    ]);
+
+    expect(counts['8828308281fffff']).toBe(2);
   });
 });

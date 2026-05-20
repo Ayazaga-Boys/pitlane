@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 import { MapHeatmapQuerySchema, MapNearbyQuerySchema, MapPinsQuerySchema } from '../schemas/map.schema.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
+import { getHeatmapCells } from '../services/valkey.js';
 
 export const mapRoutes = new Hono();
 
@@ -15,12 +16,13 @@ mapRoutes.get('/heatmap', async (c) => {
   const parsed = MapHeatmapQuerySchema.safeParse(c.req.query());
   if (!parsed.success) return validationError(c, parsed.error);
 
-  return c.json({
-    data: parsed.data.bounds.map((h3Cell) => ({
-      h3_cell: h3Cell,
-      user_count: 0,
-    })),
-  });
+  try {
+    const data = await getHeatmapCells(parsed.data.bounds);
+    return c.json({ data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Valkey heatmap read failed';
+    return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
+  }
 });
 
 mapRoutes.get('/flares', async (c) => {

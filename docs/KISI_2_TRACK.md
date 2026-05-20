@@ -70,7 +70,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 
 ### Sprint 2 — Harita Endpoint'leri (Hafta 3-4)
 - [x] Supabase migration: `flares`, `business_pins` tabloları
-- [ ] `GET /v1/map/heatmap` — Valkey'den h3 yoğunluk verisi
+- [x] `GET /v1/map/heatmap` — Valkey'den h3 yoğunluk verisi
 - [x] `GET /v1/map/flares?h3cell=&k=` — k-ring flare listesi
 - [x] `GET /v1/map/pins?h3cell=&k=` — yakındaki pinler
 - [x] `GET /v1/map/help?h3cell=&k=` — açık yardım talepleri

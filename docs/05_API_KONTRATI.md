@@ -149,7 +149,9 @@ type HeatmapResponse = {
 ```
 
 > Not: Canlı konum güncellemeleri HTTP değil, Go WebSocket servisi üzerinden gelir.
-> WebSocket protokolünün tam detayı bu dosyanın altındaki "WebSocket Kontratı" bölümündedir.
+> Backend bu endpoint'te `heatmap:snapshot` Valkey kaydını okur; snapshot yoksa `loc:*`
+> kullanıcı hücrelerini res-8 parent'a gruplayarak sayar. WebSocket protokolünün tam detayı bu
+> dosyanın altındaki "WebSocket Kontratı" bölümündedir.
 
 ---
 
