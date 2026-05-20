@@ -358,7 +358,7 @@ const FinalizeSchema = z.object({
 });
 ```
 
-Not: Backend finalize sırasında R2 `HEAD` doğrulaması yapar. Obje bulunamazsa `409 UPLOAD_NOT_FOUND`, R2 erişim hatasında `502 DOWNSTREAM_ERROR` döner.
+Not: Backend finalize sırasında R2 `HEAD` doğrulaması yapar. Obje bulunamazsa `409 UPLOAD_NOT_FOUND`, R2 erişim hatasında `502 DOWNSTREAM_ERROR` döner. `CF_IMAGES_API_TOKEN` tanımlıysa fotoğraflar Cloudflare Images'a URL import ile kopyalanır ve `cf_image_id` set edilir. `CF_STREAM_API_TOKEN` tanımlıysa videolar Cloudflare Stream `/stream/copy` ingest'e gönderilir; webhook hazır durumunu `ready`/`failed` olarak günceller.
 
 ### DELETE /v1/media/:id — Response
 
@@ -371,7 +371,7 @@ type DeleteMediaResponse = {
 };
 ```
 
-Not: Endpoint sahiplik kontrolünden sonra R2 objesini siler ve `media_assets` kaydını kaldırır. Cloudflare Images/Stream tarafındaki ek silme çağrıları ilgili token kontratları netleşince aynı akışa bağlanır.
+Not: Endpoint sahiplik kontrolünden sonra R2 objesini siler ve `media_assets` kaydını kaldırır. İlgili Cloudflare token'ları tanımlıysa `cf_image_id` ve `cf_stream_id` için Cloudflare Images/Stream delete çağrıları da yapılır.
 
 ### POST /v1/media/webhook/stream — Cloudflare Stream
 

@@ -128,11 +128,15 @@ router.post('/finalize', async (c) => {
 
   // Video ise Cloudflare Stream'e bildir (arka planda transcode başlar)
   if (asset.asset_type === 'video') {
-    await triggerCloudflareStreamIngest(asset.storage_key);
+    await copyCloudflareStreamFromUrl({
+      url: generateR2ReadUrl(asset.storage_key),
+      assetId: asset.id,
+      storageKey: asset.storage_key,
+    });
     // Status webhook gelince güncellenir
   } else {
     // Fotoğraf — Cloudflare Images'a kopyala
-    const cfImageId = await uploadToCloudflareImages(asset.storage_key);
+    const cfImageId = await uploadToCloudflareImagesFromUrl(generateR2ReadUrl(asset.storage_key));
     await sb.from('media_assets').update({
       status: 'ready',
       cf_image_id: cfImageId,
@@ -317,4 +321,4 @@ async function deleteMediaAsset(assetId: string, userId: string) {
 }
 ```
 
-V1 backend davranışı: `DELETE /v1/media/:id` sahiplik kontrolü yapar, R2 objesini siler ve `media_assets` kaydını kaldırır. Cloudflare Images/Stream silme çağrıları `CF_IMAGES_API_TOKEN` / `CF_STREAM_API_TOKEN` operasyon kontratıyla ayrıca bağlanır.
+V1 backend davranışı: `DELETE /v1/media/:id` sahiplik kontrolü yapar, R2 objesini siler ve `media_assets` kaydını kaldırır. `CF_IMAGES_API_TOKEN` / `CF_STREAM_API_TOKEN` tanımlıysa Cloudflare Images/Stream silme çağrıları da aynı akışta yapılır.

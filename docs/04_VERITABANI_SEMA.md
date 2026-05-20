@@ -308,7 +308,7 @@ CREATE TABLE public.media_assets (
   height       INTEGER,
   duration_sec SMALLINT,
   size_bytes   INTEGER,
-  status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','ready','failed')),
+  status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','processing','ready','failed')),
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

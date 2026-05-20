@@ -11,7 +11,7 @@ interface R2Config {
 
 interface GenerateUploadUrlInput {
   storageKey: string;
-  method?: 'PUT' | 'DELETE' | 'HEAD';
+  method?: 'GET' | 'PUT' | 'DELETE' | 'HEAD';
   expiresInSeconds?: number;
 }
 
@@ -89,6 +89,10 @@ export async function deleteR2Object(storageKey: string): Promise<void> {
   if (!response.ok && response.status !== 404) {
     throw new Error(`R2 delete failed with status ${response.status}`);
   }
+}
+
+export function generateR2ReadUrl(storageKey: string, expiresInSeconds = PRESIGNED_TTL_SECONDS): string {
+  return generateR2UploadUrl({ storageKey, method: 'GET', expiresInSeconds });
 }
 
 export async function headR2Object(storageKey: string): Promise<R2ObjectMetadata | null> {
