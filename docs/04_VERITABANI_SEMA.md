@@ -264,9 +264,9 @@ CREATE TABLE public.messages (
   community_id  UUID REFERENCES public.communities(id) ON DELETE CASCADE,
   flare_id      UUID REFERENCES public.flares(id) ON DELETE CASCADE,
   help_req_id   UUID REFERENCES public.help_requests(id) ON DELETE CASCADE,
-  body          TEXT CHECK (char_length(body) <= 2000),
+  body          TEXT CHECK (body IS NULL OR char_length(body) <= 2000),
   media_url     TEXT,
-  media_type    TEXT CHECK (media_type IN ('image','video','audio')),
+  media_type    TEXT CHECK (media_type IS NULL OR media_type IN ('image','video','audio')),
   is_deleted    BOOLEAN NOT NULL DEFAULT FALSE,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT messages_one_context CHECK (
@@ -274,6 +274,9 @@ CREATE TABLE public.messages (
     (community_id IS NOT NULL)::int +
     (flare_id IS NOT NULL)::int +
     (help_req_id IS NOT NULL)::int = 1
+  ),
+  CONSTRAINT messages_body_or_media CHECK (
+    is_deleted = TRUE OR body IS NOT NULL OR media_url IS NOT NULL
   )
 );
 
