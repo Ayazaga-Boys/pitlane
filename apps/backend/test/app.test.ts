@@ -152,19 +152,23 @@ describe('app routes', () => {
     expect(response.status).toBe(503);
   });
 
-  it('keeps internal retention job protected', async () => {
+  it('keeps internal job routes protected', async () => {
     const previousSecret = process.env.INTERNAL_JOB_SECRET;
     const previousTriggerSecret = process.env.TRIGGER_SECRET_KEY;
     process.env.INTERNAL_JOB_SECRET = 'job-secret';
     delete process.env.TRIGGER_SECRET_KEY;
 
     const app = createApp();
-    const response = await app.request('/v1/internal/jobs/retention/run', { method: 'POST' });
+    const [retentionResponse, profileDeletionResponse] = await Promise.all([
+      app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/profile-deletion/run', { method: 'POST' }),
+    ]);
 
     restoreEnv('INTERNAL_JOB_SECRET', previousSecret);
     restoreEnv('TRIGGER_SECRET_KEY', previousTriggerSecret);
 
-    expect(response.status).toBe(401);
+    expect(retentionResponse.status).toBe(401);
+    expect(profileDeletionResponse.status).toBe(401);
   });
 
   it('keeps message routes protected', async () => {

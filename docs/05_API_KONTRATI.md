@@ -476,6 +476,7 @@ V1 canonical Cloudflare Images varyantları: `thumb` (120x120 cover), `feed` (64
 
 ```
 POST /v1/internal/jobs/retention/run — Retention cleanup çalıştır
+POST /v1/internal/jobs/profile-deletion/run — 30 günü dolan hesap silme taleplerini anonimleştir
 ```
 
 Auth: `Authorization: Bearer <INTERNAL_JOB_SECRET>`; bu yoksa fallback olarak `TRIGGER_SECRET_KEY` kabul edilir.
@@ -488,6 +489,21 @@ type RetentionCleanupResponse = {
     deleted_read_notifications: number;
     deleted_resolved_help_requests: number;
     deleted_ended_flares: number;
+  };
+};
+```
+
+```typescript
+type ProfileDeletionCleanupResponse = {
+  data: {
+    processed_profiles: number;
+    anonymized_profiles: number;
+    deleted_push_devices: number;
+    deleted_vehicles: number;
+    deleted_notifications: number;
+    deleted_blocks: number;
+    deleted_community_memberships: number;
+    deleted_flare_rsvps: number;
   };
 };
 ```

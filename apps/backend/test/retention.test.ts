@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { buildDeletedProfileUsername } from '../src/jobs/profile-deletion.js';
 import { getRetentionCutoffs } from '../src/jobs/retention.js';
 
 describe('retention jobs', () => {
@@ -10,5 +11,10 @@ describe('retention jobs', () => {
     expect(cutoffs.readNotifications).toBe('2026-02-16T12:00:00.000Z');
     expect(cutoffs.resolvedHelpRequests).toBe('2025-11-18T12:00:00.000Z');
     expect(cutoffs.endedFlares).toBe('2025-05-17T12:00:00.000Z');
+  });
+
+  it('builds profile-safe deleted usernames', () => {
+    expect(buildDeletedProfileUsername('00000000-0000-4000-8000-000000000001')).toBe('deleted_000000000000');
+    expect(buildDeletedProfileUsername('aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee')).toMatch(/^[A-Za-z0-9_]{3,20}$/);
   });
 });
