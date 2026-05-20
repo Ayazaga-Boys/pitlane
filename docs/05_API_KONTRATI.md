@@ -35,7 +35,7 @@ GET    /v1/profiles/me/vehicles        — Araç listesi
 POST   /v1/profiles/me/vehicles        — Araç ekle
 PATCH  /v1/profiles/me/vehicles/:id    — Araç güncelle
 DELETE /v1/profiles/me/vehicles/:id    — Araç sil
-GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi (KVKK/GDPR)
+GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi için 48 saatlik indirme URL'i
 ```
 
 ### GET /v1/profiles/me/export — Response
@@ -43,30 +43,17 @@ GET    /v1/profiles/me/export          — Veri dışa aktarma JSON arşivi (KVK
 ```typescript
 type UserExportResponse = {
   data: {
-    format_version: 1;
     generated_at: string;
-    user_id: string;
-    profile: Profile;
-    vehicles: Vehicle[];
-    communities: {
-      owned: Community[];
-      memberships: CommunityMember[];
-    };
-    flares: {
-      created: Flare[];
-      rsvps: FlareRsvp[];
-    };
-    business_pins: BusinessPin[];
-    help_requests: HelpRequest[];
-    messages: Message[];
-    media_assets: MediaAsset[];
-    reports: Report[];
-    notifications: Notification[];
-    blocks: Block[];
-    push_devices: PushDevice[];
+    expires_at: string;  // generated_at + 48 saat
+    storage_key: string; // R2 private key
+    download_url: string; // Presigned GET URL
   };
 };
 ```
+
+`download_url` içindeki JSON arşiv `profile`, `vehicles`, `communities`, `flares`, `business_pins`,
+`help_requests`, `messages`, `media_assets`, `reports`, `notifications`, `blocks` ve `push_devices`
+alanlarını içerir. R2 yapılandırılmamışsa endpoint `503 SERVICE_UNAVAILABLE` döner.
 
 ### PATCH /v1/profiles/me — Zod Şeması
 

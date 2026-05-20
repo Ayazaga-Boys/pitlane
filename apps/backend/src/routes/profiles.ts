@@ -9,7 +9,7 @@ import {
 } from '../schemas/profile.schema.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import { serviceUnavailable, validationError } from '../lib/http.js';
-import { buildUserExportArchive } from '../services/user-export.js';
+import { buildUserExportArchive, uploadUserExportArchive } from '../services/user-export.js';
 import type { AppEnv } from '../types/hono.js';
 
 export const profileRoutes = new Hono<AppEnv>();
@@ -39,12 +39,16 @@ profileRoutes.get('/me/export', async (c) => {
   if (!supabase) return serviceUnavailable(c);
 
   try {
-    const archive = await buildUserExportArchive(supabase, userId);
-    const date = archive.generated_at.slice(0, 10);
-    c.header('Content-Disposition', `attachment; filename="rollpit-export-${date}.json"`);
-    return c.json({ data: archive });
+    const generatedAt = new Date();
+    const archive = await buildUserExportArchive(supabase, userId, generatedAt);
+    const delivery = await uploadUserExportArchive({ archive, generatedAt });
+    return c.json({ data: delivery });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Export failed';
+    if (message === 'Cloudflare R2 is not configured') return serviceUnavailable(c);
+    if (message.startsWith('R2 put failed')) {
+      return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
+    }
     return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
   }
 });

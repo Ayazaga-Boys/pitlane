@@ -91,6 +91,23 @@ export async function deleteR2Object(storageKey: string): Promise<void> {
   }
 }
 
+export async function putR2Object(input: {
+  storageKey: string;
+  body: string;
+  contentType: string;
+}): Promise<void> {
+  const url = generateR2UploadUrl({ storageKey: input.storageKey, method: 'PUT' });
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': input.contentType },
+    body: input.body,
+  });
+
+  if (!response.ok) {
+    throw new Error(`R2 put failed with status ${response.status}`);
+  }
+}
+
 export function generateR2ReadUrl(storageKey: string, expiresInSeconds = PRESIGNED_TTL_SECONDS): string {
   return generateR2UploadUrl({ storageKey, method: 'GET', expiresInSeconds });
 }
