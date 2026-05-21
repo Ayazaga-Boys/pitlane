@@ -13,6 +13,8 @@ const _backoffMax = Duration(seconds: 60);
 
 enum WsHelpEventType { nearby, assigned }
 
+enum WsPresenceStatus { online, dnd, offline }
+
 class WsHelpEvent {
   const WsHelpEvent({
     required this.type,
@@ -31,6 +33,26 @@ class WsHelpEvent {
   final String? helperId;
 }
 
+class WsPresenceEvent {
+  const WsPresenceEvent({
+    required this.userId,
+    required this.status,
+  });
+
+  final String userId;
+  final WsPresenceStatus status;
+}
+
+class WsLocationShareEvent {
+  const WsLocationShareEvent({
+    required this.userId,
+    required this.h3Cell,
+  });
+
+  final String userId;
+  final String h3Cell;
+}
+
 class WsService {
   WebSocketChannel? _channel;
   StreamSubscription? _sub;
@@ -39,11 +61,18 @@ class WsService {
   String? _connectedToken;
   int _reconnectAttempts = 0;
   final _subscriptions = <String, int>{};
+  final _userSubscriptions = <String>{};
 
   final _heatmapController = StreamController<Map<String, int>>.broadcast();
   Stream<Map<String, int>> get heatmapStream => _heatmapController.stream;
   final _helpEventController = StreamController<WsHelpEvent>.broadcast();
   Stream<WsHelpEvent> get helpEventStream => _helpEventController.stream;
+  final _presenceController = StreamController<WsPresenceEvent>.broadcast();
+  Stream<WsPresenceEvent> get presenceStream => _presenceController.stream;
+  final _locationShareController =
+      StreamController<WsLocationShareEvent>.broadcast();
+  Stream<WsLocationShareEvent> get locationShareStream =>
+      _locationShareController.stream;
 
   void connect(String jwtToken, {bool resetBackoff = true}) {
     if (_channel != null && _connectedToken == jwtToken) {
@@ -92,6 +121,18 @@ class WsService {
     _send({'type': 'unsubscribe_cell', 'h3_cell': h3Cell});
   }
 
+  void subscribeUser(String userId) {
+    if (userId.isEmpty) return;
+    _userSubscriptions.add(userId);
+    _send({'type': 'subscribe_user', 'user_id': userId});
+  }
+
+  void unsubscribeUser(String userId) {
+    if (userId.isEmpty) return;
+    _userSubscriptions.remove(userId);
+    _send({'type': 'unsubscribe_user', 'user_id': userId});
+  }
+
   void _onMessage(dynamic raw) {
     final msg = jsonDecode(raw as String) as Map<String, dynamic>;
     switch (msg['type']) {
@@ -105,6 +146,12 @@ class WsService {
       case 'help_assigned':
         final event = parseWsHelpEvent(msg);
         if (event != null) _helpEventController.add(event);
+      case 'presence_update':
+        final event = parseWsPresenceEvent(msg);
+        if (event != null) _presenceController.add(event);
+      case 'location_share':
+        final event = parseWsLocationShareEvent(msg);
+        if (event != null) _locationShareController.add(event);
       case 'error':
         debugPrint('[WS] error: ${msg['code']} — ${msg['message']}');
     }
@@ -120,6 +167,7 @@ class WsService {
     _channel = null;
     if (clearSubscriptions) {
       _subscriptions.clear();
+      _userSubscriptions.clear();
     }
   }
 
@@ -152,6 +200,8 @@ class WsService {
     disconnect(clearSubscriptions: true);
     _heatmapController.close();
     _helpEventController.close();
+    _presenceController.close();
+    _locationShareController.close();
   }
 
   void _resubscribeAll() {
@@ -161,6 +211,9 @@ class WsService {
         'h3_cell': entry.key,
         'k': entry.value,
       });
+    }
+    for (final userId in _userSubscriptions) {
+      _send({'type': 'subscribe_user', 'user_id': userId});
     }
   }
 }
@@ -200,6 +253,31 @@ WsHelpEvent? _parseHelpAssigned(Map<String, dynamic> msg) {
     requesterId: msg['requester_id'] as String?,
     helperId: msg['helper_id'] as String?,
   );
+}
+
+WsPresenceEvent? parseWsPresenceEvent(Map<String, dynamic> msg) {
+  if (msg['type'] != 'presence_update') return null;
+  final userId = msg['user_id'] as String?;
+  final rawStatus = msg['status'] as String?;
+  if (userId == null || userId.isEmpty || rawStatus == null) return null;
+  final status = switch (rawStatus) {
+    'online' => WsPresenceStatus.online,
+    'dnd' => WsPresenceStatus.dnd,
+    'offline' => WsPresenceStatus.offline,
+    _ => null,
+  };
+  if (status == null) return null;
+  return WsPresenceEvent(userId: userId, status: status);
+}
+
+WsLocationShareEvent? parseWsLocationShareEvent(Map<String, dynamic> msg) {
+  if (msg['type'] != 'location_share') return null;
+  final userId = msg['user_id'] as String?;
+  final h3Cell = msg['h3_cell'] as String?;
+  if (userId == null || userId.isEmpty || h3Cell == null || h3Cell.isEmpty) {
+    return null;
+  }
+  return WsLocationShareEvent(userId: userId, h3Cell: h3Cell);
 }
 
 final wsServiceProvider = Provider<WsService>((ref) {

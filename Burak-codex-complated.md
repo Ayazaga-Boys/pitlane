@@ -183,6 +183,26 @@ Doğrulama:
 - `go test ./... -race` geçti.
 - `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
 
+### İş 10 — V2.1 Flutter Followed User Locations Provider
+
+Sprint 1 / Kişi 1 V2 kapsamında yapıldı:
+
+- Flutter WS service `presence_update` ve `location_share` eventlerini parse edecek hale getirildi.
+- WS reconnect sonrası `subscribe_user` abonelikleri otomatik tekrar gönderiliyor.
+- `/v2/follows/following` endpoint'inden takip edilen kullanıcı ID'lerini çeken repository eklendi.
+- `followedUserLocationsProvider` eklendi; takip edilen kullanıcıların son H3 cell ve presence durumunu tutuyor.
+- `followedUserPinsProvider` eklendi; H3 cell'i harita marker pozisyonuna çevirip takip edilen kullanıcı pinlerini üretiyor.
+- Map screen normal pinlerle takip edilen kullanıcı pinlerini birlikte render ediyor.
+- Offline kullanıcılar haritada gösterilmiyor.
+- `docs/KISI_1_TRACK_V2.md` içinde Flutter `followed_users_locations_provider` maddesi tamamlandı olarak işaretlendi.
+
+Doğrulama:
+
+- `dart format --output=none --set-exit-if-changed lib/ test/` geçti.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./... -race` geçti.
+
 ### İş 7 — V2 Vehicle Filtered Heatmap Snapshot Kontratı
 
 Erol'dan gelen kontrat:

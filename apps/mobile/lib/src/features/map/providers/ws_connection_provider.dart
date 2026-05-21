@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../features/auth/providers/auth_provider.dart';
 import '../data/ws_service.dart';
+import 'followed_user_locations_provider.dart';
 import 'map_pins_provider.dart';
 
 /// Supabase oturumu açılınca WS'e otomatik bağlan, kapanınca kes.
@@ -17,7 +18,11 @@ final wsConnectionProvider = Provider<void>((ref) {
     final token = state.session?.accessToken;
     if (token != null && token.isNotEmpty) {
       ws.connect(token);
+      Future.microtask(() {
+        ref.read(followedUserLocationsProvider.notifier).syncFollowing();
+      });
     } else {
+      ref.read(followedUserLocationsProvider.notifier).clear();
       ws.disconnect(clearSubscriptions: true);
     }
   });
