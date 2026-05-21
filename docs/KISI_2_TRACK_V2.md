@@ -23,21 +23,21 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.1 — Profil & Follow Temeli (Hafta 1-2)
 
 **Migration:**
-- [ ] `profiles` tablosuna kolon ekle: `avatar_url`, `is_private`, `bio_extended`, `location_share_mode` ENUM
-- [ ] Yeni tablo: `follows` (`follower_id`, `followee_id`, `created_at`, UNIQUE)
-- [ ] Yeni tablo: `follow_requests` (`requester_id`, `target_id`, `status`, `created_at`)
-- [ ] `community_invites` — link/code sistemi için (link_slug, code, mode: 'instant'|'request', expires_at, max_uses)
-- [ ] RLS: kullanıcı kendi follow'larını CRUD edebilir, başkasınınkini sadece görebilir (public ise)
+- [x] `profiles` tablosuna kolon ekle: `avatar_url`, `is_private`, `bio_extended`, `location_share_mode` ENUM
+- [x] Yeni tablo: `follows` (`follower_id`, `followee_id`, `created_at`, UNIQUE)
+- [x] Yeni tablo: `follow_requests` (`requester_id`, `target_id`, `status`, `created_at`)
+- [x] `community_invites` — link/code sistemi için (link_slug, code, mode: 'instant'|'request', expires_at, max_uses)
+- [x] RLS: kullanıcı kendi follow'larını CRUD edebilir, başkasınınkini sadece görebilir (public ise)
 
 **Endpoint:**
-- [ ] `POST /v2/profiles/me/avatar` — presigned URL (Cloudflare Images)
-- [ ] `PATCH /v2/profiles/me/privacy` — public/private toggle, location_share_mode
-- [ ] `POST /v2/follows/:userId` — takip et (public → anında, private → istek)
-- [ ] `DELETE /v2/follows/:userId` — takipten çık
-- [ ] `GET /v2/follows/followers?user_id=` ve `?...following` — liste
-- [ ] `POST /v2/follow-requests/:id/accept` ve `/reject`
-- [ ] `GET /v2/follow-requests/incoming`
-- [ ] Block kontrolü follow'larda — blocked kullanıcı follow edemez
+- [x] `POST /v2/profiles/me/avatar` — presigned URL (Cloudflare Images)
+- [x] `PATCH /v2/profiles/me/privacy` — public/private toggle, location_share_mode
+- [x] `POST /v2/follows/:userId` — takip et (public → anında, private → istek)
+- [x] `DELETE /v2/follows/:userId` — takipten çık
+- [x] `GET /v2/follows/followers?user_id=` ve `?...following` — liste
+- [x] `POST /v2/follow-requests/:id/accept` ve `/reject`
+- [x] `GET /v2/follow-requests/incoming`
+- [x] Block kontrolü follow'larda — blocked kullanıcı follow edemez
 
 ### V2.2 — Post & Yorum & Beğeni (Hafta 3-4)
 

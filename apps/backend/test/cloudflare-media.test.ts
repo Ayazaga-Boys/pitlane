@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   copyCloudflareStreamFromUrl,
+  createCloudflareImageDirectUpload,
   deleteCloudflareImage,
   uploadCloudflareImageFromUrl,
 } from '../src/services/cloudflare-media.js';
@@ -69,6 +70,39 @@ describe('cloudflare media api', () => {
         storage_key: 'videos/user/video.mp4',
       },
     });
+  });
+
+  it('creates direct upload URLs for profile avatars', async () => {
+    process.env.CF_ACCOUNT_ID = 'account_123';
+    process.env.CF_IMAGES_API_TOKEN = 'images_token';
+    const fetchMock = vi.fn().mockResolvedValue(responseJson({
+      success: true,
+      result: { id: 'image_123', uploadURL: 'https://upload.imagedelivery.net/direct' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await createCloudflareImageDirectUpload({
+      userId: '00000000-0000-4000-8000-000000000001',
+      purpose: 'profile_avatar',
+      expiresAt: new Date('2026-05-21T12:30:00.000Z'),
+      filename: 'avatar.jpg',
+    });
+
+    expect(result.uploadURL).toBe('https://upload.imagedelivery.net/direct');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.cloudflare.com/client/v4/accounts/account_123/images/v2/direct_upload',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.any(Headers),
+        body: expect.any(FormData),
+      }),
+    );
+
+    const [, init] = fetchMock.mock.calls[0];
+    const form = init.body as FormData;
+    expect(form.get('creator')).toBe('00000000-0000-4000-8000-000000000001');
+    expect(form.get('expiry')).toBe('2026-05-21T12:30:00.000Z');
+    expect(form.get('requireSignedURLs')).toBe('false');
   });
 
   it('deletes images by Cloudflare image id', async () => {

@@ -16,6 +16,11 @@ export interface CloudflareImageResult {
   variants?: string[];
 }
 
+export interface CloudflareImageDirectUploadResult {
+  id: string;
+  uploadURL: string;
+}
+
 export interface CloudflareStreamResult {
   uid: string;
   readyToStream?: boolean;
@@ -47,6 +52,31 @@ export async function uploadCloudflareImageFromUrl(input: {
   return cloudflareFetch<CloudflareImageResult>({
     config,
     path: `/accounts/${config.accountId}/images/v1`,
+    method: 'POST',
+    body: form,
+  });
+}
+
+export async function createCloudflareImageDirectUpload(input: {
+  userId: string;
+  purpose: 'profile_avatar';
+  expiresAt: Date;
+  filename?: string;
+}): Promise<CloudflareImageDirectUploadResult> {
+  const config = getCloudflareConfig('CF_IMAGES_API_TOKEN');
+  const form = new FormData();
+  form.set('creator', input.userId);
+  form.set('expiry', input.expiresAt.toISOString());
+  form.set('metadata', JSON.stringify({
+    user_id: input.userId,
+    purpose: input.purpose,
+    ...(input.filename ? { filename: input.filename } : {}),
+  }));
+  form.set('requireSignedURLs', 'false');
+
+  return cloudflareFetch<CloudflareImageDirectUploadResult>({
+    config,
+    path: `/accounts/${config.accountId}/images/v2/direct_upload`,
     method: 'POST',
     body: form,
   });

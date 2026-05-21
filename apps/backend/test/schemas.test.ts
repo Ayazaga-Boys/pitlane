@@ -16,6 +16,7 @@ import {
   UpdatePinSchema,
 } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
+import { V2FollowListQuerySchema, V2PrivacySchema } from '../src/schemas/v2-social.schema.js';
 
 describe('auth schemas', () => {
   it('normalizes invite codes', () => {
@@ -65,6 +66,35 @@ describe('profile schemas', () => {
       model: 'E30',
       year: 1800,
     })).toThrow();
+  });
+});
+
+describe('v2 social schemas', () => {
+  it('accepts profile privacy settings', () => {
+    const parsed = V2PrivacySchema.parse({
+      is_private: true,
+      location_share_mode: 'followers',
+      bio_extended: 'Garaj ve pist notları.',
+    });
+
+    expect(parsed.location_share_mode).toBe('followers');
+  });
+
+  it('requires at least one privacy field', () => {
+    expect(V2PrivacySchema.safeParse({}).success).toBe(false);
+  });
+
+  it('bounds follow list pagination', () => {
+    const parsed = V2FollowListQuerySchema.parse({
+      user_id: '00000000-0000-4000-8000-000000000001',
+      limit: '50',
+    });
+
+    expect(parsed.limit).toBe(50);
+    expect(V2FollowListQuerySchema.safeParse({
+      user_id: '00000000-0000-4000-8000-000000000001',
+      limit: '51',
+    }).success).toBe(false);
   });
 });
 
