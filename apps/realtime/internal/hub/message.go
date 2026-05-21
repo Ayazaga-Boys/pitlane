@@ -2,9 +2,10 @@ package hub
 
 // InboundMessage — Flutter'dan gelen mesaj tipleri
 type InboundMessage struct {
-	Type   string `json:"type"`
-	H3Cell string `json:"h3_cell,omitempty"`
-	K      int    `json:"k,omitempty"`
+	Type        string `json:"type"`
+	H3Cell      string `json:"h3_cell,omitempty"`
+	K           int    `json:"k,omitempty"`
+	VehicleType string `json:"vehicle_type,omitempty"` // "car" | "motorcycle" | "" (any)
 }
 
 // OutboundMessage — Flutter'a gönderilen mesaj tipleri
