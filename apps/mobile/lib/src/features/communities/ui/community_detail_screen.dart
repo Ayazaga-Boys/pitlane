@@ -248,14 +248,16 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initial = member.displayName.trim().isNotEmpty
+        ? member.displayName.characters.first.toUpperCase()
+        : '?';
+
     return _SurfaceTile(
       leading: CircleAvatar(
         backgroundColor: AppColors.surface3,
         backgroundImage:
             member.avatarUrl == null ? null : NetworkImage(member.avatarUrl!),
-        child: member.avatarUrl == null
-            ? Text(member.displayName.characters.first.toUpperCase())
-            : null,
+        child: member.avatarUrl == null ? Text(initial) : null,
       ),
       title: member.displayName,
       subtitle: '@${member.username} · ${member.role}',
