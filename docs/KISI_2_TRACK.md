@@ -89,14 +89,14 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [x] **Block kontrolü**: mesaj gönderirken alıcının `blocks` tablosunu kontrol et (UF-05 edge case)
 - [x] Bildirim endpoint'leri (liste, read, read-all)
 - [x] `POST /v1/notifications/devices` + `DELETE /v1/notifications/devices/:token`
-- [ ] FCM / APNs entegrasyonu (firebase-admin, 20. doküman Bölüm 6)
+- [x] FCM / APNs entegrasyonu (FCM HTTP v1 provider, APNs Firebase üzerinden)
 - [ ] Trigger.dev job: `dm_new` (presence kontrol — kullanıcı sohbet ekranındaysa skip)
 - [ ] Trigger.dev job: `flare_starting` (her 5 dk'da bir, 60 dk öncesi push)
 - [x] Quiet hours mantığı (23:00-08:00, 20. doküman Bölüm 8)
 - [x] Geçersiz token temizliği (`registration-token-not-registered` → DB sil)
 - [ ] Supabase Realtime channel konfigürasyonu
 
-> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare/help job wrapper'ları hazır. FCM/APNs provider ve Trigger.dev schedule bağlanınca yukarıdaki maddeler kapatılmalı.
+> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare/help job wrapper'ları hazır. FCM HTTP v1 provider eklendi; `FIREBASE_SERVICE_ACCOUNT_JSON` veya `FCM_PROJECT_ID`/`FCM_CLIENT_EMAIL`/`FCM_PRIVATE_KEY` ile etkinleşir. Trigger.dev schedule bağlanınca ilgili schedule maddeleri kapatılmalı.
 
 ### Sprint 5 — Acil Yardım & İşletme Pinleri (Hafta 9-10)
 - [x] Supabase migration: `help_requests`
