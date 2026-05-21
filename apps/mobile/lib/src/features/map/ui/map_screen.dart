@@ -188,7 +188,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
       size: const Size(64, 64),
     );
     const basePath = 'assets/vehicle_icons/compact_crossover_green_01';
-    const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+    const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
     final icons = <int, BitmapDescriptor>{};
 
     for (final angle in angles) {
@@ -215,7 +215,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   int _nearestVehicleAngle(double bearing) {
     final normalized =
         bearing.isNegative ? (bearing % 360) + 360 : bearing % 360;
-    return ((normalized / 45).round() * 45) % 360;
+    return ((normalized / 30).round() * 30) % 360;
   }
 
   Set<Marker> _buildDevVehicleMarkers(String? currentCell) {
