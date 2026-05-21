@@ -46,6 +46,15 @@ export function createBusinessTaxDocumentStorageKey(input: {
   return `business-tax-documents/${input.pinId}/${input.userId}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
 }
 
+export function createBusinessApplicationDocumentStorageKey(input: {
+  userId: string;
+  applicationId: string;
+  documentType: string;
+  contentType: string;
+}): string {
+  return `business-applications/${input.applicationId}/${input.userId}/${input.documentType}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
+}
+
 export function generateR2UploadUrl(input: GenerateUploadUrlInput): string {
   const config = getR2Config();
   const endpoint = new URL(config.endpoint);

@@ -93,6 +93,15 @@ describe('app routes', () => {
       listEventsResponse,
       rsvpEventResponse,
       createPollResponse,
+      createBusinessApplicationResponse,
+      businessApplicationDocumentsResponse,
+      myBusinessApplicationsResponse,
+      adminBusinessApplicationsResponse,
+      approveBusinessApplicationResponse,
+      rejectBusinessApplicationResponse,
+      nearbyBusinessLocationsResponse,
+      v2HeatmapResponse,
+      v2HelpResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -118,6 +127,15 @@ describe('app routes', () => {
       app.request('/v2/communities/00000000-0000-4000-8000-000000000001/events'),
       app.request('/v2/events/00000000-0000-4000-8000-000000000001/rsvp', { method: 'POST' }),
       app.request('/v2/events/00000000-0000-4000-8000-000000000001/polls', { method: 'POST' }),
+      app.request('/v2/business/applications', { method: 'POST' }),
+      app.request('/v2/business/applications/00000000-0000-4000-8000-000000000001/documents', { method: 'POST' }),
+      app.request('/v2/business/applications/me'),
+      app.request('/v2/admin/business/applications'),
+      app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/approve', { method: 'POST' }),
+      app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/reject', { method: 'POST' }),
+      app.request('/v2/business/locations/nearby?h3cell=8928308280fffff'),
+      app.request('/v2/map/heatmap?vehicle_type=car'),
+      app.request('/v2/help', { method: 'POST' }),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -144,6 +162,15 @@ describe('app routes', () => {
     expect(listEventsResponse.status).toBe(401);
     expect(rsvpEventResponse.status).toBe(401);
     expect(createPollResponse.status).toBe(401);
+    expect(createBusinessApplicationResponse.status).toBe(401);
+    expect(businessApplicationDocumentsResponse.status).toBe(401);
+    expect(myBusinessApplicationsResponse.status).toBe(401);
+    expect(adminBusinessApplicationsResponse.status).toBe(401);
+    expect(approveBusinessApplicationResponse.status).toBe(401);
+    expect(rejectBusinessApplicationResponse.status).toBe(401);
+    expect(nearbyBusinessLocationsResponse.status).toBe(401);
+    expect(v2HeatmapResponse.status).toBe(401);
+    expect(v2HelpResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {

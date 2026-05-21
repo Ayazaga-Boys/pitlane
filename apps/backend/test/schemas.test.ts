@@ -3,11 +3,12 @@ import { JoinWaitingListSchema, ValidateInviteCodeSchema } from '../src/schemas/
 import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/community.schema.js';
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
-import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
+import { MapNearbyQuerySchema, MapPinsQuerySchema, V2MapHeatmapQuerySchema } from '../src/schemas/map.schema.js';
 import { UploadUrlSchema } from '../src/schemas/media.schema.js';
 import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
+import { V2CreateHelpSchema } from '../src/schemas/v2-help.schema.js';
 import {
   CreatePinSchema,
   StartCampaignSchema,
@@ -16,6 +17,12 @@ import {
   UpdatePinSchema,
 } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
+import {
+  V2BusinessApplicationDocumentSchema,
+  V2BusinessLocationsNearbyQuerySchema,
+  V2CreateBusinessApplicationSchema,
+  V2RejectBusinessApplicationSchema,
+} from '../src/schemas/v2-business.schema.js';
 import {
   V2CreateCommentSchema,
   V2CreateCommunityEventSchema,
@@ -179,6 +186,58 @@ describe('v2 social schemas', () => {
   });
 });
 
+describe('v2 business schemas', () => {
+  it('accepts business applications and documents', () => {
+    const parsed = V2CreateBusinessApplicationSchema.parse({
+      business_name: 'Pit Garage',
+      category: 'garage',
+      h3_cell: '8928308280fffff',
+      latitude: 41.0082,
+      longitude: 28.9784,
+      address: 'Istanbul paddock',
+      working_hours: { monday: ['09:00', '18:00'] },
+    });
+
+    expect(parsed.category).toBe('garage');
+    expect(V2CreateBusinessApplicationSchema.safeParse({
+      business_name: 'Bad',
+      category: 'garage',
+      h3_cell: 'bad-cell',
+      latitude: 91,
+      longitude: 28.9784,
+      address: 'Istanbul paddock',
+    }).success).toBe(false);
+    expect(V2BusinessApplicationDocumentSchema.safeParse({
+      document_type: 'tax_license',
+      filename: 'tax.pdf',
+      content_type: 'application/pdf',
+      size_bytes: 2_000_000,
+    }).success).toBe(true);
+    expect(V2BusinessApplicationDocumentSchema.safeParse({
+      document_type: 'tax_license',
+      filename: 'tax.exe',
+      content_type: 'application/octet-stream',
+      size_bytes: 2_000_000,
+    }).success).toBe(false);
+  });
+
+  it('accepts business admin and nearby queries', () => {
+    expect(V2RejectBusinessApplicationSchema.parse({ reason: 'Missing document' }).reason).toBe('Missing document');
+    expect(V2RejectBusinessApplicationSchema.safeParse({ reason: '' }).success).toBe(false);
+    const nearby = V2BusinessLocationsNearbyQuerySchema.parse({
+      h3cell: '8928308280fffff',
+      k: '3',
+      category: 'repair',
+    });
+
+    expect(nearby.k).toBe(3);
+    expect(V2BusinessLocationsNearbyQuerySchema.safeParse({
+      h3cell: '8928308280fffff',
+      k: '6',
+    }).success).toBe(false);
+  });
+});
+
 describe('map schemas', () => {
   it('coerces nearby query k value', () => {
     const parsed = MapNearbyQuerySchema.parse({
@@ -196,6 +255,17 @@ describe('map schemas', () => {
   it('validates optional pin category', () => {
     expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'garage' }).success).toBe(true);
     expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'mall' }).success).toBe(false);
+  });
+
+  it('accepts v2 vehicle-filtered heatmap queries', () => {
+    const parsed = V2MapHeatmapQuerySchema.parse({
+      vehicle_type: 'motorcycle',
+      bounds: '8828308281fffff,882830828dfffff',
+    });
+
+    expect(parsed.vehicle_type).toBe('motorcycle');
+    expect(parsed.bounds).toHaveLength(2);
+    expect(V2MapHeatmapQuerySchema.safeParse({ vehicle_type: 'truck' }).success).toBe(false);
   });
 });
 
@@ -298,6 +368,26 @@ describe('help schemas', () => {
       h3_cell: '8928308280fffff',
       issue_type: 'fuel',
       description: 'x'.repeat(301),
+    }).success).toBe(false);
+  });
+
+  it('accepts targeted v2 help requests', () => {
+    expect(V2CreateHelpSchema.parse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'breakdown',
+      target_type: 'followers',
+      urgency: 'critical',
+    }).target_type).toBe('followers');
+    expect(V2CreateHelpSchema.safeParse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'fuel',
+      target_type: 'group',
+    }).success).toBe(false);
+    expect(V2CreateHelpSchema.safeParse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'fuel',
+      target_type: 'nearby',
+      target_id: '00000000-0000-4000-8000-000000000001',
     }).success).toBe(false);
   });
 });
