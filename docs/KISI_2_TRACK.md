@@ -89,14 +89,14 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [x] **Block kontrolü**: mesaj gönderirken alıcının `blocks` tablosunu kontrol et (UF-05 edge case)
 - [x] Bildirim endpoint'leri (liste, read, read-all)
 - [x] `POST /v1/notifications/devices` + `DELETE /v1/notifications/devices/:token`
-- [ ] FCM / APNs entegrasyonu (firebase-admin, 20. doküman Bölüm 6)
+- [x] FCM / APNs entegrasyonu (FCM HTTP v1 provider, APNs Firebase üzerinden)
 - [ ] Trigger.dev job: `dm_new` (presence kontrol — kullanıcı sohbet ekranındaysa skip)
 - [ ] Trigger.dev job: `flare_starting` (her 5 dk'da bir, 60 dk öncesi push)
 - [x] Quiet hours mantığı (23:00-08:00, 20. doküman Bölüm 8)
 - [x] Geçersiz token temizliği (`registration-token-not-registered` → DB sil)
 - [ ] Supabase Realtime channel konfigürasyonu
 
-> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare/help job wrapper'ları hazır. FCM/APNs provider ve Trigger.dev schedule bağlanınca yukarıdaki maddeler kapatılmalı.
+> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare/help job wrapper'ları hazır. FCM HTTP v1 provider eklendi; `FIREBASE_SERVICE_ACCOUNT_JSON` veya `FCM_PROJECT_ID`/`FCM_CLIENT_EMAIL`/`FCM_PRIVATE_KEY` ile etkinleşir. Trigger.dev schedule bağlanınca ilgili schedule maddeleri kapatılmalı.
 
 ### Sprint 5 — Acil Yardım & İşletme Pinleri (Hafta 9-10)
 - [x] Supabase migration: `help_requests`
@@ -105,7 +105,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [x] Saatlik limit kontrolü (`max_help_per_user_hour` remote_config, F5.3)
 - [x] Trigger.dev `sendHelpNotification`: k-ring 2 → aktif kullanıcı listesi → block filter → push (20. doküman Bölüm 6)
 - [ ] iOS Critical Alert entitlement başvurusu (Apple — yardım push'u için)
-- [ ] 2 saat sonra otomatik `expired` cron
+- [x] 2 saat sonra otomatik `expired` cron
 - [x] İşletme pin CRUD + kampanya endpoint'i
 - [x] Vergi belgesi yüklemesi (R2 privat bucket)
 - [x] İşletme doğrulama akışı (admin panel için flag)
@@ -127,7 +127,7 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [ ] Fly.io production deploy + auto-rollback (23. doküman Bölüm 12)
 - [ ] Status sayfası setup (statuspage.io veya Cachet)
 
-> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Finalize sırasında R2 HEAD doğrulaması, Cloudflare Images URL import ve Cloudflare Stream `/stream/copy` ingest eklendi. `DELETE /v1/media/:id` R2 + Cloudflare Images/Stream delete çağrılarını yapıyor. Cloudflare Stream webhook imza doğrulama + ready/failed status update eklendi. Cloudflare Images varyant isimleri `GET /v1/config` kontratına sabitlendi. Retention cleanup helper'ları ve `POST /v1/internal/jobs/retention/run` internal endpoint'i eklendi; Trigger.dev schedule bağlama işi açık. Hesap silme için 30 günü dolan profilleri anonimleştiren `POST /v1/internal/jobs/profile-deletion/run` internal endpoint'i eklendi; e-posta/undelete ve Trigger.dev schedule bağlama işi açık. Veri export endpoint'i JSON arşivi R2'ye yazıp 48 saatlik presigned indirme URL'i dönecek hale getirildi; `POST /v1/internal/jobs/user-export/run` internal job wrapper'ı eklendi. İşletme vergi belgesi için R2 upload-url/finalize endpoint'leri ve `verification_status` flag'i eklendi; admin panel onay/red aksiyonu flag'i `verified/rejected` olarak güncelliyor. `pnpm --filter @rollpit/backend smoke:cloudflare` script'i R2, Cloudflare Images ve Stream bağlantılarını secret basmadan doğruluyor.
+> Not: R2 upload temel akışı eklendi (`POST /v1/media/upload-url`, `POST /v1/media/finalize`, `media_assets` migration). Finalize sırasında R2 HEAD doğrulaması, Cloudflare Images URL import ve Cloudflare Stream `/stream/copy` ingest eklendi. `DELETE /v1/media/:id` R2 + Cloudflare Images/Stream delete çağrılarını yapıyor. Cloudflare Stream webhook imza doğrulama + ready/failed status update eklendi. Cloudflare Images varyant isimleri `GET /v1/config` kontratına sabitlendi. Retention cleanup helper'ları ve `POST /v1/internal/jobs/retention/run` internal endpoint'i eklendi; Trigger.dev schedule bağlama işi açık. Yardım talepleri için `POST /v1/internal/jobs/help-expiration/run` internal endpoint'i eklendi. Hesap silme için 30 günü dolan profilleri anonimleştiren `POST /v1/internal/jobs/profile-deletion/run` internal endpoint'i eklendi; e-posta/undelete ve Trigger.dev schedule bağlama işi açık. Veri export endpoint'i JSON arşivi R2'ye yazıp 48 saatlik presigned indirme URL'i dönecek hale getirildi; `POST /v1/internal/jobs/user-export/run` internal job wrapper'ı eklendi. İşletme vergi belgesi için R2 upload-url/finalize endpoint'leri ve `verification_status` flag'i eklendi; admin panel onay/red aksiyonu flag'i `verified/rejected` olarak güncelliyor. `pnpm --filter @rollpit/backend smoke:cloudflare` script'i R2, Cloudflare Images ve Stream bağlantılarını secret basmadan doğruluyor.
 
 ---
 

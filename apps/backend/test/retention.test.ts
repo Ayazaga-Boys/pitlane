@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { runHelpRequestExpiration } from '../src/jobs/help-expiration.js';
 import { buildDeletedProfileUsername } from '../src/jobs/profile-deletion.js';
 import { getRetentionCutoffs } from '../src/jobs/retention.js';
 import { runUserExportJob } from '../src/jobs/user-export.js';
@@ -34,6 +35,11 @@ describe('retention jobs', () => {
       userId: '00000000-0000-4000-8000-000000000001',
       supabase: null,
     })).rejects.toThrow('Supabase service client is not configured');
+  });
+
+  it('requires a service client for help expiration jobs', async () => {
+    await expect(runHelpRequestExpiration({ supabase: null }))
+      .rejects.toThrow('Supabase service client is not configured');
   });
 
   it('groups realtime location cells into res-8 heatmap counts', () => {

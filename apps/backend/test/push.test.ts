@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getHelpNotificationTargetIds } from '../src/jobs/notifications.js';
+import { buildFcmMessage, readFcmServiceAccountConfig } from '../src/services/fcm.js';
 import {
   getPushPreferenceDecision,
   isInvalidPushTokenError,
@@ -70,4 +71,68 @@ describe('push notification helpers', () => {
       ['blocked'],
     )).toEqual(['helper-a', 'helper-b']);
   });
+
+  it('builds FCM HTTP v1 payloads with normalized data', () => {
+    expect(buildFcmMessage({
+      id: 'device-1',
+      user_id: 'user-1',
+      platform: 'ios',
+      token: 'device-token',
+    }, {
+      type: 'help_nearby',
+      title: 'Yardim',
+      body: 'Yakinda yardim gerekiyor',
+      data: { help_id: 'help-1', count: 2 },
+    })).toMatchObject({
+      message: {
+        token: 'device-token',
+        notification: {
+          title: 'Yardim',
+          body: 'Yakinda yardim gerekiyor',
+        },
+        data: {
+          type: 'help_nearby',
+          help_id: 'help-1',
+          count: '2',
+        },
+        android: { priority: 'HIGH' },
+        apns: { headers: { 'apns-priority': '10' } },
+      },
+    });
+  });
+
+  it('reads Firebase service account config from JSON env', () => {
+    const previousJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    const previousProjectId = process.env.FCM_PROJECT_ID;
+    const previousEmail = process.env.FCM_CLIENT_EMAIL;
+    const previousKey = process.env.FCM_PRIVATE_KEY;
+
+    delete process.env.FCM_PROJECT_ID;
+    delete process.env.FCM_CLIENT_EMAIL;
+    delete process.env.FCM_PRIVATE_KEY;
+    process.env.FIREBASE_SERVICE_ACCOUNT_JSON = JSON.stringify({
+      project_id: 'rollpit-test',
+      client_email: 'firebase-adminsdk@test.iam.gserviceaccount.com',
+      private_key: '-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----\\n',
+    });
+
+    expect(readFcmServiceAccountConfig()).toEqual({
+      projectId: 'rollpit-test',
+      clientEmail: 'firebase-adminsdk@test.iam.gserviceaccount.com',
+      privateKey: '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----\n',
+    });
+
+    restoreEnv('FIREBASE_SERVICE_ACCOUNT_JSON', previousJson);
+    restoreEnv('FCM_PROJECT_ID', previousProjectId);
+    restoreEnv('FCM_CLIENT_EMAIL', previousEmail);
+    restoreEnv('FCM_PRIVATE_KEY', previousKey);
+  });
 });
+
+function restoreEnv(key: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
+  }
+}
