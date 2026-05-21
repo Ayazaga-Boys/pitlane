@@ -12,4 +12,6 @@ type CellStore interface {
 	GetCellCounts(ctx context.Context) map[string]int
 	GetCellCountsByVehicle(ctx context.Context, vehicleType string) map[string]int
 	WriteHeatmapSnapshots(ctx context.Context) error
+	SetFollowees(ctx context.Context, userID string, followeeIDs []string) error
+	IsFollowing(ctx context.Context, followerID, followeeID string) (bool, error)
 }

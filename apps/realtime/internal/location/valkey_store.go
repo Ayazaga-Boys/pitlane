@@ -20,6 +20,7 @@ const (
 	heatmapSnapshotKey           = "heatmap:snapshot"
 	heatmapSnapshotCarKey        = "heatmap:snapshot:vehicle:car"
 	heatmapSnapshotMotorcycleKey = "heatmap:snapshot:vehicle:motorcycle"
+	followCacheTTL               = 10 * time.Minute
 )
 
 // NewValkeyStore — Valkey bağlantısı kurar; bağlantı başarısız olursa hata döner.
@@ -156,6 +157,32 @@ func (s *valkeyStore) WriteHeatmapSnapshots(ctx context.Context) error {
 	return nil
 }
 
+func (s *valkeyStore) SetFollowees(ctx context.Context, userID string, followeeIDs []string) error {
+	key := followeesKey(userID)
+	pipe := s.client.Pipeline()
+	pipe.Del(ctx, key)
+	if len(followeeIDs) > 0 {
+		members := make([]interface{}, 0, len(followeeIDs))
+		for _, followeeID := range followeeIDs {
+			members = append(members, followeeID)
+		}
+		pipe.SAdd(ctx, key, members...)
+		pipe.Expire(ctx, key, followCacheTTL)
+	}
+	if _, err := pipe.Exec(ctx); err != nil {
+		return fmt.Errorf("follow cache write failed: %w", err)
+	}
+	return nil
+}
+
+func (s *valkeyStore) IsFollowing(ctx context.Context, followerID, followeeID string) (bool, error) {
+	ok, err := s.client.SIsMember(ctx, followeesKey(followerID), followeeID).Result()
+	if err != nil {
+		return false, fmt.Errorf("follow cache read failed: %w", err)
+	}
+	return ok, nil
+}
+
 // GetCellCountsSnapshot — Prometheus scrape için heatmap snapshot (pipeline ile hızlı)
 func (s *valkeyStore) GetCellCountsSnapshot(ctx context.Context) (map[string]int, error) {
 	raw, err := s.client.Get(ctx, heatmapSnapshotKey).Result()
@@ -182,4 +209,8 @@ func userKey(userID string) string {
 
 func userVehicleKey(userID string) string {
 	return "locveh:" + userID
+}
+
+func followeesKey(userID string) string {
+	return "follows:" + userID
 }

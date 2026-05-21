@@ -98,17 +98,23 @@ func (h *Hub) Run(ctx context.Context) {
 			h.mu.Unlock()
 			metrics.WsConnectionsTotal.Inc()
 			metrics.WsActiveConnections.Inc()
+			h.SendPresenceUpdateToUserSubscribers(c.userID, "online")
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_connected")
 
 		case c := <-h.unregister:
+			removed := false
 			h.mu.Lock()
 			if _, ok := h.clients[c.userID]; ok {
 				delete(h.clients, c.userID)
 				close(c.send)
 				_ = h.store.DeleteUserCell(context.Background(), c.userID)
 				metrics.WsActiveConnections.Dec()
+				removed = true
 			}
 			h.mu.Unlock()
+			if removed {
+				h.SendPresenceUpdateToUserSubscribers(c.userID, "offline")
+			}
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_disconnected")
 		}
 	}
@@ -131,11 +137,12 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := &Client{
-		hub:           h,
-		conn:          conn,
-		userID:        userID,
-		send:          make(chan []byte, sendBufferSize),
-		subscriptions: make(map[string]int),
+		hub:               h,
+		conn:              conn,
+		userID:            userID,
+		send:              make(chan []byte, sendBufferSize),
+		subscriptions:     make(map[string]int),
+		userSubscriptions: make(map[string]struct{}),
 	}
 	h.register <- c
 	go c.writePump()
@@ -236,6 +243,74 @@ func (h *Hub) SendToSubscribersWithK(h3Cell string, minK int, msg []byte) {
 		default:
 			log.Warn().Str("userID", userID).Msg("send_buffer_full_subscribers")
 		}
+	}
+}
+
+func (h *Hub) SendPresenceSnapshot(c *Client, targetUserID string) {
+	status := "offline"
+	h.mu.RLock()
+	if _, ok := h.clients[targetUserID]; ok {
+		status = "online"
+	}
+	h.mu.RUnlock()
+
+	payload := OutboundMessage{
+		Type:   TypePresenceUpdate,
+		UserID: targetUserID,
+		Status: status,
+	}
+	h.sendOutboundToClient(c, payload)
+}
+
+func (h *Hub) SendPresenceUpdateToUserSubscribers(targetUserID, status string) {
+	payload := OutboundMessage{
+		Type:   TypePresenceUpdate,
+		UserID: targetUserID,
+		Status: status,
+	}
+	h.SendToUserSubscribers(targetUserID, payload)
+}
+
+func (h *Hub) SendLocationShareToUserSubscribers(targetUserID, h3Cell string) {
+	payload := OutboundMessage{
+		Type:   TypeLocationShare,
+		UserID: targetUserID,
+		H3Cell: h3Cell,
+	}
+	h.SendToUserSubscribers(targetUserID, payload)
+}
+
+func (h *Hub) SendToUserSubscribers(targetUserID string, payload OutboundMessage) {
+	msg, err := json.Marshal(payload)
+	if err != nil {
+		log.Error().Err(err).Str("targetUserID", targetUserID).Msg("user_subscriber_marshal_failed")
+		return
+	}
+
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for userID, c := range h.clients {
+		if userID == targetUserID || !c.followsUser(targetUserID) {
+			continue
+		}
+		select {
+		case c.send <- msg:
+		default:
+			log.Warn().Str("userID", userID).Str("targetUserID", targetUserID).Msg("send_buffer_full_user_subscriber")
+		}
+	}
+}
+
+func (h *Hub) sendOutboundToClient(c *Client, payload OutboundMessage) {
+	msg, err := json.Marshal(payload)
+	if err != nil {
+		log.Error().Err(err).Str("userID", c.userID).Msg("outbound_marshal_failed")
+		return
+	}
+	select {
+	case c.send <- msg:
+	default:
+		log.Warn().Str("userID", c.userID).Msg("send_buffer_full")
 	}
 }
 

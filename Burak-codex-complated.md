@@ -163,6 +163,26 @@ Doğrulama:
 - `flutter analyze` geçti.
 - `flutter test` geçti.
 
+### İş 9 — V2.1 Realtime Follow Presence Çekirdeği
+
+Sprint 1 / Kişi 1 V2 kapsamında yapıldı:
+
+- WS inbound kontratına `subscribe_user` ve `unsubscribe_user` eklendi.
+- WS outbound kontratına `presence_update` ve `location_share` eklendi.
+- Go realtime client'ı takip edilen kullanıcı aboneliklerini tutacak hale getirildi.
+- `location_share` fanout'u sadece ilgili kullanıcıya subscribe olan client'lara gönderiliyor.
+- Gürültüyü azaltmak için aynı H3 cell'de 30 saniye cooldown eklendi; H3 cell değişirse event hemen gönderiliyor.
+- Ghost mode aktifken konum store'a yazılmıyor ve `location_share` gönderilmiyor.
+- Valkey follow cache desteği eklendi: `follows:<user_id>` set'i `subscribe_user` güvenlik kontrolünde okunuyor.
+- Follow cache izin vermiyorsa `subscribe_user` `FORBIDDEN` döner; arbitrary kullanıcı takibi engellendi.
+- `docs/KISI_1_TRACK_V2.md` içinde V2.1 Go realtime maddeleri tamamlandı olarak işaretlendi.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+
 ### İş 7 — V2 Vehicle Filtered Heatmap Snapshot Kontratı
 
 Erol'dan gelen kontrat:
@@ -188,6 +208,24 @@ Doğrulama:
 - `gofmt` çalıştırıldı.
 - `go test ./... -race` geçti.
 - `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+
+### İş 8 — Flutter CI Format Hatası Düzeltmesi
+
+Sebep:
+
+- GitHub Actions Flutter job'ı `dart format --output=none --set-exit-if-changed lib/ test/` adımında kalıyordu.
+- CI logunda formatlanması gereken dosya `apps/mobile/lib/src/features/profile/data/profile_repository.dart` olarak görünüyordu.
+
+Yapıldı:
+
+- `getCurrentProfile` içindeki tek satırlık null kontrolü blok forma çekildi.
+- Satır sonu yorumunun formatter tarafından farklı biçimlenmesi engellendi.
+
+Doğrulama:
+
+- `dart format --output=none --set-exit-if-changed lib/ test/` geçti.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
 
 ### İş 7 — Realtime Server-Side k-ring ve Valkey Pub/Sub
 
