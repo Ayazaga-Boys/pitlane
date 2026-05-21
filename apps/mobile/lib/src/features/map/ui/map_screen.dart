@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
@@ -31,7 +32,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
     with WidgetsBindingObserver {
   GoogleMapController? _mapController;
   StreamSubscription<WsHelpEvent>? _helpEventSub;
+  final Map<int, BitmapDescriptor> _vehicleIcons = {};
   bool _showPermissionRationale = false;
+  bool _vehicleIconsStartedLoading = false;
+  int _vehicleIconAngle = 0;
 
   static const _istanbul = CameraPosition(
     target: LatLng(41.0082, 28.9784),
@@ -58,6 +62,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
       if (!mounted) return;
       _showHelpEventSnackBar(event);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_vehicleIconsStartedLoading) {
+      _vehicleIconsStartedLoading = true;
+      unawaited(_loadVehicleIcons());
+    }
   }
 
   @override
@@ -167,6 +180,78 @@ class _MapScreenState extends ConsumerState<MapScreen>
         _ => 'Yakında yeni yardım talebi var.',
       };
 
+  Future<void> _loadVehicleIcons() async {
+    if (!AppConstants.isDev) return;
+
+    final configuration = createLocalImageConfiguration(
+      context,
+      size: const Size(64, 64),
+    );
+    const basePath = 'assets/vehicle_icons/compact_crossover_green_01';
+    const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+    final icons = <int, BitmapDescriptor>{};
+
+    for (final angle in angles) {
+      final angleName = angle.toString().padLeft(3, '0');
+      icons[angle] = await BitmapDescriptor.asset(
+        configuration,
+        '$basePath/angle_$angleName.png',
+        width: 64,
+        height: 64,
+      );
+    }
+
+    if (!mounted) return;
+    setState(() => _vehicleIcons.addAll(icons));
+  }
+
+  void _handleCameraMove(CameraPosition position) {
+    if (!AppConstants.isDev) return;
+    final nextAngle = _nearestVehicleAngle(position.bearing);
+    if (nextAngle == _vehicleIconAngle) return;
+    setState(() => _vehicleIconAngle = nextAngle);
+  }
+
+  int _nearestVehicleAngle(double bearing) {
+    final normalized =
+        bearing.isNegative ? (bearing % 360) + 360 : bearing % 360;
+    return ((normalized / 45).round() * 45) % 360;
+  }
+
+  Set<Marker> _buildDevVehicleMarkers(String? currentCell) {
+    if (!AppConstants.isDev) return {};
+
+    final position = _vehiclePosition(currentCell);
+    final icon = _vehicleIcons[_vehicleIconAngle] ??
+        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+
+    return {
+      Marker(
+        markerId: const MarkerId('dev_vehicle_compact_crossover_green_01'),
+        position: position,
+        icon: icon,
+        anchor: const Offset(0.5, 0.56),
+        zIndexInt: 1000,
+        infoWindow: const InfoWindow(
+          title: 'Compact crossover demo',
+          snippet: 'Sprite marker angle test',
+        ),
+      ),
+    };
+  }
+
+  LatLng _vehiclePosition(String? currentCell) {
+    if (currentCell != null && currentCell.isNotEmpty) {
+      try {
+        final center = h3CellCenter(currentCell);
+        return LatLng(center.lat, center.lon);
+      } catch (_) {
+        // Fallback below.
+      }
+    }
+    return const LatLng(41.0102, 28.9808);
+  }
+
   @override
   Widget build(BuildContext context) {
     final heatmap = ref.watch(heatmapProvider);
@@ -194,7 +279,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
       }
       return false;
     }).toList();
-    final pins = pinData.map((p) => _toMarker(context, p)).toSet();
+    final pins = {
+      ...pinData.map((p) => _toMarker(context, p)),
+      ..._buildDevVehicleMarkers(currentCell),
+    };
 
     return Scaffold(
       backgroundColor: AppColors.surface0,
@@ -204,6 +292,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
           GoogleMap(
             initialCameraPosition: _istanbul,
             onMapCreated: (c) => _mapController = c,
+            onCameraMove: _handleCameraMove,
             myLocationEnabled: !isGhost,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
