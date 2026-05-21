@@ -53,6 +53,26 @@ class WsLocationShareEvent {
   final String h3Cell;
 }
 
+enum WsSocialEventType { storyPosted, postLiked, postCommented }
+
+class WsSocialEvent {
+  const WsSocialEvent({
+    required this.type,
+    this.userId,
+    this.storyId,
+    this.postId,
+    this.likerId,
+    this.commenterId,
+  });
+
+  final WsSocialEventType type;
+  final String? userId;
+  final String? storyId;
+  final String? postId;
+  final String? likerId;
+  final String? commenterId;
+}
+
 class WsService {
   WebSocketChannel? _channel;
   StreamSubscription? _sub;
@@ -73,6 +93,8 @@ class WsService {
       StreamController<WsLocationShareEvent>.broadcast();
   Stream<WsLocationShareEvent> get locationShareStream =>
       _locationShareController.stream;
+  final _socialEventController = StreamController<WsSocialEvent>.broadcast();
+  Stream<WsSocialEvent> get socialEventStream => _socialEventController.stream;
 
   void connect(String jwtToken, {bool resetBackoff = true}) {
     if (_channel != null && _connectedToken == jwtToken) {
@@ -152,6 +174,11 @@ class WsService {
       case 'location_share':
         final event = parseWsLocationShareEvent(msg);
         if (event != null) _locationShareController.add(event);
+      case 'story_posted':
+      case 'post_liked':
+      case 'post_commented':
+        final event = parseWsSocialEvent(msg);
+        if (event != null) _socialEventController.add(event);
       case 'error':
         debugPrint('[WS] error: ${msg['code']} — ${msg['message']}');
     }
@@ -202,6 +229,7 @@ class WsService {
     _helpEventController.close();
     _presenceController.close();
     _locationShareController.close();
+    _socialEventController.close();
   }
 
   void _resubscribeAll() {
@@ -278,6 +306,49 @@ WsLocationShareEvent? parseWsLocationShareEvent(Map<String, dynamic> msg) {
     return null;
   }
   return WsLocationShareEvent(userId: userId, h3Cell: h3Cell);
+}
+
+WsSocialEvent? parseWsSocialEvent(Map<String, dynamic> msg) {
+  final type = msg['type'] as String?;
+  return switch (type) {
+    'story_posted' => _parseStoryPosted(msg),
+    'post_liked' => _parsePostLiked(msg),
+    'post_commented' => _parsePostCommented(msg),
+    _ => null,
+  };
+}
+
+WsSocialEvent? _parseStoryPosted(Map<String, dynamic> msg) {
+  final userId = msg['user_id'] as String?;
+  final storyId = msg['story_id'] as String?;
+  if (userId == null || storyId == null) return null;
+  return WsSocialEvent(
+    type: WsSocialEventType.storyPosted,
+    userId: userId,
+    storyId: storyId,
+  );
+}
+
+WsSocialEvent? _parsePostLiked(Map<String, dynamic> msg) {
+  final postId = msg['post_id'] as String?;
+  final likerId = msg['liker_id'] as String?;
+  if (postId == null || likerId == null) return null;
+  return WsSocialEvent(
+    type: WsSocialEventType.postLiked,
+    postId: postId,
+    likerId: likerId,
+  );
+}
+
+WsSocialEvent? _parsePostCommented(Map<String, dynamic> msg) {
+  final postId = msg['post_id'] as String?;
+  final commenterId = msg['commenter_id'] as String?;
+  if (postId == null || commenterId == null) return null;
+  return WsSocialEvent(
+    type: WsSocialEventType.postCommented,
+    postId: postId,
+    commenterId: commenterId,
+  );
 }
 
 final wsServiceProvider = Provider<WsService>((ref) {

@@ -37,6 +37,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
     with WidgetsBindingObserver {
   GoogleMapController? _mapController;
   StreamSubscription<WsHelpEvent>? _helpEventSub;
+  StreamSubscription<WsSocialEvent>? _socialEventSub;
   bool _showPermissionRationale = false;
   Set<Marker> _clusteredMarkers = {};
   gmc.ClusterManager<MapPinClusterItem>? _clusterManager;
@@ -66,12 +67,18 @@ class _MapScreenState extends ConsumerState<MapScreen>
       if (!mounted) return;
       _showHelpEventSnackBar(event);
     });
+    _socialEventSub =
+        ref.read(wsServiceProvider).socialEventStream.listen((event) {
+      if (!mounted) return;
+      _showSocialEventSnackBar(event);
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _helpEventSub?.cancel();
+    _socialEventSub?.cancel();
     super.dispose();
   }
 
@@ -218,6 +225,27 @@ class _MapScreenState extends ConsumerState<MapScreen>
       position: cluster.location,
       icon: icon,
       infoWindow: InfoWindow(title: '${cluster.count} pin'),
+      onTap: () {
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(cluster.location, 15),
+        );
+      },
+    );
+  }
+
+  void _showSocialEventSnackBar(WsSocialEvent event) {
+    if (event.type != WsSocialEventType.storyPosted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text('Takip ettiğin biri yeni bir story paylaştı.'),
+        action: SnackBarAction(
+          label: 'Gör',
+          onPressed: () => context.go('/discover'),
+        ),
+        duration: const Duration(seconds: 4),
+      ),
     );
   }
 
