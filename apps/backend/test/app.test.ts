@@ -280,10 +280,11 @@ describe('app routes', () => {
     delete process.env.TRIGGER_SECRET_KEY;
 
     const app = createApp();
-    const [retentionResponse, profileDeletionResponse, discoverRefreshResponse] = await Promise.all([
+    const [retentionResponse, profileDeletionResponse, discoverRefreshResponse, userExportResponse] = await Promise.all([
       app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/profile-deletion/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/discover-refresh/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/user-export/run', { method: 'POST', body: '{}' }),
     ]);
 
     restoreEnv('INTERNAL_JOB_SECRET', previousSecret);
@@ -292,6 +293,7 @@ describe('app routes', () => {
     expect(retentionResponse.status).toBe(401);
     expect(profileDeletionResponse.status).toBe(401);
     expect(discoverRefreshResponse.status).toBe(401);
+    expect(userExportResponse.status).toBe(401);
   });
 
   it('keeps message routes protected', async () => {

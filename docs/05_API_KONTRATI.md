@@ -499,6 +499,7 @@ V1 canonical Cloudflare Images varyantları: `thumb` (120x120 cover), `feed` (64
 ```
 POST /v1/internal/jobs/retention/run — Retention cleanup çalıştır
 POST /v1/internal/jobs/profile-deletion/run — 30 günü dolan hesap silme taleplerini anonimleştir
+POST /v1/internal/jobs/user-export/run — Kullanıcı veri export JSON arşivini üret
 ```
 
 Auth: `Authorization: Bearer <INTERNAL_JOB_SECRET>`; bu yoksa fallback olarak `TRIGGER_SECRET_KEY` kabul edilir.

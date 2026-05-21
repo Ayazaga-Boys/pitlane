@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { getHelpNotificationTargetIds } from '../src/jobs/notifications.js';
 import {
   getPushPreferenceDecision,
   isInvalidPushTokenError,
@@ -60,5 +61,13 @@ describe('push notification helpers', () => {
       unread_count: '3',
       urgent: 'true',
     });
+  });
+
+  it('deduplicates help notification targets and filters requester plus blocks', () => {
+    expect(getHelpNotificationTargetIds(
+      ['requester', 'helper-a', 'helper-a', 'helper-b', 'blocked'],
+      'requester',
+      ['blocked'],
+    )).toEqual(['helper-a', 'helper-b']);
   });
 });
