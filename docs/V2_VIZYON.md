@@ -21,10 +21,10 @@ V2 ile uygulama **kalıcı kullanım haline** geçiyor. Kullanıcı sadece yola 
 
 | Kategori | V1 | V2 |
 |---|---|---|
-| Profil | Username + araç | + Foto, public/private, takip sistemi |
+| Profil | Username + araç | + Foto, public/private, takip sistemi, presence status dot |
 | Topluluk | Açık katılım | + Davet linki/kodu, rütbeler, etkinlikler, poll'ler |
 | Keşfet | — (yok) | Postlar, story'ler, yarışmalar, algoritma feed |
-| Harita | Heatmap + pin | + Takip ettikleri konumu, foto-bubble lokasyonlar, filtreler |
+| Harita | Heatmap + pin | + Araç modeli ikonu, takip ettikleri konumu, foto-bubble lokasyonlar, filtreler |
 | SOS | Yakındaki herkes | Takip ettikleri + gruplar + renk kodlu aciliyet |
 | Bildirim | DM, flare, help | + Follow request, story view, like, comment, event |
 | İşletme | Admin ekler | + Self-onboarding başvuru akışı |
@@ -37,6 +37,11 @@ V2 ile uygulama **kalıcı kullanım haline** geçiyor. Kullanıcı sadece yola 
 ### A — Sosyal Ağ Katmanı
 
 1. **Profil fotoğrafı** (kullanıcı yükler, Cloudflare Images)
+1a. **Presence status göstergesi** — profil fotoğrafının köşesinde küçük renkli dot
+   - 🟢 Yeşil: çevrimiçi
+   - 🟡 Sarı: rahatsız etmeyin (DND)
+   - ⚫ Gri: çevrimdışı
+   - Kullanıcı isterse presence'ı tamamen gizleyebilir
 2. **Public/Private profil** (story görme, post görme kontrolü)
 3. **Follow/Following sistemi** — instagramdaki gibi
    - Public profilde anında takip
@@ -83,6 +88,12 @@ V2 ile uygulama **kalıcı kullanım haline** geçiyor. Kullanıcı sadece yola 
 13. **Takip ettiği kullanıcıların konumu** — opsiyonel (kullanıcı ghost mode'da değilse)
 14. **Filtreler** — Motorcu yoğunluğu / Otomobil yoğunluğu / Sadece takip ettiğim / İşletmeler
 15. **Map clustering** — zoom out edildiğinde marker'lar gruplanır
+16. **Araç modeli harita ikonu** — kullanıcının haritadaki konumu generic pin değil araç silueti
+   - Araç tipine göre (motosiklet / otomobil / diğer)
+   - Marka/modele göre ikon (Golf → Golf silueti, Chopper → chopper silueti)
+   - Kullanıcı birden fazla aracı varsa aktif aracını seçer
+   - İkon basit SVG (performans için detaylı değil)
+   - Haritada zoom seviyesine göre boyutlanır
 
 ### D — SOS V2
 

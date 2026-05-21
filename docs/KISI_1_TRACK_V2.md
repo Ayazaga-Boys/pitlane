@@ -21,12 +21,25 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 
 ## Sprint Görevlerin (V2)
 
+### V2.0b — Araç İkonu Harita Entegrasyonu (Hafta 1-2 paralel)
+
+> Bağımlılık: Erol'un `vehicles.icon_slug` alanı + ikon kataloğu endpoint'i
+
+- [ ] Flutter: kullanıcının aktif aracının `icon_slug`'ına göre custom marker widget
+- [ ] Custom marker: basit SVG/PNG siluet (motosiklet, araba, chopper, pickup, suv, van, klasik, diğer)
+- [ ] Araç markasına özel ikonlar (Golf, BMW, Harley vb.) — isteğe bağlı genişletme
+- [ ] Zoom level < 12 → generic cluster, zoom ≥ 12 → araç ikonu göster
+- [ ] Kendi konumun için de araç ikonu (mavi outline ile vurgulansa iyi olur)
+- [ ] Ghost mode aktifse ikon haritada görünmez (V1 davranışı korunur)
+- [ ] `GET /v2/vehicles/icons` endpoint'inden ikon kataloğunu çek (Erol yazar)
+- [ ] **Performans**: marker başına SVG render değil, `BitmapDescriptor` cache kullan
+
 ### V2.1 — Takip Sistemi Altyapısı (Hafta 1-2)
 
 > Bağımlılık: Erol'un `follows` tablosu + `/v2/follows/*` endpoint'leri
 
 - [ ] Go realtime: `follows` cache (Valkey) — kullanıcı kimi takip ediyor
-- [ ] WS event: `presence_update` — takip ettiğim kullanıcı online/offline olduğunda
+- [ ] WS event: `presence_update` — takip ettiğim kullanıcı online/dnd/offline olduğunda
 - [ ] WS event: `location_share` — takip ettiğim kullanıcı konum güncellediğinde (eğer paylaşıyorsa)
 - [ ] Flutter: `followed_users_locations_provider` — haritada takip ettiklerini gösterir
 - [ ] Flutter: Konum paylaşımı kontrolü — kullanıcı kimlerle paylaşacağını seçer (ghost mode v2)
@@ -100,7 +113,7 @@ type V2OutboundMessage =
   | { type: 'heatmap_update'; cells: Record<string, number> }
   | { type: 'help_nearby'; help_id: string; h3_cell: string; urgency: string }
   | { type: 'help_targeted'; help_id: string; target_type: string; urgency: string }
-  | { type: 'presence_update'; user_id: string; online: boolean }    // YENİ
+  | { type: 'presence_update'; user_id: string; status: 'online' | 'dnd' | 'offline' }  // YENİ
   | { type: 'location_share'; user_id: string; h3_cell: string }    // YENİ
   | { type: 'story_posted'; user_id: string; story_id: string }     // YENİ
   | { type: 'post_liked'; post_id: string; liker_id: string }       // YENİ

@@ -20,6 +20,31 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
 
 ## Sprint Görevlerin (V2)
 
+### V2.0a — Presence Status Göstergesi (Sprint Öncesi — Furkan isteği)
+
+> Bağımlılık: Erol'un `presence_status` endpoint'i + Burak'ın WS `presence_update` event'i
+
+- [ ] **`PresenceDot` widget** — 10–12px, profil fotoğrafının sağ alt köşesinde
+  - 🟢 `online` → yeşil
+  - 🟡 `dnd` → sarı (rahatsız etmeyin)
+  - ⚫ `offline` → gri
+  - `presence_visible: false` → dot hiç gösterilmez
+- [ ] Presence dot tüm ekranlarda tutarlı: DM listesi, yorum, topluluk üye listesi, arama
+- [ ] Ayarlar ekranında: **"Çevrimiçi durumumu göster"** toggle + DND modu
+- [ ] WS `presence_update` event'i ile gerçek zamanlı güncelleme (Burak deliver eder)
+
+### V2.0b — Araç İkonu Harita Kişiselleştirme (Sprint Öncesi — Furkan isteği)
+
+> Bağımlılık: Erol'un `icon_slug` + ikon kataloğu endpoint'i + Burak'ın harita marker entegrasyonu
+
+- [ ] **Araç profil düzenleme ekranı** — mevcut araç düzenleme'ye ikon seçici ekle
+  - Grid görünümde ikon kataloğu (SVG siluetler)
+  - Kategori filtreleri: Motosiklet / Otomobil
+  - Seçili ikon vurgulu
+- [ ] **Aktif araç seçimi** — birden fazla araç varsa hangisinin haritada görüneceği
+- [ ] **Önizleme** — "Haritada böyle görünürsün" mini harita kartı
+- [ ] İkon dosyaları: basit tek renk SVG siluetler (`assets/vehicle_icons/`)
+
 ### V2.0 — V1 Buglar (Sprint Öncesi) ⭐ İlk iş
 
 > Burak'ın list'inde madde 1 — profil tamamlama back button bug fix
