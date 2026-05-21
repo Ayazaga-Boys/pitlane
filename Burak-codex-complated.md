@@ -189,6 +189,24 @@ Doğrulama:
 - `go test ./... -race` geçti.
 - `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
 
+### İş 8 — Flutter CI Format Hatası Düzeltmesi
+
+Sebep:
+
+- GitHub Actions Flutter job'ı `dart format --output=none --set-exit-if-changed lib/ test/` adımında kalıyordu.
+- CI logunda formatlanması gereken dosya `apps/mobile/lib/src/features/profile/data/profile_repository.dart` olarak görünüyordu.
+
+Yapıldı:
+
+- `getCurrentProfile` içindeki tek satırlık null kontrolü blok forma çekildi.
+- Satır sonu yorumunun formatter tarafından farklı biçimlenmesi engellendi.
+
+Doğrulama:
+
+- `dart format --output=none --set-exit-if-changed lib/ test/` geçti.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+
 ### İş 7 — Realtime Server-Side k-ring ve Valkey Pub/Sub
 
 Yapıldı:
