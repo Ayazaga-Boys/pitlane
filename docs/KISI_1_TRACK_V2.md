@@ -34,6 +34,8 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 - [ ] `GET /v2/vehicles/icons` endpoint'inden ikon kataloğunu çek (Erol yazar)
 - [ ] **Performans**: marker başına SVG render değil, `BitmapDescriptor` cache kullan
 
+Not: Backend endpoint beklenirken Flutter tarafında local ikon katalog modeli ve `BitmapDescriptor` cache altyapısı hazırlandı; `icon_slug` API kontratı gelince map marker'a bağlanacak.
+
 ### V2.1 — Takip Sistemi Altyapısı (Hafta 1-2)
 
 > Bağımlılık: Erol'un `follows` tablosu + `/v2/follows/*` endpoint'leri
@@ -42,7 +44,7 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 - [x] WS event: `presence_update` — takip ettiğim kullanıcı online/dnd/offline olduğunda
 - [x] WS event: `location_share` — takip ettiğim kullanıcı konum güncellediğinde (eğer paylaşıyorsa)
 - [x] Flutter: `followed_users_locations_provider` — haritada takip ettiklerini gösterir
-- [ ] Flutter: Konum paylaşımı kontrolü — kullanıcı kimlerle paylaşacağını seçer (ghost mode v2)
+- [x] Flutter: Konum paylaşımı kontrolü — kullanıcı kimlerle paylaşacağını seçer (ghost mode v2)
 
 Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend bu cache'i doldurmadığında `subscribe_user` güvenlik için `FORBIDDEN` döner.
 
@@ -68,7 +70,7 @@ Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend bu cache'i dol
 
 ### V2.4 — Heatmap Filtreleri V2 (Hafta 7-8)
 
-- [ ] Flutter: filtre sheet'e yeni seçenekler:
+- [x] Flutter: filtre sheet'e yeni seçenekler:
   - "Sadece motorcu yoğunluğu" (kullanıcının vehicle_type == motorcycle filter)
   - "Sadece takip ettiklerim"
   - "İşletmeleri gizle"

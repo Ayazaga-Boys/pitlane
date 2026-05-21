@@ -14,6 +14,7 @@ import '../data/ws_service.dart';
 import '../providers/followed_user_locations_provider.dart';
 import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/map_heatmap_provider.dart';
 import '../providers/map_pins_provider.dart';
 import 'location_permission_screen.dart';
 import 'map_filter_sheet.dart';
@@ -170,10 +171,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
 
   @override
   Widget build(BuildContext context) {
-    final heatmap = ref.watch(heatmapProvider);
     final isGhost = ref.watch(ghostModeProvider);
     final currentCell = ref.watch(locationProvider).valueOrNull;
     final filters = ref.watch(mapFiltersProvider);
+    final liveHeatmap = ref.watch(heatmapProvider);
+    final vehicleHeatmap = filters.vehicle == VehicleFilter.all
+        ? null
+        : ref.watch(vehicleHeatmapProvider(filters.vehicle));
+    final heatmapCells =
+        vehicleHeatmap?.valueOrNull ?? liveHeatmap.valueOrNull ?? {};
     final hasFilter = !filters.isDefault;
     // allPinsProvider'ı direkt izle — async tamamlanınca harita yeniden çizilir
     final pinsAsync = ref.watch(allPinsProvider);
@@ -181,6 +187,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final followedPins = ref.watch(followedUserPinsProvider);
     final pinsLoading = pinsAsync.isLoading;
     final pinData = [...allPins, ...followedPins].where((pin) {
+      if (filters.hideBusinesses && pin.type == MapPinType.business) {
+        return false;
+      }
       if (filters.pin == PinFilter.all) {
         return true;
       }
@@ -192,6 +201,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
       }
       if (filters.pin == PinFilter.business &&
           pin.type == MapPinType.business) {
+        return true;
+      }
+      if (filters.pin == PinFilter.followed &&
+          pin.type == MapPinType.followedUser) {
         return true;
       }
       return false;
@@ -211,9 +224,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
             zoomControlsEnabled: false,
             mapToolbarEnabled: false,
             style: _darkMapStyle,
-            polygons: heatmap.valueOrNull != null
-                ? _buildHeatmap(heatmap.valueOrNull!)
-                : {},
+            polygons:
+                heatmapCells.isNotEmpty ? _buildHeatmap(heatmapCells) : {},
             markers: pins,
           ),
 
