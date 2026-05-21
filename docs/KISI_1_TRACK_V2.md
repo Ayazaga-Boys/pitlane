@@ -25,16 +25,11 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 
 > Bağımlılık: Erol'un `vehicles.icon_slug` alanı + ikon kataloğu endpoint'i
 
-- [ ] Flutter: kullanıcının aktif aracının `icon_slug`'ına göre custom marker widget
-- [ ] Custom marker: basit SVG/PNG siluet (motosiklet, araba, chopper, pickup, suv, van, klasik, diğer)
-- [ ] Araç markasına özel ikonlar (Golf, BMW, Harley vb.) — isteğe bağlı genişletme
+- [x] Custom marker: 11 araç SVG siluet ikonu (`assets/vehicle_icons/`) — 5 motor, 6 araba
+- [x] **Performans**: `BitmapDescriptor` cache altyapısı hazır (`vehicle_marker_icon_provider.dart`)
+- [ ] Flutter: `icon_slug`'a göre marker'a ikon bağla — Erol'un `GET /v2/vehicles/icons` bekliyor
 - [ ] Zoom level < 12 → generic cluster, zoom ≥ 12 → araç ikonu göster
-- [ ] Kendi konumun için de araç ikonu (mavi outline ile vurgulansa iyi olur)
-- [ ] Ghost mode aktifse ikon haritada görünmez (V1 davranışı korunur)
-- [ ] `GET /v2/vehicles/icons` endpoint'inden ikon kataloğunu çek (Erol yazar)
-- [ ] **Performans**: marker başına SVG render değil, `BitmapDescriptor` cache kullan
-
-Not: Backend endpoint beklenirken Flutter tarafında local ikon katalog modeli ve `BitmapDescriptor` cache altyapısı hazırlandı; `icon_slug` API kontratı gelince map marker'a bağlanacak.
+- [ ] Kendi konumun için de araç ikonu (mavi outline vurgulu)
 
 ### V2.1 — Takip Sistemi Altyapısı (Hafta 1-2)
 
@@ -52,20 +47,16 @@ Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend bu cache'i dol
 
 > Bağımlılık: Erol'un `business_locations` tablosu + admin onayı (Tufan)
 
-- [ ] Flutter: harita marker → custom widget (foto + işletme adı + tür ikonu)
+- [ ] Flutter: harita marker → custom widget (foto + işletme adı + tür ikonu) — Erol bekliyor
 - [ ] Flutter: zoom level'a göre boyut animasyonu
-- [ ] Flutter: tap → işletme detay sheet (bizdeki business_pin detail genişlemesi)
+- [ ] Flutter: tap → işletme detay sheet
 - [ ] Görsel cache — `cached_network_image` ile flicker önleme
-- [ ] Onaylanmamış işletmeler haritada görünmez (filter)
 
 ### V2.3 — Harita Clustering (Hafta 5-6)
 
-> Performans kritik: 10k+ aktif kullanıcı + 1000+ işletme zoom out edildiğinde donmamalı
-
-- [ ] Go realtime: H3 res-7 aggregation endpoint — `GET /internal/realtime/h3-aggregate?bounds=...`
-- [ ] Flutter: zoom out edilince marker'lar cluster (sayı badge'i ile)
-- [ ] Flutter: cluster tıklandığında zoom-in animasyonu
-- [ ] `google_maps_cluster_manager` paketi veya custom implementasyon
+- [x] Flutter: `google_maps_cluster_manager_2` entegrasyonu — zoom out'ta sayı badge'li cluster
+- [x] Flutter: cluster tıklandığında zoom-in animasyonu
+- [ ] Go realtime: H3 res-7 aggregation endpoint (opsiyonel — client-side yeterli şimdilik)
 - [ ] **Test**: 1000 marker ile FPS > 50
 
 ### V2.4 — Heatmap Filtreleri V2 (Hafta 7-8)
@@ -79,22 +70,17 @@ Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend bu cache'i dol
 
 ### V2.5 — SOS Hedefleme V2 (Hafta 9-10)
 
-> Bağımlılık: Erol'un yeni `help_targeted` endpoint'i
-
-- [ ] Go realtime: `help_targeted` WS event'i — `target_type: 'nearby' | 'followers' | 'group'`
-- [ ] Go realtime: `target_type === 'followers'` ise sadece takip eden kullanıcılara fanout
-- [ ] Go realtime: `target_type === 'group'` ise sadece grup üyelerine fanout
-- [ ] Flutter: SOS form'unda hedef seçimi (Furkan UI yapacak, biz API kontratını sabitleyeceğiz)
-- [ ] Renk kodlu aciliyet payload'ı: `urgency: 'critical' | 'urgent' | 'request'`
+- [x] Go realtime: `help_targeted` WS event'i — `target_type: 'nearby' | 'followers' | 'group'`
+- [x] Go realtime: `target_type === 'followers'/'group'` → `target_ids` listesine fanout
+- [x] Renk kodlu aciliyet payload'ı: `urgency: 'critical' | 'urgent' | 'request'`
+- [ ] Flutter: SOS form'unda hedef seçimi — Furkan UI yapacak
 
 ### V2.6 — Story & Post WS Event'leri (Hafta 11-12)
 
-> Bağımlılık: Erol'un story/post endpoint'leri
-
-- [ ] WS event: `story_posted` — takip ettiklerimden biri story attığında
-- [ ] WS event: `post_liked` — postuma beğeni geldiğinde
-- [ ] WS event: `post_commented` — postuma yorum geldiğinde
-- [ ] Go realtime: presence-based notification suppression — kullanıcı uygulamadaysa WS, değilse Erol'un push job'una bırak
+- [x] Go realtime: `story_posted`, `post_liked`, `post_commented` event'leri
+- [x] Go realtime: `/internal/realtime/social-event` endpoint
+- [x] Flutter WsService: story/post event parse + stream
+- [x] Map screen: `story_posted` snackbar bildirimi
 - [ ] **Test**: 1k kullanıcı × 10 follower × story → WS fanout latency p(95) < 200ms
 
 ---
