@@ -164,3 +164,41 @@ export const V2InviteUserSchema = z.object({
 export const V2RespondCommunityInviteSchema = z.object({
   response: z.enum(['accept', 'reject']),
 });
+
+export const V2CommunityEventStatusSchema = z.enum(['scheduled', 'canceled', 'completed']);
+
+export const V2EventIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+const h3CellSchema = z.string().regex(/^[0-9a-f]{15}$/i);
+
+export const V2CreateCommunityEventSchema = z.object({
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(2000).nullable().optional(),
+  starts_at: z.string().datetime(),
+  location_h3: h3CellSchema.optional(),
+}).superRefine((value, ctx) => {
+  if (Date.parse(value.starts_at) <= Date.now()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['starts_at'],
+      message: 'starts_at must be in the future',
+    });
+  }
+});
+
+export const V2CommunityEventsQuerySchema = z.object({
+  cursor: z.string().datetime().optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  status: V2CommunityEventStatusSchema.optional(),
+});
+
+export const V2EventRsvpSchema = z.object({
+  response: z.enum(['yes', 'maybe', 'no']),
+});
+
+export const V2CreateCommunityPollSchema = z.object({
+  question: z.string().trim().min(3).max(240),
+  options: z.array(z.string().trim().min(1).max(120)).min(2).max(10),
+});

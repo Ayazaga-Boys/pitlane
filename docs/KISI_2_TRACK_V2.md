@@ -113,9 +113,9 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `community_roles` (`id`, `community_id`, `name`, `permissions` JSONB, `rank_order`)
   - Permissions: `can_invite`, `can_kick`, `can_create_event`, `can_pin`, `can_moderate`
 - [x] `community_members` tablosuna `role_id` kolonu ekle
-- [ ] `community_events` (`id`, `community_id`, `creator_id`, `title`, `description`, `starts_at`, `location_h3`, `status`)
-- [ ] `event_rsvps` (`event_id`, `user_id`, `response` 'yes'|'maybe'|'no')
-- [ ] `community_polls` (`id`, `event_id`, `question`, `options` JSONB)
+- [x] `community_events` (`id`, `community_id`, `creator_id`, `title`, `description`, `starts_at`, `location_h3`, `status`)
+- [x] `event_rsvps` (`event_id`, `user_id`, `response` 'yes'|'maybe'|'no')
+- [x] `community_polls` (`id`, `event_id`, `question`, `options` JSONB)
 
 **Endpoint — Roller:**
 - [x] `POST /v2/communities/:id/roles` — rol oluştur
@@ -131,10 +131,10 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `POST /v2/community-invites/:id/respond` — accept/reject
 
 **Endpoint — Etkinlik:**
-- [ ] `POST /v2/communities/:id/events` (rol kontrolü: `can_create_event`)
-- [ ] `GET /v2/communities/:id/events`
-- [ ] `POST /v2/events/:id/rsvp`
-- [ ] `POST /v2/events/:id/polls`
+- [x] `POST /v2/communities/:id/events` (rol kontrolü: `can_create_event`)
+- [x] `GET /v2/communities/:id/events`
+- [x] `POST /v2/events/:id/rsvp`
+- [x] `POST /v2/events/:id/polls`
 
 ### V2.5 — İşletme Self-Onboarding + Harita Lokasyonları (Hafta 9-10)
 
