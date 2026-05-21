@@ -296,6 +296,13 @@ export interface MockCompetition {
   reportsCount: number;
   suspicious: boolean;
   filtersSummary: string;
+  moderationNote: string;
+  topEntries: Array<{
+    id: string;
+    title: string;
+    votes: number;
+    flagged: boolean;
+  }>;
 }
 
 export interface MockWaitingListEntry {
@@ -1236,6 +1243,11 @@ export const mockCompetitions: MockCompetition[] = [
     reportsCount: 0,
     suspicious: false,
     filtersSummary: "car · trackday · street-legal",
+    moderationNote: "Akış sağlıklı görünüyor. Oy dağılımı dengeli, şikayet sinyali yok.",
+    topEntries: [
+      { id: "entry_01", title: "Kırmızı coupe apex çıkışı", votes: 34, flagged: false },
+      { id: "entry_02", title: "Pit lane detay karesi", votes: 27, flagged: false },
+    ],
   },
   {
     id: "competition_02",
@@ -1249,6 +1261,11 @@ export const mockCompetitions: MockCompetition[] = [
     reportsCount: 4,
     suspicious: true,
     filtersSummary: "all vehicles · night shot · community vote",
+    moderationNote: "Oy akışı çok hızlı. Kısa sürede yüksek oy alan entry’lerde koordineli oy verme ihtimali izlenmeli.",
+    topEntries: [
+      { id: "entry_03", title: "Neon yansımada hatchback", votes: 112, flagged: true },
+      { id: "entry_04", title: "Marina önü roller çekimi", votes: 94, flagged: false },
+    ],
   },
   {
     id: "competition_03",
@@ -1262,6 +1279,8 @@ export const mockCompetitions: MockCompetition[] = [
     reportsCount: 0,
     suspicious: false,
     filtersSummary: "motorcycle · ride group only",
+    moderationNote: "Henüz taslak. Filtreler net ama entry kontratı backend tarafında eksik.",
+    topEntries: [],
   },
 ];
 

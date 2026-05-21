@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableWrapper, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import type { MockCompetition } from "@/lib/mock-data";
@@ -31,7 +32,9 @@ export function CompetitionsTable({ competitions }: { competitions: MockCompetit
                 <TR key={competition.id}>
                   <TD>
                     <div>
-                      <p className="font-medium text-text-primary">{competition.title}</p>
+                      <Link className="focus-ring inline-flex rounded-xs font-medium text-text-primary hover:text-pit-red" href={`/competitions/${competition.id}`}>
+                        {competition.title}
+                      </Link>
                       <p className="mt-1 text-xs text-text-tertiary">{competition.filtersSummary}</p>
                     </div>
                   </TD>
