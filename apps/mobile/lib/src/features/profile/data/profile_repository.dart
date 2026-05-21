@@ -29,7 +29,8 @@ class ProfileRepository {
   final Dio _dio;
 
   Future<RollpitProfile?> getCurrentProfile() async {
-    final userId = _currentUserId();
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return null; // dev bypass: profil yok, tamamlama adımı gösterilir
     final data = await _supabase
         .from('profiles')
         .select(
@@ -138,13 +139,24 @@ class ProfileRepository {
 
   String _currentUserId() {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) throw const UnauthorizedException();
+    if (userId == null) {
+      if (AppConstants.isDev) return 'dev-user-bypass';
+      throw const UnauthorizedException();
+    }
     return userId;
   }
 
   Map<String, String> _authHeaders() {
     final token = _supabase.auth.currentSession?.accessToken;
-    if (token == null) throw const UnauthorizedException();
+    if (token == null) {
+      if (AppConstants.isDev) {
+        return {
+          'x-dev-user-id': 'dev-user-bypass',
+          'x-dev-user-email': 'dev@rollpit.test',
+        };
+      }
+      throw const UnauthorizedException();
+    }
     return {'Authorization': 'Bearer $token'};
   }
 

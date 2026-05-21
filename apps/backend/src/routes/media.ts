@@ -8,7 +8,22 @@ import {
   toMediaAssetMetrics,
   verifyCloudflareStreamSignature,
 } from '../services/cloudflare-stream.js';
-import { createMediaStorageKey, deleteR2Object, generateR2UploadUrl, headR2Object, isR2Configured } from '../services/r2.js';
+import {
+  copyCloudflareStreamFromUrl,
+  deleteCloudflareImage,
+  deleteCloudflareStream,
+  isCloudflareImagesConfigured,
+  isCloudflareStreamConfigured,
+  uploadCloudflareImageFromUrl,
+} from '../services/cloudflare-media.js';
+import {
+  createMediaStorageKey,
+  deleteR2Object,
+  generateR2ReadUrl,
+  generateR2UploadUrl,
+  headR2Object,
+  isR2Configured,
+} from '../services/r2.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
@@ -17,6 +32,15 @@ export const mediaWebhookRoutes = new Hono();
 
 const MEDIA_ASSET_SELECT =
   'id,uploader_id,asset_type,storage_key,cf_image_id,cf_stream_id,width,height,duration_sec,size_bytes,status,created_at';
+
+interface MediaAssetRow {
+  id: string;
+  asset_type: 'photo' | 'video';
+  storage_key: string;
+  cf_image_id?: string | null;
+  cf_stream_id?: string | null;
+  size_bytes?: number | null;
+}
 
 mediaWebhookRoutes.post('/webhook/stream', async (c) => {
   const secret = process.env.CF_STREAM_WEBHOOK_SECRET;
@@ -135,9 +159,10 @@ mediaRoutes.post('/finalize', async (c) => {
     return c.json({ code: 'SERVICE_UNAVAILABLE', error: 'Cloudflare R2 is not configured' }, 503);
   }
 
+  const mediaAsset = asset as MediaAssetRow;
   let objectMetadata;
   try {
-    objectMetadata = await headR2Object((asset as { storage_key: string }).storage_key);
+    objectMetadata = await headR2Object(mediaAsset.storage_key);
   } catch (headError) {
     const message = headError instanceof Error ? headError.message : 'R2 head failed';
     return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
@@ -147,12 +172,46 @@ mediaRoutes.post('/finalize', async (c) => {
     return c.json({ code: 'UPLOAD_NOT_FOUND', error: 'Uploaded object was not found in R2' }, 409);
   }
 
+  const update: Record<string, unknown> = {
+    status: 'ready',
+    ...(objectMetadata.sizeBytes ? { size_bytes: objectMetadata.sizeBytes } : {}),
+  };
+
+  if (mediaAsset.asset_type === 'photo' && isCloudflareImagesConfigured()) {
+    try {
+      const image = await uploadCloudflareImageFromUrl({
+        url: generateR2ReadUrl(mediaAsset.storage_key),
+        assetId: mediaAsset.id,
+        storageKey: mediaAsset.storage_key,
+      });
+      update.cf_image_id = image.id;
+    } catch (cloudflareError) {
+      const message = cloudflareError instanceof Error ? cloudflareError.message : 'Cloudflare Images import failed';
+      return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
+    }
+  }
+
+  if (mediaAsset.asset_type === 'video' && isCloudflareStreamConfigured()) {
+    try {
+      const maxSizeBytes = objectMetadata.sizeBytes ?? mediaAsset.size_bytes ?? undefined;
+      const streamInput = {
+        url: generateR2ReadUrl(mediaAsset.storage_key),
+        assetId: mediaAsset.id,
+        storageKey: mediaAsset.storage_key,
+        ...(maxSizeBytes ? { maxSizeBytes } : {}),
+      };
+      const stream = await copyCloudflareStreamFromUrl(streamInput);
+      update.cf_stream_id = stream.uid;
+      update.status = stream.readyToStream || stream.status?.state === 'ready' ? 'ready' : 'processing';
+    } catch (cloudflareError) {
+      const message = cloudflareError instanceof Error ? cloudflareError.message : 'Cloudflare Stream ingest failed';
+      return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
+    }
+  }
+
   const { data, error: updateError } = await supabase
     .from('media_assets')
-    .update({
-      status: 'ready',
-      ...(objectMetadata.sizeBytes ? { size_bytes: objectMetadata.sizeBytes } : {}),
-    })
+    .update(update)
     .eq('id', parsed.data.asset_id)
     .eq('uploader_id', userId)
     .eq('status', 'pending')
@@ -209,9 +268,16 @@ mediaRoutes.delete('/:id', async (c) => {
   }
 
   try {
-    await deleteR2Object((asset as { storage_key: string }).storage_key);
+    const mediaAsset = asset as MediaAssetRow;
+    await deleteR2Object(mediaAsset.storage_key);
+    if (mediaAsset.cf_image_id && isCloudflareImagesConfigured()) {
+      await deleteCloudflareImage(mediaAsset.cf_image_id);
+    }
+    if (mediaAsset.cf_stream_id && isCloudflareStreamConfigured()) {
+      await deleteCloudflareStream(mediaAsset.cf_stream_id);
+    }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'R2 delete failed';
+    const message = error instanceof Error ? error.message : 'Media delete failed';
     return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
   }
 

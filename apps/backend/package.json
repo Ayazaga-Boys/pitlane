@@ -12,6 +12,7 @@
     "seed:dev": "tsx scripts/seed-dev.ts",
     "seed:sprint2": "tsx scripts/seed-sprint2.ts",
     "smoke:auth": "tsx scripts/smoke-auth.ts",
+    "smoke:cloudflare": "tsx scripts/smoke-cloudflare.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

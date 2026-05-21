@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'src/core/theme/app_theme.dart';
 import 'src/core/constants/app_constants.dart';
+import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/providers/auth_provider.dart';
 import 'src/features/auth/ui/invite_code_screen.dart';
 import 'src/features/auth/ui/login_screen.dart';
@@ -42,7 +42,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/auth/invite-code',
     redirect: (context, state) {
       final location = state.matchedLocation;
-      final isAuthRoute = location.startsWith('/auth/');
+      final isAuthRoute = location.startsWith('/auth');
 
       // AUTH BYPASS — domain + Resend kurulunca kaldır.
       // Dev'de sadece auth ekranlarından çık; uygulama içi/deep-link route'larını

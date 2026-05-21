@@ -209,6 +209,15 @@ CREATE TABLE public.business_pins (
   cover_url        TEXT,
   is_verified      BOOLEAN NOT NULL DEFAULT FALSE,
   is_active        BOOLEAN NOT NULL DEFAULT TRUE,
+  tax_document_key TEXT,
+  tax_document_content_type TEXT CHECK (
+    tax_document_content_type IS NULL
+    OR tax_document_content_type IN ('application/pdf','image/jpeg','image/png','image/webp')
+  ),
+  verification_status TEXT NOT NULL DEFAULT 'not_submitted'
+    CHECK (verification_status IN ('not_submitted','pending','verified','rejected')),
+  verification_submitted_at TIMESTAMPTZ,
+  verified_at      TIMESTAMPTZ,
   campaign_text    TEXT CHECK (char_length(campaign_text) <= 200),
   campaign_ends_at TIMESTAMPTZ,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -217,6 +226,7 @@ CREATE TABLE public.business_pins (
 
 CREATE INDEX idx_bp_h3     ON public.business_pins(h3_cell);
 CREATE INDEX idx_bp_active ON public.business_pins(is_active) WHERE is_active = TRUE;
+CREATE INDEX idx_bp_verification_status ON public.business_pins(verification_status);
 ALTER TABLE public.business_pins ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "bp_select" ON public.business_pins FOR SELECT USING (is_active = TRUE);
 CREATE POLICY "bp_insert" ON public.business_pins FOR INSERT WITH CHECK (auth.uid() = owner_id);
@@ -264,9 +274,9 @@ CREATE TABLE public.messages (
   community_id  UUID REFERENCES public.communities(id) ON DELETE CASCADE,
   flare_id      UUID REFERENCES public.flares(id) ON DELETE CASCADE,
   help_req_id   UUID REFERENCES public.help_requests(id) ON DELETE CASCADE,
-  body          TEXT CHECK (char_length(body) <= 2000),
+  body          TEXT CHECK (body IS NULL OR char_length(body) <= 2000),
   media_url     TEXT,
-  media_type    TEXT CHECK (media_type IN ('image','video','audio')),
+  media_type    TEXT CHECK (media_type IS NULL OR media_type IN ('image','video','audio')),
   is_deleted    BOOLEAN NOT NULL DEFAULT FALSE,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT messages_one_context CHECK (
@@ -274,6 +284,9 @@ CREATE TABLE public.messages (
     (community_id IS NOT NULL)::int +
     (flare_id IS NOT NULL)::int +
     (help_req_id IS NOT NULL)::int = 1
+  ),
+  CONSTRAINT messages_body_or_media CHECK (
+    is_deleted = TRUE OR body IS NOT NULL OR media_url IS NOT NULL
   )
 );
 
@@ -308,7 +321,7 @@ CREATE TABLE public.media_assets (
   height       INTEGER,
   duration_sec SMALLINT,
   size_bytes   INTEGER,
-  status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','ready','failed')),
+  status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','processing','ready','failed')),
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

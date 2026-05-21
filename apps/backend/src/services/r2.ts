@@ -11,7 +11,7 @@ interface R2Config {
 
 interface GenerateUploadUrlInput {
   storageKey: string;
-  method?: 'PUT' | 'DELETE' | 'HEAD';
+  method?: 'GET' | 'PUT' | 'DELETE' | 'HEAD';
   expiresInSeconds?: number;
 }
 
@@ -36,6 +36,14 @@ export function createMediaStorageKey(input: {
 }): string {
   const folder = input.assetType === 'photo' ? 'photos' : 'videos';
   return `${folder}/${input.userId}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
+}
+
+export function createBusinessTaxDocumentStorageKey(input: {
+  userId: string;
+  pinId: string;
+  contentType: string;
+}): string {
+  return `business-tax-documents/${input.pinId}/${input.userId}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
 }
 
 export function generateR2UploadUrl(input: GenerateUploadUrlInput): string {
@@ -91,6 +99,27 @@ export async function deleteR2Object(storageKey: string): Promise<void> {
   }
 }
 
+export async function putR2Object(input: {
+  storageKey: string;
+  body: string;
+  contentType: string;
+}): Promise<void> {
+  const url = generateR2UploadUrl({ storageKey: input.storageKey, method: 'PUT' });
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': input.contentType },
+    body: input.body,
+  });
+
+  if (!response.ok) {
+    throw new Error(`R2 put failed with status ${response.status}`);
+  }
+}
+
+export function generateR2ReadUrl(storageKey: string, expiresInSeconds = PRESIGNED_TTL_SECONDS): string {
+  return generateR2UploadUrl({ storageKey, method: 'GET', expiresInSeconds });
+}
+
 export async function headR2Object(storageKey: string): Promise<R2ObjectMetadata | null> {
   const url = generateR2UploadUrl({ storageKey, method: 'HEAD' });
   const response = await fetch(url, { method: 'HEAD' });
@@ -136,6 +165,8 @@ function extensionForContentType(contentType: string): string {
       return 'webp';
     case 'video/mp4':
       return 'mp4';
+    case 'application/pdf':
+      return 'pdf';
     default:
       return 'bin';
   }

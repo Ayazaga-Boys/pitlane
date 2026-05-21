@@ -8,8 +8,21 @@ import { UploadUrlSchema } from '../src/schemas/media.schema.js';
 import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
-import { CreatePinSchema, StartCampaignSchema, UpdatePinSchema } from '../src/schemas/pin.schema.js';
+import {
+  CreatePinSchema,
+  StartCampaignSchema,
+  TaxDocumentFinalizeSchema,
+  TaxDocumentUploadUrlSchema,
+  UpdatePinSchema,
+} from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
+import {
+  V2CreateCommentSchema,
+  V2CreatePostSchema,
+  V2CreateStorySchema,
+  V2FollowListQuerySchema,
+  V2PrivacySchema,
+} from '../src/schemas/v2-social.schema.js';
 
 describe('auth schemas', () => {
   it('normalizes invite codes', () => {
@@ -59,6 +72,59 @@ describe('profile schemas', () => {
       model: 'E30',
       year: 1800,
     })).toThrow();
+  });
+});
+
+describe('v2 social schemas', () => {
+  it('accepts profile privacy settings', () => {
+    const parsed = V2PrivacySchema.parse({
+      is_private: true,
+      location_share_mode: 'followers',
+      bio_extended: 'Garaj ve pist notları.',
+    });
+
+    expect(parsed.location_share_mode).toBe('followers');
+  });
+
+  it('requires at least one privacy field', () => {
+    expect(V2PrivacySchema.safeParse({}).success).toBe(false);
+  });
+
+  it('bounds follow list pagination', () => {
+    const parsed = V2FollowListQuerySchema.parse({
+      user_id: '00000000-0000-4000-8000-000000000001',
+      limit: '50',
+    });
+
+    expect(parsed.limit).toBe(50);
+    expect(V2FollowListQuerySchema.safeParse({
+      user_id: '00000000-0000-4000-8000-000000000001',
+      limit: '51',
+    }).success).toBe(false);
+  });
+
+  it('accepts post drafts with caption or media', () => {
+    expect(V2CreatePostSchema.parse({ caption: 'Pist gunu', visibility: 'followers' }).visibility).toBe('followers');
+    expect(V2CreatePostSchema.safeParse({
+      media_id: '00000000-0000-4000-8000-000000000001',
+    }).success).toBe(true);
+    expect(V2CreatePostSchema.safeParse({ visibility: 'public' }).success).toBe(false);
+  });
+
+  it('bounds comment bodies', () => {
+    expect(V2CreateCommentSchema.parse({ body: 'Harika!' }).body).toBe('Harika!');
+    expect(V2CreateCommentSchema.safeParse({ body: '' }).success).toBe(false);
+    expect(V2CreateCommentSchema.safeParse({ body: 'x'.repeat(501) }).success).toBe(false);
+  });
+
+  it('accepts bounded story drafts', () => {
+    expect(V2CreateStorySchema.parse({
+      media_id: '00000000-0000-4000-8000-000000000001',
+    }).audience).toBe('followers');
+    expect(V2CreateStorySchema.safeParse({
+      media_id: '00000000-0000-4000-8000-000000000001',
+      expires_at: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+    }).success).toBe(false);
   });
 });
 
@@ -140,6 +206,28 @@ describe('pin schemas', () => {
       campaign_text: 'Bugun fren bakımında indirim',
       campaign_ends_at: tooLateEnd,
     }).success).toBe(false);
+  });
+
+  it('accepts tax document uploads with bounded content types', () => {
+    expect(TaxDocumentUploadUrlSchema.safeParse({
+      filename: 'vergi-levhasi.pdf',
+      content_type: 'application/pdf',
+      size_bytes: 2_000_000,
+    }).success).toBe(true);
+    expect(TaxDocumentUploadUrlSchema.safeParse({
+      filename: 'vergi.exe',
+      content_type: 'application/octet-stream',
+      size_bytes: 2_000_000,
+    }).success).toBe(false);
+  });
+
+  it('accepts tax document finalize payloads', () => {
+    const parsed = TaxDocumentFinalizeSchema.parse({
+      storage_key: 'business-tax-documents/pin/user/doc.pdf',
+      content_type: 'application/pdf',
+    });
+
+    expect(parsed.content_type).toBe('application/pdf');
   });
 });
 

@@ -1,10 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { generateR2ReadUrl, isR2Configured, putR2Object } from './r2.js';
 
 const PROFILE_EXPORT_SELECT =
   'id,username,display_name,avatar_url,bio,ghost_mode,is_verified,role,notification_prefs,created_at,updated_at';
 
 const MESSAGE_EXPORT_SELECT =
   'id,sender_id,dm_peer_id,community_id,flare_id,help_req_id,body,media_url,media_type,is_deleted,created_at';
+
+const EXPORT_URL_TTL_SECONDS = 48 * 60 * 60;
 
 type QueryResult<T> = {
   data: T | null;
@@ -34,6 +37,13 @@ export type UserExportArchive = {
   blocks: unknown[];
   push_devices: unknown[];
 };
+
+export interface UserExportDelivery {
+  generated_at: string;
+  expires_at: string;
+  storage_key: string;
+  download_url: string;
+}
 
 function unwrap<T>(name: string, result: QueryResult<T>): T {
   if (result.error) throw new Error(`${name}: ${result.error.message}`);
@@ -115,5 +125,36 @@ export async function buildUserExportArchive(
     notifications: unwrapList('notifications', notifications),
     blocks: unwrapList('blocks', blocks),
     push_devices: unwrapList('push_devices', pushDevices),
+  };
+}
+
+export function createUserExportStorageKey(userId: string, generatedAt: Date): string {
+  const stamp = generatedAt.toISOString().replace(/[:-]|\.\d{3}/g, '');
+  return `exports/${userId}/rollpit-export-${stamp}.json`;
+}
+
+export async function uploadUserExportArchive(input: {
+  archive: UserExportArchive;
+  generatedAt?: Date;
+}): Promise<UserExportDelivery> {
+  if (!isR2Configured()) {
+    throw new Error('Cloudflare R2 is not configured');
+  }
+
+  const generatedAt = input.generatedAt ?? new Date(input.archive.generated_at);
+  const storageKey = createUserExportStorageKey(input.archive.user_id, generatedAt);
+  const expiresAt = new Date(generatedAt.getTime() + EXPORT_URL_TTL_SECONDS * 1000);
+
+  await putR2Object({
+    storageKey,
+    body: `${JSON.stringify(input.archive, null, 2)}\n`,
+    contentType: 'application/json',
+  });
+
+  return {
+    generated_at: input.archive.generated_at,
+    expires_at: expiresAt.toISOString(),
+    storage_key: storageKey,
+    download_url: generateR2ReadUrl(storageKey, EXPORT_URL_TTL_SECONDS),
   };
 }

@@ -52,6 +52,11 @@ export interface BusinessPinRow {
   cover_url: string | null;
   is_active: boolean;
   is_verified: boolean;
+  tax_document_key: string | null;
+  tax_document_content_type: "application/pdf" | "image/jpeg" | "image/png" | "image/webp" | null;
+  verification_status: "not_submitted" | "pending" | "verified" | "rejected";
+  verification_submitted_at: string | null;
+  verified_at: string | null;
   campaign_text: string | null;
   campaign_ends_at: string | null;
   created_at: string;
