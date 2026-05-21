@@ -214,6 +214,23 @@ export interface MockInviteCode {
   createdAt: string;
 }
 
+export interface MockCommunityInvite {
+  id: string;
+  communityName: string;
+  creatorName: string;
+  token: string;
+  tokenType: "link" | "code";
+  mode: "instant" | "request";
+  usesCount: number;
+  maxUses: number | null;
+  expiresAt: string | null;
+  createdAt: string;
+  status: "active" | "expired" | "revoked";
+  suspicious: boolean;
+  pendingJoinRequests: number;
+  pendingDirectInvites: number;
+}
+
 export interface MockWaitingListEntry {
   id: string;
   email: string;
@@ -911,6 +928,57 @@ export const mockInviteCodes: MockInviteCode[] = [
     maxUses: 10,
     expiresAt: "2026-06-15 23:59",
     createdAt: "2026-05-16 09:40",
+  },
+];
+
+export const mockCommunityInvites: MockCommunityInvite[] = [
+  {
+    id: "community_invite_01",
+    communityName: "Alfistiler",
+    creatorName: "Mert Caglar",
+    token: "alfistiler-trackday",
+    tokenType: "link",
+    mode: "instant",
+    usesCount: 18,
+    maxUses: 25,
+    expiresAt: "2026-05-28 23:59",
+    createdAt: "2026-05-20 09:10",
+    status: "active",
+    suspicious: false,
+    pendingJoinRequests: 0,
+    pendingDirectInvites: 3,
+  },
+  {
+    id: "community_invite_02",
+    communityName: "Route 35 Garage",
+    creatorName: "Doga Tunc",
+    token: "R35MODA",
+    tokenType: "code",
+    mode: "request",
+    usesCount: 41,
+    maxUses: 50,
+    expiresAt: "2026-05-23 18:00",
+    createdAt: "2026-05-18 20:30",
+    status: "active",
+    suspicious: true,
+    pendingJoinRequests: 6,
+    pendingDirectInvites: 0,
+  },
+  {
+    id: "community_invite_03",
+    communityName: "Ankara Track Days",
+    creatorName: "Emir Demir",
+    token: "ankara-pit-session",
+    tokenType: "link",
+    mode: "request",
+    usesCount: 9,
+    maxUses: 10,
+    expiresAt: "2026-05-21 08:00",
+    createdAt: "2026-05-15 14:05",
+    status: "expired",
+    suspicious: false,
+    pendingJoinRequests: 1,
+    pendingDirectInvites: 1,
   },
 ];
 

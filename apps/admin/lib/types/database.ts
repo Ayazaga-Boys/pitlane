@@ -226,6 +226,39 @@ export interface InviteCodeRow {
   created_at: string;
 }
 
+export interface CommunityInviteRow {
+  id: string;
+  community_id: string;
+  creator_id: string;
+  link_slug: string | null;
+  code: string | null;
+  mode: "instant" | "request";
+  uses_count: number;
+  max_uses: number | null;
+  expires_at: string | null;
+  created_at: string;
+}
+
+export interface CommunityDirectInviteRow {
+  id: string;
+  community_id: string;
+  inviter_id: string;
+  invitee_id: string;
+  status: "pending" | "accepted" | "rejected" | "canceled";
+  created_at: string;
+  responded_at: string | null;
+}
+
+export interface CommunityJoinRequestRow {
+  id: string;
+  community_id: string;
+  requester_id: string;
+  source_invite_id: string | null;
+  status: "pending" | "accepted" | "rejected" | "canceled";
+  created_at: string;
+  responded_at: string | null;
+}
+
 export interface WaitingListRow {
   id: string;
   email: string;
@@ -466,6 +499,24 @@ export interface Database {
         Row: InviteCodeRow;
         Insert: Partial<InviteCodeRow> & { code: string };
         Update: Partial<InviteCodeRow>;
+        Relationships: [];
+      };
+      community_invites: {
+        Row: CommunityInviteRow;
+        Insert: Partial<CommunityInviteRow> & { community_id: string; creator_id: string; mode: CommunityInviteRow["mode"] };
+        Update: Partial<CommunityInviteRow>;
+        Relationships: [];
+      };
+      community_direct_invites: {
+        Row: CommunityDirectInviteRow;
+        Insert: Partial<CommunityDirectInviteRow> & { community_id: string; inviter_id: string; invitee_id: string };
+        Update: Partial<CommunityDirectInviteRow>;
+        Relationships: [];
+      };
+      community_join_requests: {
+        Row: CommunityJoinRequestRow;
+        Insert: Partial<CommunityJoinRequestRow> & { community_id: string; requester_id: string };
+        Update: Partial<CommunityJoinRequestRow>;
         Relationships: [];
       };
       waiting_list: {

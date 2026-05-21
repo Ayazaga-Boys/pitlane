@@ -3,6 +3,7 @@ import type {
   AnalyticsPoint,
   MockCommunity,
   MockCommunityEvent,
+  MockCommunityInvite,
   MockFeedOverride,
   MockHelpRequest,
   MockInviteCode,
@@ -22,6 +23,9 @@ import type {
 import type {
   AuditLogRow,
   CommunityEventRow,
+  CommunityDirectInviteRow,
+  CommunityInviteRow,
+  CommunityJoinRequestRow,
   BusinessPinRow,
   CommunityMemberRow,
   CommunityRow,
@@ -153,6 +157,23 @@ export interface AdminInviteCode {
   maxUses: number;
   expiresAt: string | null;
   createdAt: string;
+}
+
+export interface AdminCommunityInvite {
+  id: string;
+  communityName: string;
+  creatorName: string;
+  token: string;
+  tokenType: "link" | "code";
+  mode: CommunityInviteRow["mode"];
+  usesCount: number;
+  maxUses: number | null;
+  expiresAt: string | null;
+  createdAt: string;
+  status: "active" | "expired" | "revoked";
+  suspicious: boolean;
+  pendingJoinRequests: number;
+  pendingDirectInvites: number;
 }
 
 export interface AdminWaitingListEntry {
@@ -424,6 +445,16 @@ interface HelpRequestRecord extends Pick<HelpRequestRow, "id" | "issue_type" | "
 interface InviteCodeRecord extends Pick<InviteCodeRow, "code" | "uses_count" | "max_uses" | "expires_at" | "created_at"> {
   inviter_profile: Pick<ProfileRow, "username" | "display_name"> | null;
 }
+
+interface CommunityInviteRecord
+  extends Pick<CommunityInviteRow, "id" | "community_id" | "creator_id" | "link_slug" | "code" | "mode" | "uses_count" | "max_uses" | "expires_at" | "created_at"> {
+  community: Pick<CommunityRow, "name"> | null;
+  creator_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface DirectInviteRecord extends Pick<CommunityDirectInviteRow, "community_id" | "status"> {}
+
+interface JoinRequestRecord extends Pick<CommunityJoinRequestRow, "community_id" | "source_invite_id" | "status"> {}
 type WaitingListRecord = Pick<WaitingListRow, "id" | "email" | "vehicle_type" | "city" | "invited_at" | "created_at">;
 
 interface MediaAssetRecord extends Pick<MediaAssetRow, "id" | "asset_type" | "storage_key" | "cf_image_id" | "cf_stream_id" | "status"> {}
@@ -1121,6 +1152,44 @@ function mapCommunityEvent(
   };
 }
 
+function mapCommunityInviteStatus(invite: CommunityInviteRecord): AdminCommunityInvite["status"] {
+  if (invite.max_uses !== null && invite.uses_count >= invite.max_uses) {
+    return "revoked";
+  }
+
+  if (invite.expires_at && Date.parse(invite.expires_at) <= Date.now()) {
+    return "expired";
+  }
+
+  return "active";
+}
+
+function mapCommunityInvite(
+  invite: CommunityInviteRecord,
+  pendingJoinRequests: number,
+  pendingDirectInvites: number,
+): AdminCommunityInvite {
+  const status = mapCommunityInviteStatus(invite);
+  const suspicious = status === "active" && (invite.mode === "request" ? pendingJoinRequests >= 3 : invite.uses_count >= 25);
+
+  return {
+    id: invite.id,
+    communityName: invite.community?.name ?? shortenId(invite.community_id),
+    creatorName: profileLabel(invite.creator_profile, shortenId(invite.creator_id)),
+    token: invite.link_slug ?? invite.code ?? shortenId(invite.id),
+    tokenType: invite.link_slug ? "link" : "code",
+    mode: invite.mode,
+    usesCount: invite.uses_count,
+    maxUses: invite.max_uses,
+    expiresAt: invite.expires_at ? formatDateTime(invite.expires_at) : null,
+    createdAt: formatDateTime(invite.created_at),
+    status,
+    suspicious,
+    pendingJoinRequests,
+    pendingDirectInvites,
+  };
+}
+
 export async function getAdminPinsOrMock(mockPins: MockPin[]): Promise<AdminDataResult<MockPin[]>> {
   try {
     const supabase = createAdminSupabaseClient();
@@ -1639,6 +1708,76 @@ export async function getAdminInviteCodesOrMock(
       expiresAt: entry.expires_at ? formatDateTime(entry.expires_at) : null,
       createdAt: formatDateTime(entry.created_at),
     }));
+
+    if (data.length === 0) {
+      return toMockResult();
+    }
+
+    return { data, usingMockData: false };
+  } catch {
+    return toMockResult();
+  }
+}
+
+export async function getAdminCommunityInvitesOrMock(
+  mockEntries: MockCommunityInvite[],
+): Promise<AdminDataResult<AdminCommunityInvite[]>> {
+  const toMockResult = () => ({
+    data: mockEntries.map((entry) => ({
+      id: entry.id,
+      communityName: entry.communityName,
+      creatorName: entry.creatorName,
+      token: entry.token,
+      tokenType: entry.tokenType,
+      mode: entry.mode,
+      usesCount: entry.usesCount,
+      maxUses: entry.maxUses,
+      expiresAt: entry.expiresAt,
+      createdAt: entry.createdAt,
+      status: entry.status,
+      suspicious: entry.suspicious,
+      pendingJoinRequests: entry.pendingJoinRequests,
+      pendingDirectInvites: entry.pendingDirectInvites,
+    })),
+    usingMockData: true,
+  });
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [invitesResult, joinRequestsResult, directInvitesResult] = await Promise.all([
+      supabase
+        .from("community_invites")
+        .select(
+          "id, community_id, creator_id, link_slug, code, mode, uses_count, max_uses, expires_at, created_at, community:communities(name), creator_profile:profiles!community_invites_creator_id_fkey(username, display_name)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase.from("community_join_requests").select("community_id, source_invite_id, status").eq("status", "pending"),
+      supabase.from("community_direct_invites").select("community_id, status").eq("status", "pending"),
+    ]);
+
+    if (invitesResult.error || joinRequestsResult.error || directInvitesResult.error || !invitesResult.data || !joinRequestsResult.data || !directInvitesResult.data) {
+      return toMockResult();
+    }
+
+    const joinCountsByInvite = new Map<string, number>();
+    for (const request of joinRequestsResult.data as unknown as JoinRequestRecord[]) {
+      if (!request.source_invite_id) continue;
+      joinCountsByInvite.set(request.source_invite_id, (joinCountsByInvite.get(request.source_invite_id) ?? 0) + 1);
+    }
+
+    const directCountsByCommunity = new Map<string, number>();
+    for (const invite of directInvitesResult.data as unknown as DirectInviteRecord[]) {
+      directCountsByCommunity.set(invite.community_id, (directCountsByCommunity.get(invite.community_id) ?? 0) + 1);
+    }
+
+    const data = (invitesResult.data as unknown as CommunityInviteRecord[]).map((invite) =>
+      mapCommunityInvite(
+        invite,
+        joinCountsByInvite.get(invite.id) ?? 0,
+        directCountsByCommunity.get(invite.community_id) ?? 0,
+      ),
+    );
 
     if (data.length === 0) {
       return toMockResult();
