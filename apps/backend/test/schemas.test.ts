@@ -19,6 +19,7 @@ import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile
 import {
   V2CreateCommentSchema,
   V2CreatePostSchema,
+  V2CreateStorySchema,
   V2FollowListQuerySchema,
   V2PrivacySchema,
 } from '../src/schemas/v2-social.schema.js';
@@ -114,6 +115,16 @@ describe('v2 social schemas', () => {
     expect(V2CreateCommentSchema.parse({ body: 'Harika!' }).body).toBe('Harika!');
     expect(V2CreateCommentSchema.safeParse({ body: '' }).success).toBe(false);
     expect(V2CreateCommentSchema.safeParse({ body: 'x'.repeat(501) }).success).toBe(false);
+  });
+
+  it('accepts bounded story drafts', () => {
+    expect(V2CreateStorySchema.parse({
+      media_id: '00000000-0000-4000-8000-000000000001',
+    }).audience).toBe('followers');
+    expect(V2CreateStorySchema.safeParse({
+      media_id: '00000000-0000-4000-8000-000000000001',
+      expires_at: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+    }).success).toBe(false);
   });
 });
 

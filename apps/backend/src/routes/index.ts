@@ -17,6 +17,7 @@ import { reportRoutes } from './reports.js';
 import { v2FollowRequestRoutes, v2FollowRoutes } from './v2-follows.js';
 import { v2CommentRoutes, v2PostRoutes, v2UserRoutes } from './v2-posts.js';
 import { v2ProfileRoutes } from './v2-profiles.js';
+import { v2StoryRoutes } from './v2-stories.js';
 import type { AppEnv } from '../types/hono.js';
 
 export function mountPublicRoutes(app: Hono) {
@@ -47,5 +48,6 @@ export function mountProtectedV2Routes(app: Hono<AppEnv>) {
   app.route('/follows', v2FollowRoutes);
   app.route('/posts', v2PostRoutes);
   app.route('/profiles', v2ProfileRoutes);
+  app.route('/stories', v2StoryRoutes);
   app.route('/users', v2UserRoutes);
 }

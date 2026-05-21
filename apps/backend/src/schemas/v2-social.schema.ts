@@ -59,3 +59,34 @@ export const V2CursorQuerySchema = z.object({
   cursor: z.string().datetime().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
+
+export const V2StoryAudienceSchema = z.enum(['public', 'followers', 'private']);
+
+export const V2StoryIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const V2CreateStorySchema = z.object({
+  media_id: z.string().uuid(),
+  audience: V2StoryAudienceSchema.default('followers'),
+  expires_at: z.string().datetime().optional(),
+}).superRefine((value, ctx) => {
+  if (!value.expires_at) return;
+
+  const expiresAt = Date.parse(value.expires_at);
+  const now = Date.now();
+  if (expiresAt <= now) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expires_at'],
+      message: 'expires_at must be in the future',
+    });
+  }
+  if (expiresAt > now + 24 * 60 * 60 * 1000) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expires_at'],
+      message: 'expires_at cannot be more than 24 hours in the future',
+    });
+  }
+});

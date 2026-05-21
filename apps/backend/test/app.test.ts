@@ -78,6 +78,9 @@ describe('app routes', () => {
       postResponse,
       userPostsResponse,
       commentLikeResponse,
+      createStoryResponse,
+      storyFeedResponse,
+      storyViewResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -88,6 +91,9 @@ describe('app routes', () => {
       app.request('/v2/posts/00000000-0000-4000-8000-000000000001'),
       app.request('/v2/users/erol/posts'),
       app.request('/v2/comments/00000000-0000-4000-8000-000000000001/like', { method: 'POST' }),
+      app.request('/v2/stories', { method: 'POST' }),
+      app.request('/v2/stories/feed'),
+      app.request('/v2/stories/00000000-0000-4000-8000-000000000001/view', { method: 'POST' }),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -99,6 +105,9 @@ describe('app routes', () => {
     expect(postResponse.status).toBe(401);
     expect(userPostsResponse.status).toBe(401);
     expect(commentLikeResponse.status).toBe(401);
+    expect(createStoryResponse.status).toBe(401);
+    expect(storyFeedResponse.status).toBe(401);
+    expect(storyViewResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {

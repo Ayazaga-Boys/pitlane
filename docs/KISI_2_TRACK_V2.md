@@ -67,16 +67,16 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.3 — Story + Keşfet + Feed Algoritması (Hafta 5-6)
 
 **Migration:**
-- [ ] `stories` (`id`, `author_id`, `media_id`, `audience`, `expires_at`, `created_at`)
-- [ ] `story_views` (`story_id`, `viewer_id`, `viewed_at`, UNIQUE)
-- [ ] `story_mutes` (`muter_id`, `muted_id`) — birinin story'sini sessize alma
+- [x] `stories` (`id`, `author_id`, `media_id`, `audience`, `expires_at`, `created_at`)
+- [x] `story_views` (`story_id`, `viewer_id`, `viewed_at`, UNIQUE)
+- [x] `story_mutes` (`muter_id`, `muted_id`) — birinin story'sini sessize alma
 
 **Endpoint:**
-- [ ] `POST /v2/stories`
-- [ ] `GET /v2/stories/feed` — takip ettiklerimin son 24 saat story'leri
-- [ ] `POST /v2/stories/:id/view`
-- [ ] `GET /v2/stories/:id/views` — yazar görebilir
-- [ ] `DELETE /v2/stories/:id`
+- [x] `POST /v2/stories`
+- [x] `GET /v2/stories/feed` — takip ettiklerimin son 24 saat story'leri
+- [x] `POST /v2/stories/:id/view`
+- [x] `GET /v2/stories/:id/views` — yazar görebilir
+- [x] `DELETE /v2/stories/:id`
 
 **Trigger.dev:**
 - [ ] Story expiry job — saatlik cron, `expires_at < now()` olanları sil + Cloudflare Stream/Images temizliği
