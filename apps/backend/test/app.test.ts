@@ -85,6 +85,14 @@ describe('app routes', () => {
       rolePresetsResponse,
       createRoleResponse,
       assignRoleResponse,
+      createInviteResponse,
+      acceptInviteResponse,
+      inviteUserResponse,
+      respondInviteResponse,
+      createEventResponse,
+      listEventsResponse,
+      rsvpEventResponse,
+      createPollResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -102,6 +110,14 @@ describe('app routes', () => {
       app.request('/v2/communities/role-presets'),
       app.request('/v2/communities/00000000-0000-4000-8000-000000000001/roles', { method: 'POST' }),
       app.request('/v2/communities/00000000-0000-4000-8000-000000000001/members/00000000-0000-4000-8000-000000000002/role', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/invites', { method: 'POST' }),
+      app.request('/v2/invites/ABCDEF12/accept', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/invite-user', { method: 'POST' }),
+      app.request('/v2/community-invites/00000000-0000-4000-8000-000000000001/respond', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/events', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/events'),
+      app.request('/v2/events/00000000-0000-4000-8000-000000000001/rsvp', { method: 'POST' }),
+      app.request('/v2/events/00000000-0000-4000-8000-000000000001/polls', { method: 'POST' }),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -120,6 +136,14 @@ describe('app routes', () => {
     expect(rolePresetsResponse.status).toBe(401);
     expect(createRoleResponse.status).toBe(401);
     expect(assignRoleResponse.status).toBe(401);
+    expect(createInviteResponse.status).toBe(401);
+    expect(acceptInviteResponse.status).toBe(401);
+    expect(inviteUserResponse.status).toBe(401);
+    expect(respondInviteResponse.status).toBe(401);
+    expect(createEventResponse.status).toBe(401);
+    expect(listEventsResponse.status).toBe(401);
+    expect(rsvpEventResponse.status).toBe(401);
+    expect(createPollResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {

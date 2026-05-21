@@ -18,11 +18,16 @@ import {
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 import {
   V2CreateCommentSchema,
+  V2CreateCommunityEventSchema,
+  V2CreateCommunityInviteSchema,
+  V2CreateCommunityPollSchema,
   V2CreateCommunityRoleSchema,
   V2CreatePostSchema,
   V2CreateStorySchema,
+  V2EventRsvpSchema,
   V2FollowListQuerySchema,
   V2PrivacySchema,
+  V2RespondCommunityInviteSchema,
   V2UpdateCommunityRoleSchema,
 } from '../src/schemas/v2-social.schema.js';
 
@@ -142,6 +147,35 @@ describe('v2 social schemas', () => {
       permissions: { can_delete_everything: true },
     }).success).toBe(false);
     expect(V2UpdateCommunityRoleSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('accepts community invite drafts and responses', () => {
+    expect(V2CreateCommunityInviteSchema.parse({ type: 'code' }).mode).toBe('instant');
+    expect(V2CreateCommunityInviteSchema.safeParse({
+      expires_at: new Date(Date.now() - 60_000).toISOString(),
+    }).success).toBe(false);
+    expect(V2RespondCommunityInviteSchema.parse({ response: 'accept' }).response).toBe('accept');
+  });
+
+  it('accepts community event drafts, RSVPs, and polls', () => {
+    expect(V2CreateCommunityEventSchema.parse({
+      title: 'Sunday Meet',
+      starts_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      location_h3: '8928308280fffff',
+    }).title).toBe('Sunday Meet');
+    expect(V2CreateCommunityEventSchema.safeParse({
+      title: 'Past',
+      starts_at: new Date(Date.now() - 60_000).toISOString(),
+    }).success).toBe(false);
+    expect(V2EventRsvpSchema.parse({ response: 'maybe' }).response).toBe('maybe');
+    expect(V2CreateCommunityPollSchema.parse({
+      question: 'Where should we meet?',
+      options: ['Garage', 'Track'],
+    }).options).toHaveLength(2);
+    expect(V2CreateCommunityPollSchema.safeParse({
+      question: 'One option?',
+      options: ['Only'],
+    }).success).toBe(false);
   });
 });
 
