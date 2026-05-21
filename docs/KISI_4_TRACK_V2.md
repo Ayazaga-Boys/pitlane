@@ -49,7 +49,7 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
 
 > Burak'ın list'inde madde 1 — profil tamamlama back button bug fix
 
-- [ ] **Profil tamamlama back button** — Burak şikayetçi
+- [x] **Profil tamamlama back button** — Burak şikayetçi
   - `ProfileCompletionScreen`'de AppBar'a back butonu ekle veya WillPopScope ile profile'a yönlendir
   - Akış: kullanıcı profilden "Eksikleri tamamla" der → girer → istediği zaman geri çıkabilir
 - [ ] Hot reload sonrası state korunma sorunu kontrol

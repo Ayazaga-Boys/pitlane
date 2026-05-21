@@ -13,6 +13,14 @@ import '../providers/profile_completion_provider.dart';
 class ProfileCompletionScreen extends ConsumerWidget {
   const ProfileCompletionScreen({super.key});
 
+  void _leaveCompletion(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/profile');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final completion = ref.watch(profileCompletionProvider);
@@ -33,24 +41,37 @@ class ProfileCompletionScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profilini tamamla')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Geri',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => _leaveCompletion(context),
+        ),
+        title: const Text('Profilini tamamla'),
+      ),
       body: SafeArea(
-        child: completion.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _OnboardingFrame(
-            progress: ProfileConstants.progressNotStarted,
-            child: _ErrorState(message: error.toString()),
-          ),
-          data: (state) => _OnboardingFrame(
-            progress: state.progress,
-            child: switch (state.step) {
-              ProfileCompletionStep.identity => _IdentityStep(state: state),
-              ProfileCompletionStep.vehicle => const _VehicleStep(),
-              ProfileCompletionStep.permissions => const _PermissionsStep(),
-              ProfileCompletionStep.rules => const _RulesStep(),
-              ProfileCompletionStep.done =>
-                const Center(child: CircularProgressIndicator()),
-            },
+        child: PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _leaveCompletion(context);
+          },
+          child: completion.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => _OnboardingFrame(
+              progress: ProfileConstants.progressNotStarted,
+              child: _ErrorState(message: error.toString()),
+            ),
+            data: (state) => _OnboardingFrame(
+              progress: state.progress,
+              child: switch (state.step) {
+                ProfileCompletionStep.identity => _IdentityStep(state: state),
+                ProfileCompletionStep.vehicle => const _VehicleStep(),
+                ProfileCompletionStep.permissions => const _PermissionsStep(),
+                ProfileCompletionStep.rules => const _RulesStep(),
+                ProfileCompletionStep.done =>
+                  const Center(child: CircularProgressIndicator()),
+              },
+            ),
           ),
         ),
       ),
