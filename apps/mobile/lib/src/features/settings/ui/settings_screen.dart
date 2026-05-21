@@ -71,6 +71,31 @@ class SettingsScreen extends ConsumerWidget {
                         prefs.copyWith(readReceipts: value),
                       ),
             ),
+            _SettingsSwitchTile(
+              icon: Icons.circle_outlined,
+              title: 'Çevrimiçi durumumu göster',
+              subtitle: 'Profil fotoğrafında durum noktan görünsün',
+              value: prefs.showOnlineStatus,
+              onChanged: (value) =>
+                  ref.read(settingsPreferencesProvider.notifier).update(
+                        prefs.copyWith(
+                          showOnlineStatus: value,
+                          dndMode: value ? prefs.dndMode : false,
+                        ),
+                      ),
+            ),
+            _SettingsSwitchTile(
+              icon: Icons.do_disturb_on_outlined,
+              title: 'Rahatsız etmeyin',
+              subtitle: 'Durumunu sarı DND olarak göster',
+              value: prefs.dndMode,
+              onChanged: prefs.showOnlineStatus
+                  ? (value) =>
+                      ref.read(settingsPreferencesProvider.notifier).update(
+                            prefs.copyWith(dndMode: value),
+                          )
+                  : null,
+            ),
             _SettingsTile(
               icon: Icons.file_download_outlined,
               title: 'Veri dışa aktar',
@@ -408,7 +433,7 @@ class _SettingsSwitchTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +446,11 @@ class _SettingsSwitchTile extends StatelessWidget {
           border: Border.all(color: AppColors.surface3),
         ),
         child: SwitchListTile(
-          secondary: Icon(icon, color: AppColors.pitRed),
+          secondary: Icon(
+            icon,
+            color:
+                onChanged == null ? AppColors.textTertiary : AppColors.pitRed,
+          ),
           value: value,
           onChanged: onChanged,
           title: Text(title),

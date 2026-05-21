@@ -24,13 +24,13 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
 
 > Bağımlılık: Erol'un `presence_status` endpoint'i + Burak'ın WS `presence_update` event'i
 
-- [ ] **`PresenceDot` widget** — 10–12px, profil fotoğrafının sağ alt köşesinde
+- [x] **`PresenceDot` widget** — 10–12px, profil fotoğrafının sağ alt köşesinde
   - 🟢 `online` → yeşil
   - 🟡 `dnd` → sarı (rahatsız etmeyin)
   - ⚫ `offline` → gri
   - `presence_visible: false` → dot hiç gösterilmez
 - [ ] Presence dot tüm ekranlarda tutarlı: DM listesi, yorum, topluluk üye listesi, arama
-- [ ] Ayarlar ekranında: **"Çevrimiçi durumumu göster"** toggle + DND modu
+- [x] Ayarlar ekranında: **"Çevrimiçi durumumu göster"** toggle + DND modu
 - [ ] WS `presence_update` event'i ile gerçek zamanlı güncelleme (Burak deliver eder)
 
 ### V2.0b — Araç İkonu Harita Kişiselleştirme (Sprint Öncesi — Furkan isteği)

@@ -1,4 +1,5 @@
 import 'community.dart';
+import '../../../core/models/presence_status.dart';
 
 class CommunityMember {
   const CommunityMember({
@@ -7,6 +8,8 @@ class CommunityMember {
     required this.displayName,
     required this.role,
     this.avatarUrl,
+    this.presenceStatus = PresenceStatus.offline,
+    this.presenceVisible = true,
   });
 
   factory CommunityMember.fromJson(Map<String, dynamic> json) {
@@ -18,6 +21,11 @@ class CommunityMember {
     final displayName = json['display_name'] as String? ??
         profile['display_name'] as String? ??
         username;
+    final isOnline = json['is_online'] as bool? ?? false;
+    final rawPresenceStatus = json['presence_status'] as String?;
+    final presenceStatus = PresenceStatus.fromApiValue(
+      rawPresenceStatus,
+    );
 
     return CommunityMember(
       id: json['id'] as String? ?? json['user_id'] as String? ?? '',
@@ -26,6 +34,10 @@ class CommunityMember {
       role: json['role'] as String? ?? 'member',
       avatarUrl:
           json['avatar_url'] as String? ?? profile['avatar_url'] as String?,
+      presenceStatus: rawPresenceStatus == null && isOnline
+          ? PresenceStatus.online
+          : presenceStatus,
+      presenceVisible: json['presence_visible'] as bool? ?? true,
     );
   }
 
@@ -34,6 +46,8 @@ class CommunityMember {
   final String displayName;
   final String role;
   final String? avatarUrl;
+  final PresenceStatus presenceStatus;
+  final bool presenceVisible;
 }
 
 class CommunityFlarePreview {
