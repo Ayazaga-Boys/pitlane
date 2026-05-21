@@ -150,6 +150,31 @@ func TestNormalizeVehicleType(t *testing.T) {
 	}
 }
 
+func TestFollowCache(t *testing.T) {
+	store := newTestStore()
+	ctx := context.Background()
+
+	if err := store.SetFollowees(ctx, "user-a", []string{"user-b", "user-c"}); err != nil {
+		t.Fatalf("SetFollowees failed: %v", err)
+	}
+
+	ok, err := store.IsFollowing(ctx, "user-a", "user-b")
+	if err != nil {
+		t.Fatalf("IsFollowing failed: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected user-a to follow user-b")
+	}
+
+	ok, err = store.IsFollowing(ctx, "user-a", "user-x")
+	if err != nil {
+		t.Fatalf("IsFollowing failed: %v", err)
+	}
+	if ok {
+		t.Fatal("expected user-a not to follow user-x")
+	}
+}
+
 func TestLocationTTLEviction(t *testing.T) {
 	store := &Store{data: make(map[string]cellEntry)}
 

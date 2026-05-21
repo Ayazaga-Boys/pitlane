@@ -86,11 +86,12 @@ func TestMessageMarshal(t *testing.T) {
 
 func newTestClient(h *Hub, userID string) *Client {
 	return &Client{
-		hub:           h,
-		conn:          nil, // connection gerekmeyen testler için
-		userID:        userID,
-		send:          make(chan []byte, sendBufferSize),
-		subscriptions: make(map[string]int),
+		hub:               h,
+		conn:              nil, // connection gerekmeyen testler için
+		userID:            userID,
+		send:              make(chan []byte, sendBufferSize),
+		subscriptions:     make(map[string]int),
+		userSubscriptions: make(map[string]struct{}),
 	}
 }
 
@@ -201,6 +202,115 @@ func TestSendToSubscribersDeliversOnlyInterestedClients(t *testing.T) {
 		t.Fatalf("not interested client received %s", got)
 	case <-time.After(50 * time.Millisecond):
 		// expected
+	}
+}
+
+func TestSendPresenceUpdateToUserSubscribers(t *testing.T) {
+	h := newTestHub()
+	follower := newTestClient(h, "follower-user")
+	other := newTestClient(h, "other-user")
+	target := newTestClient(h, "target-user")
+	follower.subscribeUser(target.userID)
+
+	h.mu.Lock()
+	h.clients[follower.userID] = follower
+	h.clients[other.userID] = other
+	h.clients[target.userID] = target
+	h.mu.Unlock()
+
+	h.SendPresenceUpdateToUserSubscribers(target.userID, "online")
+
+	select {
+	case raw := <-follower.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal presence message: %v", err)
+		}
+		if msg.Type != TypePresenceUpdate || msg.UserID != target.userID || msg.Status != "online" {
+			t.Fatalf("unexpected presence payload: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("follower did not receive presence update")
+	}
+
+	select {
+	case raw := <-other.send:
+		t.Fatalf("non-subscriber received %s", raw)
+	case <-time.After(50 * time.Millisecond):
+		// expected
+	}
+}
+
+func TestLocationShareRespectsCooldownAndGhostMode(t *testing.T) {
+	h := newTestHub()
+	c := newTestClient(h, "driver-user")
+
+	if !c.shouldShareLocation("89283082803ffff", time.Unix(100, 0)) {
+		t.Fatal("first location should be shared")
+	}
+	if c.shouldShareLocation("89283082803ffff", time.Unix(110, 0)) {
+		t.Fatal("same cell inside cooldown should be suppressed")
+	}
+	if !c.shouldShareLocation("8928308280fffff", time.Unix(111, 0)) {
+		t.Fatal("cell change should be shared immediately")
+	}
+	if !c.shouldShareLocation("8928308280fffff", time.Unix(142, 0)) {
+		t.Fatal("same cell after cooldown should be shared")
+	}
+
+	c.setGhostMode(true)
+	if c.shouldShareLocation("89283082803ffff", time.Unix(200, 0)) {
+		t.Fatal("ghost mode should suppress location_share")
+	}
+}
+
+func TestSubscribeUserRequiresFollowCache(t *testing.T) {
+	h := newTestHub()
+	c := newTestClient(h, "follower-user")
+
+	c.handleMessage(InboundMessage{Type: TypeSubscribeUser, UserID: "target-user"})
+
+	select {
+	case raw := <-c.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal error message: %v", err)
+		}
+		if msg.Type != TypeError || msg.Code != "FORBIDDEN" {
+			t.Fatalf("expected FORBIDDEN error, got %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("expected forbidden error")
+	}
+
+	if c.followsUser("target-user") {
+		t.Fatal("target should not be subscribed when follow cache denies it")
+	}
+}
+
+func TestSubscribeUserAllowedByFollowCache(t *testing.T) {
+	h := newTestHub()
+	c := newTestClient(h, "follower-user")
+	if err := h.store.SetFollowees(context.Background(), c.userID, []string{"target-user"}); err != nil {
+		t.Fatalf("SetFollowees failed: %v", err)
+	}
+
+	c.handleMessage(InboundMessage{Type: TypeSubscribeUser, UserID: "target-user"})
+
+	if !c.followsUser("target-user") {
+		t.Fatal("target should be subscribed when follow cache allows it")
+	}
+	select {
+	case raw := <-c.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal presence snapshot: %v", err)
+		}
+		if msg.Type != TypePresenceUpdate || msg.UserID != "target-user" || msg.Status != "offline" {
+			t.Fatalf("unexpected presence snapshot: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("expected presence snapshot")
 	}
 }
 
@@ -320,6 +430,8 @@ func TestInboundMessageTypes(t *testing.T) {
 		{`{"type":"ghost_off"}`, TypeGhostOff},
 		{`{"type":"subscribe_cell","h3_cell":"89283082803ffff","k":2}`, TypeSubscribeCell},
 		{`{"type":"unsubscribe_cell","h3_cell":"89283082803ffff"}`, TypeUnsubscribeCell},
+		{`{"type":"subscribe_user","user_id":"target-user"}`, TypeSubscribeUser},
+		{`{"type":"unsubscribe_user","user_id":"target-user"}`, TypeUnsubscribeUser},
 	}
 
 	for _, tt := range tests {
