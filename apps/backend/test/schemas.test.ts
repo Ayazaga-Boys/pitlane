@@ -3,7 +3,7 @@ import { JoinWaitingListSchema, ValidateInviteCodeSchema } from '../src/schemas/
 import { CreateCommunitySchema, UpdateCommunitySchema } from '../src/schemas/community.schema.js';
 import { CreateFlareSchema, RsvpFlareSchema, UpdateFlareSchema } from '../src/schemas/flare.schema.js';
 import { CreateHelpSchema } from '../src/schemas/help.schema.js';
-import { MapNearbyQuerySchema, MapPinsQuerySchema } from '../src/schemas/map.schema.js';
+import { MapNearbyQuerySchema, MapPinsQuerySchema, V2MapHeatmapQuerySchema } from '../src/schemas/map.schema.js';
 import { UploadUrlSchema } from '../src/schemas/media.schema.js';
 import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
@@ -254,6 +254,17 @@ describe('map schemas', () => {
   it('validates optional pin category', () => {
     expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'garage' }).success).toBe(true);
     expect(MapPinsQuerySchema.safeParse({ h3cell: '8928308280fffff', category: 'mall' }).success).toBe(false);
+  });
+
+  it('accepts v2 vehicle-filtered heatmap queries', () => {
+    const parsed = V2MapHeatmapQuerySchema.parse({
+      vehicle_type: 'motorcycle',
+      bounds: '8828308281fffff,882830828dfffff',
+    });
+
+    expect(parsed.vehicle_type).toBe('motorcycle');
+    expect(parsed.bounds).toHaveLength(2);
+    expect(V2MapHeatmapQuerySchema.safeParse({ vehicle_type: 'truck' }).success).toBe(false);
   });
 });
 

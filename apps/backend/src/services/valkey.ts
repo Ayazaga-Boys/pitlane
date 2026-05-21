@@ -3,9 +3,11 @@ import tls from 'node:tls';
 import { cellToParent, isValidCell } from 'h3-js';
 
 const HEATMAP_SNAPSHOT_KEY = 'heatmap:snapshot';
+const VEHICLE_HEATMAP_SNAPSHOT_PREFIX = 'heatmap:snapshot:vehicle';
 const LOCATION_KEY_PATTERN = 'loc:*';
 const HEATMAP_RESOLUTION = 8;
 const DEFAULT_TIMEOUT_MS = 1500;
+export type HeatmapVehicleType = 'any' | 'car' | 'motorcycle';
 
 type RespValue = string | number | null | RespValue[];
 
@@ -15,7 +17,17 @@ export interface HeatmapCell {
 }
 
 export async function getHeatmapCells(bounds: string[]): Promise<HeatmapCell[]> {
-  const counts = await getValkeyHeatmapCounts();
+  const counts = await getValkeyHeatmapCounts(HEATMAP_SNAPSHOT_KEY);
+  return mapCountsToCells(counts, bounds);
+}
+
+export async function getVehicleHeatmapCells(vehicleType: HeatmapVehicleType, bounds: string[]): Promise<HeatmapCell[]> {
+  const key = vehicleType === 'any' ? HEATMAP_SNAPSHOT_KEY : `${VEHICLE_HEATMAP_SNAPSHOT_PREFIX}:${vehicleType}`;
+  const counts = await getValkeyHeatmapCounts(key);
+  return mapCountsToCells(counts, bounds);
+}
+
+function mapCountsToCells(counts: Record<string, number>, bounds: string[]): HeatmapCell[] {
   const cells = bounds.length > 0 ? bounds : Object.keys(counts).sort();
 
   return cells.map((h3Cell) => ({
@@ -34,15 +46,17 @@ export function normalizeLocationCellsToHeatmapCounts(cells: string[]): Record<s
   return counts;
 }
 
-async function getValkeyHeatmapCounts(): Promise<Record<string, number>> {
+async function getValkeyHeatmapCounts(snapshotKey: string): Promise<Record<string, number>> {
   const addr = process.env.VALKEY_ADDR;
   if (!addr) return {};
 
   const client = await ValkeyClient.connect(addr);
   try {
-    const snapshot = await client.command(['GET', HEATMAP_SNAPSHOT_KEY]);
+    const snapshot = await client.command(['GET', snapshotKey]);
     const snapshotCounts = parseHeatmapSnapshot(snapshot);
     if (snapshotCounts) return snapshotCounts;
+
+    if (snapshotKey !== HEATMAP_SNAPSHOT_KEY) return {};
 
     const cells: string[] = [];
     let cursor = '0';

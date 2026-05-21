@@ -153,8 +153,8 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `GET /v2/business/locations/nearby?h3cell=&k=` — Burak'ın harita çağırışı
 
 **Harita Vehicle-Filtered Heatmap:**
-- [ ] `GET /v2/map/heatmap?vehicle_type=motorcycle|car|any` — Burak'ın V2.4 ihtiyacı
-- [ ] Heatmap aggregation `vehicle_type` başına ayrı tutulmalı (Valkey key prefix değiştir)
+- [x] `GET /v2/map/heatmap?vehicle_type=motorcycle|car|any` — Burak'ın V2.4 ihtiyacı
+- [x] Heatmap aggregation `vehicle_type` başına ayrı tutulmalı (Valkey key prefix değiştir)
 
 ### V2.6 — SOS Hedefleme + Tagged Needs + Yarışma (Hafta 11-12)
 

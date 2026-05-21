@@ -24,6 +24,7 @@ import {
   v2InviteRoutes,
   v2PublicInviteRoutes,
 } from './v2-invites.js';
+import { v2MapRoutes } from './v2-map.js';
 import { v2CommentRoutes, v2PostRoutes, v2UserRoutes } from './v2-posts.js';
 import { v2ProfileRoutes } from './v2-profiles.js';
 import { v2StoryRoutes } from './v2-stories.js';
@@ -67,6 +68,7 @@ export function mountProtectedV2Routes(app: Hono<AppEnv>) {
   app.route('/follow-requests', v2FollowRequestRoutes);
   app.route('/follows', v2FollowRoutes);
   app.route('/invites', v2InviteRoutes);
+  app.route('/map', v2MapRoutes);
   app.route('/posts', v2PostRoutes);
   app.route('/profiles', v2ProfileRoutes);
   app.route('/stories', v2StoryRoutes);
