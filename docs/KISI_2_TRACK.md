@@ -96,14 +96,14 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [x] Geçersiz token temizliği (`registration-token-not-registered` → DB sil)
 - [ ] Supabase Realtime channel konfigürasyonu
 
-> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare job wrapper'ları hazır. FCM/APNs provider ve Trigger.dev schedule bağlanınca yukarıdaki maddeler kapatılmalı.
+> Not: Push servis temeli eklendi (`apps/backend/src/services/push.ts`): notification preference kararı, quiet hours kontrolü, provider hata kodlarından invalid token temizliği ve DM/flare/help job wrapper'ları hazır. FCM/APNs provider ve Trigger.dev schedule bağlanınca yukarıdaki maddeler kapatılmalı.
 
 ### Sprint 5 — Acil Yardım & İşletme Pinleri (Hafta 9-10)
 - [x] Supabase migration: `help_requests`
 - [x] Yardım CRUD endpoint'leri
 - [x] **Atomic helper assignment**: ilk gelen kazanır (UF-03 edge case, race condition kontrolü)
 - [x] Saatlik limit kontrolü (`max_help_per_user_hour` remote_config, F5.3)
-- [ ] Trigger.dev `sendHelpNotification`: k-ring 2 → aktif kullanıcı listesi → block filter → push (20. doküman Bölüm 6)
+- [x] Trigger.dev `sendHelpNotification`: k-ring 2 → aktif kullanıcı listesi → block filter → push (20. doküman Bölüm 6)
 - [ ] iOS Critical Alert entitlement başvurusu (Apple — yardım push'u için)
 - [ ] 2 saat sonra otomatik `expired` cron
 - [x] İşletme pin CRUD + kampanya endpoint'i
