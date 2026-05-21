@@ -256,6 +256,20 @@ export interface MockBusinessApplication {
   }>;
 }
 
+export interface MockBusinessLocation {
+  id: string;
+  ownerName: string;
+  businessName: string;
+  category: "garage" | "repair" | "parts" | "fuel" | "cafe" | "dealer" | "other";
+  address: string;
+  latitude: number;
+  longitude: number;
+  photoUrl: string | null;
+  featuredRank: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
 export interface MockWaitingListEntry {
   id: string;
   email: string;
@@ -1094,6 +1108,48 @@ export const mockBusinessApplications: MockBusinessApplication[] = [
         createdAt: "2026-05-18 13:23",
       },
     ],
+  },
+];
+
+export const mockBusinessLocations: MockBusinessLocation[] = [
+  {
+    id: "business_location_01",
+    ownerName: "Mert Yildiz",
+    businessName: "Redline Garage",
+    category: "repair",
+    address: "Hasanpasa Mah. Kurbaga Cad. No:18 Kadikoy / Istanbul",
+    latitude: 40.98971,
+    longitude: 29.03863,
+    photoUrl: "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1200&q=80",
+    featuredRank: 1,
+    isActive: true,
+    createdAt: "2026-05-21 12:05",
+  },
+  {
+    id: "business_location_02",
+    ownerName: "Selin Akca",
+    businessName: "Pit Cafe Moda",
+    category: "cafe",
+    address: "Moda Cad. No:52 Kadikoy / Istanbul",
+    latitude: 40.98512,
+    longitude: 29.02617,
+    photoUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
+    featuredRank: 3,
+    isActive: true,
+    createdAt: "2026-05-20 17:20",
+  },
+  {
+    id: "business_location_03",
+    ownerName: "Doga Tunc",
+    businessName: "Route 35 Parts",
+    category: "parts",
+    address: "Bornova Sanayi 3. Sok. No:7 Izmir",
+    latitude: 38.46291,
+    longitude: 27.21614,
+    photoUrl: null,
+    featuredRank: 12,
+    isActive: true,
+    createdAt: "2026-05-19 10:15",
   },
 ];
 

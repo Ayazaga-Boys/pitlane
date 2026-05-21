@@ -5,6 +5,7 @@ import type {
   MockCommunityEvent,
   MockCommunityInvite,
   MockBusinessApplication,
+  MockBusinessLocation,
   MockFeedOverride,
   MockHelpRequest,
   MockInviteCode,
@@ -109,6 +110,21 @@ export interface AdminBusinessApplicationDetail {
     storageKey: string;
     createdAt: string;
   }>;
+}
+
+export interface AdminBusinessLocation {
+  id: string;
+  ownerId: string;
+  ownerName: string;
+  businessName: string;
+  category: BusinessLocationRow["category"];
+  address: string;
+  latitude: number;
+  longitude: number;
+  photoUrl: string | null;
+  featuredRank: number;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface AdminUserDetail {
@@ -500,6 +516,24 @@ interface BusinessApplicationRecord
   applicant_profile: Pick<ProfileRow, "id" | "username" | "display_name" | "avatar_url"> | null;
   reviewer_profile: Pick<ProfileRow, "id" | "username" | "display_name"> | null;
   business_documents: BusinessDocumentRecord[] | null;
+}
+
+interface BusinessLocationRecord
+  extends Pick<
+    BusinessLocationRow,
+    | "id"
+    | "owner_id"
+    | "business_name"
+    | "category"
+    | "address"
+    | "latitude"
+    | "longitude"
+    | "photo_url"
+    | "featured_rank"
+    | "is_active"
+    | "created_at"
+  > {
+  owner_profile: Pick<ProfileRow, "username" | "display_name"> | null;
 }
 
 interface ProfileContentRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio"> {}
@@ -1038,6 +1072,23 @@ function mapBusinessApplicationDetail(application: BusinessApplicationRecord): A
       storageKey: document.storage_key,
       createdAt: formatDateTime(document.created_at),
     })),
+  };
+}
+
+function mapBusinessLocation(location: BusinessLocationRecord): AdminBusinessLocation {
+  return {
+    id: location.id,
+    ownerId: location.owner_id,
+    ownerName: profileLabel(location.owner_profile, shortenId(location.owner_id)),
+    businessName: location.business_name,
+    category: location.category,
+    address: location.address,
+    latitude: location.latitude,
+    longitude: location.longitude,
+    photoUrl: location.photo_url,
+    featuredRank: location.featured_rank,
+    isActive: location.is_active,
+    createdAt: formatDateTime(location.created_at),
   };
 }
 
@@ -2423,6 +2474,49 @@ export async function getAdminBusinessApplicationByIdOrMock(
     };
   } catch {
     return { data: null, usingMockData: false };
+  }
+}
+
+export async function getAdminBusinessLocationsOrMock(
+  mockLocations: MockBusinessLocation[],
+): Promise<AdminDataResult<AdminBusinessLocation[]>> {
+  const toMockResult = () => ({
+    data: mockLocations.map((location) => ({
+      id: location.id,
+      ownerId: location.id,
+      ownerName: location.ownerName,
+      businessName: location.businessName,
+      category: location.category,
+      address: location.address,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      photoUrl: location.photoUrl,
+      featuredRank: location.featuredRank,
+      isActive: location.isActive,
+      createdAt: location.createdAt,
+    })),
+    usingMockData: true,
+  });
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("business_locations")
+      .select("id, owner_id, business_name, category, address, latitude, longitude, photo_url, featured_rank, is_active, created_at, owner_profile:profiles!business_locations_owner_id_fkey(username, display_name)")
+      .order("featured_rank", { ascending: true })
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (result.error || !result.data) {
+      return toMockResult();
+    }
+
+    return {
+      data: (result.data as unknown as BusinessLocationRecord[]).map(mapBusinessLocation),
+      usingMockData: false,
+    };
+  } catch {
+    return toMockResult();
   }
 }
 
