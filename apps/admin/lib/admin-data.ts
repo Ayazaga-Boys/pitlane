@@ -4,6 +4,7 @@ import type {
   MockCommunity,
   MockCommunityEvent,
   MockCommunityInvite,
+  MockBusinessApplication,
   MockFeedOverride,
   MockHelpRequest,
   MockInviteCode,
@@ -22,6 +23,9 @@ import type {
 } from "@/lib/mock-data";
 import type {
   AuditLogRow,
+  BusinessApplicationRow,
+  BusinessDocumentRow,
+  BusinessLocationRow,
   CommunityEventRow,
   CommunityDirectInviteRow,
   CommunityInviteRow,
@@ -66,6 +70,45 @@ export interface AdminPinDetail {
   phone: string | null;
   website: string | null;
   createdAtLabel: string;
+}
+
+export interface AdminBusinessApplication {
+  id: string;
+  applicantId: string;
+  applicantName: string;
+  applicantUsername: string;
+  businessName: string;
+  category: BusinessApplicationRow["category"];
+  status: BusinessApplicationRow["status"];
+  address: string;
+  phone: string | null;
+  website: string | null;
+  photoUrl: string | null;
+  documentsCount: number;
+  hasUploadedDocuments: boolean;
+  createdAt: string;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+}
+
+export interface AdminBusinessApplicationDetail {
+  application: AdminBusinessApplication;
+  description: string | null;
+  h3Cell: string;
+  latitude: number;
+  longitude: number;
+  locationId: string | null;
+  reviewerLabel: string | null;
+  workingHoursSummary: string;
+  documents: Array<{
+    id: string;
+    type: BusinessDocumentRow["document_type"];
+    contentType: BusinessDocumentRow["content_type"];
+    sizeLabel: string;
+    status: BusinessDocumentRow["status"];
+    storageKey: string;
+    createdAt: string;
+  }>;
 }
 
 export interface AdminUserDetail {
@@ -427,6 +470,38 @@ interface BusinessPinContentRecord extends Pick<BusinessPinRow, "id" | "owner_id
   owner_profile: Pick<ProfileRow, "username" | "display_name"> | null;
 }
 
+interface BusinessDocumentRecord
+  extends Pick<BusinessDocumentRow, "id" | "application_id" | "document_type" | "storage_key" | "content_type" | "size_bytes" | "status" | "created_at"> {}
+
+interface BusinessApplicationRecord
+  extends Pick<
+    BusinessApplicationRow,
+    | "id"
+    | "applicant_id"
+    | "business_name"
+    | "category"
+    | "description"
+    | "h3_cell"
+    | "latitude"
+    | "longitude"
+    | "address"
+    | "phone"
+    | "website"
+    | "photo_url"
+    | "working_hours"
+    | "status"
+    | "rejection_reason"
+    | "reviewer_id"
+    | "reviewed_at"
+    | "location_id"
+    | "created_at"
+    | "updated_at"
+  > {
+  applicant_profile: Pick<ProfileRow, "id" | "username" | "display_name" | "avatar_url"> | null;
+  reviewer_profile: Pick<ProfileRow, "id" | "username" | "display_name"> | null;
+  business_documents: BusinessDocumentRecord[] | null;
+}
+
 interface ProfileContentRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio"> {}
 
 interface PostContentRecord extends Pick<PostRow, "id" | "author_id" | "caption" | "visibility" | "deleted_at"> {}
@@ -512,6 +587,18 @@ function formatDateTime(dateString: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(dateString));
+}
+
+function formatBytes(bytes: number) {
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  if (bytes >= 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
+  }
+
+  return `${bytes} B`;
 }
 
 function formatAuditAction(action: AuditLogRow["action"]) {
@@ -687,6 +774,38 @@ function mapPinStatus(pin: Pick<BusinessPinRow, "is_verified" | "is_active">): M
   }
 
   return "pending";
+}
+
+function mapBusinessCategory(category: BusinessApplicationRow["category"]): string {
+  switch (category) {
+    case "garage":
+      return "Garaj";
+    case "repair":
+      return "Tamir";
+    case "parts":
+      return "Parça";
+    case "fuel":
+      return "Yakıt";
+    case "cafe":
+      return "Kafe";
+    case "dealer":
+      return "Galeri";
+    default:
+      return "Diğer";
+  }
+}
+
+function summarizeWorkingHours(workingHours: Record<string, unknown> | null | undefined): string {
+  if (!workingHours || Object.keys(workingHours).length === 0) {
+    return "Çalışma saati bilgisi girilmemiş.";
+  }
+
+  const entries = Object.entries(workingHours)
+    .filter(([, value]) => typeof value === "string" && value.length > 0)
+    .slice(0, 3)
+    .map(([day, value]) => `${day}: ${value}`);
+
+  return entries.length > 0 ? entries.join(" · ") : "Çalışma saati formatı hazır değil.";
 }
 
 function mapUserRole(role: ProfileRow["role"]): MockUser["role"] {
@@ -876,6 +995,49 @@ function toMockPin(pin: PinRecord): MockPin {
     city: pin.address ?? "Adres yok",
     submittedAt: formatDate(pin.created_at),
     status: mapPinStatus(pin),
+  };
+}
+
+function mapBusinessApplication(application: BusinessApplicationRecord): AdminBusinessApplication {
+  return {
+    id: application.id,
+    applicantId: application.applicant_id,
+    applicantName: profileLabel(application.applicant_profile, shortenId(application.applicant_id)),
+    applicantUsername: application.applicant_profile?.username ?? shortenId(application.applicant_id),
+    businessName: application.business_name,
+    category: application.category,
+    status: application.status,
+    address: application.address,
+    phone: application.phone,
+    website: application.website,
+    photoUrl: application.photo_url,
+    documentsCount: application.business_documents?.length ?? 0,
+    hasUploadedDocuments: (application.business_documents ?? []).some((document) => document.status === "uploaded"),
+    createdAt: formatDateTime(application.created_at),
+    reviewedAt: application.reviewed_at ? formatDateTime(application.reviewed_at) : null,
+    rejectionReason: application.rejection_reason,
+  };
+}
+
+function mapBusinessApplicationDetail(application: BusinessApplicationRecord): AdminBusinessApplicationDetail {
+  return {
+    application: mapBusinessApplication(application),
+    description: application.description,
+    h3Cell: application.h3_cell,
+    latitude: application.latitude,
+    longitude: application.longitude,
+    locationId: application.location_id,
+    reviewerLabel: profileLabel(application.reviewer_profile, "") || null,
+    workingHoursSummary: summarizeWorkingHours(application.working_hours),
+    documents: (application.business_documents ?? []).map((document) => ({
+      id: document.id,
+      type: document.document_type,
+      contentType: document.content_type,
+      sizeLabel: formatBytes(document.size_bytes),
+      status: document.status,
+      storageKey: document.storage_key,
+      createdAt: formatDateTime(document.created_at),
+    })),
   };
 }
 
@@ -2143,6 +2305,124 @@ export async function getAdminSupportSearchOrMock(
     return { data: entries, usingMockData: false };
   } catch {
     return { data: mockEntries, usingMockData: true };
+  }
+}
+
+export async function getAdminBusinessApplicationsOrMock(
+  mockApplications: MockBusinessApplication[],
+): Promise<AdminDataResult<AdminBusinessApplication[]>> {
+  const toMockResult = () => ({
+    data: mockApplications.map((application) => ({
+      id: application.id,
+      applicantId: application.id,
+      applicantName: application.applicantName,
+      applicantUsername: application.applicantUsername,
+      businessName: application.businessName,
+      category: application.category,
+      status: application.status,
+      address: application.address,
+      phone: application.phone,
+      website: application.website,
+      photoUrl: application.photoUrl,
+      documentsCount: application.documents.length,
+      hasUploadedDocuments: application.documents.some((document) => document.status === "uploaded"),
+      createdAt: application.createdAt,
+      reviewedAt: application.reviewedAt,
+      rejectionReason: application.rejectionReason,
+    })),
+    usingMockData: true,
+  });
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("business_applications")
+      .select(
+        "id, applicant_id, business_name, category, description, h3_cell, latitude, longitude, address, phone, website, photo_url, working_hours, status, rejection_reason, reviewer_id, reviewed_at, location_id, created_at, updated_at, applicant_profile:profiles!business_applications_applicant_id_fkey(id, username, display_name, avatar_url), reviewer_profile:profiles!business_applications_reviewer_id_fkey(id, username, display_name), business_documents(id, application_id, document_type, storage_key, content_type, size_bytes, status, created_at)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (result.error || !result.data) {
+      return toMockResult();
+    }
+
+    return {
+      data: (result.data as unknown as BusinessApplicationRecord[]).map(mapBusinessApplication),
+      usingMockData: false,
+    };
+  } catch {
+    return toMockResult();
+  }
+}
+
+export async function getAdminBusinessApplicationByIdOrMock(
+  id: string,
+  mockApplications: MockBusinessApplication[],
+): Promise<AdminDataResult<AdminBusinessApplicationDetail | null>> {
+  const mockApplication = mockApplications.find((application) => application.id === id);
+  if (mockApplication) {
+    return {
+      data: {
+        application: {
+          id: mockApplication.id,
+          applicantId: mockApplication.id,
+          applicantName: mockApplication.applicantName,
+          applicantUsername: mockApplication.applicantUsername,
+          businessName: mockApplication.businessName,
+          category: mockApplication.category,
+          status: mockApplication.status,
+          address: mockApplication.address,
+          phone: mockApplication.phone,
+          website: mockApplication.website,
+          photoUrl: mockApplication.photoUrl,
+          documentsCount: mockApplication.documents.length,
+          hasUploadedDocuments: mockApplication.documents.some((document) => document.status === "uploaded"),
+          createdAt: mockApplication.createdAt,
+          reviewedAt: mockApplication.reviewedAt,
+          rejectionReason: mockApplication.rejectionReason,
+        },
+        description: null,
+        h3Cell: "8928308280fffff",
+        latitude: 41.0,
+        longitude: 29.0,
+        locationId: null,
+        reviewerLabel: null,
+        workingHoursSummary: "Pzt-Cmt 09:00-19:00",
+        documents: mockApplication.documents.map((document) => ({
+          id: document.id,
+          type: document.type,
+          contentType: document.contentType,
+          sizeLabel: formatBytes(document.sizeBytes),
+          status: document.status,
+          storageKey: document.storageKey,
+          createdAt: document.createdAt,
+        })),
+      },
+      usingMockData: true,
+    };
+  }
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("business_applications")
+      .select(
+        "id, applicant_id, business_name, category, description, h3_cell, latitude, longitude, address, phone, website, photo_url, working_hours, status, rejection_reason, reviewer_id, reviewed_at, location_id, created_at, updated_at, applicant_profile:profiles!business_applications_applicant_id_fkey(id, username, display_name, avatar_url), reviewer_profile:profiles!business_applications_reviewer_id_fkey(id, username, display_name), business_documents(id, application_id, document_type, storage_key, content_type, size_bytes, status, created_at)",
+      )
+      .eq("id", id)
+      .maybeSingle();
+
+    if (result.error || !result.data) {
+      return { data: null, usingMockData: false };
+    }
+
+    return {
+      data: mapBusinessApplicationDetail(result.data as unknown as BusinessApplicationRecord),
+      usingMockData: false,
+    };
+  } catch {
+    return { data: null, usingMockData: false };
   }
 }
 

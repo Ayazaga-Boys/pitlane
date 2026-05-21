@@ -231,6 +231,31 @@ export interface MockCommunityInvite {
   pendingDirectInvites: number;
 }
 
+export interface MockBusinessApplication {
+  id: string;
+  applicantName: string;
+  applicantUsername: string;
+  businessName: string;
+  category: "garage" | "repair" | "parts" | "fuel" | "cafe" | "dealer" | "other";
+  status: "pending" | "under_review" | "approved" | "rejected";
+  address: string;
+  phone: string | null;
+  website: string | null;
+  photoUrl: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  documents: Array<{
+    id: string;
+    type: "tax_license" | "business_license" | "identity" | "other";
+    contentType: "application/pdf" | "image/jpeg" | "image/png" | "image/webp";
+    sizeBytes: number;
+    status: "pending_upload" | "uploaded" | "rejected";
+    storageKey: string;
+    createdAt: string;
+  }>;
+}
+
 export interface MockWaitingListEntry {
   id: string;
   email: string;
@@ -979,6 +1004,96 @@ export const mockCommunityInvites: MockCommunityInvite[] = [
     suspicious: false,
     pendingJoinRequests: 1,
     pendingDirectInvites: 1,
+  },
+];
+
+export const mockBusinessApplications: MockBusinessApplication[] = [
+  {
+    id: "business_app_01",
+    applicantName: "Mert Yildiz",
+    applicantUsername: "mertyildiz",
+    businessName: "Redline Garage",
+    category: "repair",
+    status: "pending",
+    address: "Hasanpasa Mah. Kurbaga Cad. No:18 Kadikoy / Istanbul",
+    phone: "+90 532 000 11 22",
+    website: "https://redline-garage.example.com",
+    photoUrl: "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1200&q=80",
+    createdAt: "2026-05-21 11:40",
+    reviewedAt: null,
+    rejectionReason: null,
+    documents: [
+      {
+        id: "business_doc_01",
+        type: "tax_license",
+        contentType: "application/pdf",
+        sizeBytes: 482120,
+        status: "uploaded",
+        storageKey: "business-documents/mert/business_app_01/tax_license.pdf",
+        createdAt: "2026-05-21 11:44",
+      },
+      {
+        id: "business_doc_02",
+        type: "business_license",
+        contentType: "image/jpeg",
+        sizeBytes: 981223,
+        status: "uploaded",
+        storageKey: "business-documents/mert/business_app_01/license.jpg",
+        createdAt: "2026-05-21 11:46",
+      },
+    ],
+  },
+  {
+    id: "business_app_02",
+    applicantName: "Selin Akca",
+    applicantUsername: "selinakca",
+    businessName: "Pit Cafe Moda",
+    category: "cafe",
+    status: "under_review",
+    address: "Moda Cad. No:52 Kadikoy / Istanbul",
+    phone: "+90 533 111 22 33",
+    website: "https://pitcafe.example.com",
+    photoUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
+    createdAt: "2026-05-20 16:05",
+    reviewedAt: "2026-05-21 09:15",
+    rejectionReason: null,
+    documents: [
+      {
+        id: "business_doc_03",
+        type: "tax_license",
+        contentType: "application/pdf",
+        sizeBytes: 328440,
+        status: "uploaded",
+        storageKey: "business-documents/selin/business_app_02/tax_license.pdf",
+        createdAt: "2026-05-20 16:08",
+      },
+    ],
+  },
+  {
+    id: "business_app_03",
+    applicantName: "Doga Tunc",
+    applicantUsername: "dogatunc",
+    businessName: "Route 35 Parts",
+    category: "parts",
+    status: "rejected",
+    address: "Bornova Sanayi 3. Sok. No:7 Izmir",
+    phone: "+90 544 999 88 77",
+    website: null,
+    photoUrl: null,
+    createdAt: "2026-05-18 13:20",
+    reviewedAt: "2026-05-19 10:00",
+    rejectionReason: "Vergi levhası okunabilir formatta yüklenmedi. Güncel belge ile tekrar başvuru bekleniyor.",
+    documents: [
+      {
+        id: "business_doc_04",
+        type: "tax_license",
+        contentType: "image/png",
+        sizeBytes: 151003,
+        status: "rejected",
+        storageKey: "business-documents/doga/business_app_03/tax_license.png",
+        createdAt: "2026-05-18 13:23",
+      },
+    ],
   },
 ];
 

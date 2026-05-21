@@ -81,6 +81,62 @@ export interface BusinessPinRow {
   updated_at: string;
 }
 
+export interface BusinessApplicationRow {
+  id: string;
+  applicant_id: string;
+  business_name: string;
+  category: "garage" | "repair" | "parts" | "fuel" | "cafe" | "dealer" | "other";
+  description: string | null;
+  h3_cell: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  phone: string | null;
+  website: string | null;
+  photo_url: string | null;
+  working_hours: Record<string, unknown>;
+  status: "pending" | "under_review" | "approved" | "rejected";
+  rejection_reason: string | null;
+  reviewer_id: string | null;
+  reviewed_at: string | null;
+  location_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BusinessLocationRow {
+  id: string;
+  owner_id: string;
+  source_application_id: string | null;
+  business_name: string;
+  category: "garage" | "repair" | "parts" | "fuel" | "cafe" | "dealer" | "other";
+  description: string | null;
+  h3_cell: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  phone: string | null;
+  website: string | null;
+  photo_url: string | null;
+  working_hours: Record<string, unknown>;
+  is_active: boolean;
+  featured_rank: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BusinessDocumentRow {
+  id: string;
+  application_id: string;
+  uploader_id: string;
+  document_type: "tax_license" | "business_license" | "identity" | "other";
+  storage_key: string;
+  content_type: "application/pdf" | "image/jpeg" | "image/png" | "image/webp";
+  size_bytes: number;
+  status: "pending_upload" | "uploaded" | "rejected";
+  created_at: string;
+}
+
 export interface ReportRow {
   id: string;
   reporter_id: string;
@@ -400,6 +456,47 @@ export interface Database {
           is_verified: boolean;
         };
         Update: Partial<BusinessPinRow>;
+        Relationships: [];
+      };
+      business_applications: {
+        Row: BusinessApplicationRow;
+        Insert: Partial<BusinessApplicationRow> & {
+          applicant_id: string;
+          business_name: string;
+          category: BusinessApplicationRow["category"];
+          h3_cell: string;
+          latitude: number;
+          longitude: number;
+          address: string;
+        };
+        Update: Partial<BusinessApplicationRow>;
+        Relationships: [];
+      };
+      business_locations: {
+        Row: BusinessLocationRow;
+        Insert: Partial<BusinessLocationRow> & {
+          owner_id: string;
+          business_name: string;
+          category: BusinessLocationRow["category"];
+          h3_cell: string;
+          latitude: number;
+          longitude: number;
+          address: string;
+        };
+        Update: Partial<BusinessLocationRow>;
+        Relationships: [];
+      };
+      business_documents: {
+        Row: BusinessDocumentRow;
+        Insert: Partial<BusinessDocumentRow> & {
+          application_id: string;
+          uploader_id: string;
+          document_type: BusinessDocumentRow["document_type"];
+          storage_key: string;
+          content_type: BusinessDocumentRow["content_type"];
+          size_bytes: number;
+        };
+        Update: Partial<BusinessDocumentRow>;
         Relationships: [];
       };
       vehicles: {
