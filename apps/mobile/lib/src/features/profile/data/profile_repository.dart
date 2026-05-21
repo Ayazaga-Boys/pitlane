@@ -30,7 +30,10 @@ class ProfileRepository {
 
   Future<RollpitProfile?> getCurrentProfile() async {
     final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) return null; // dev bypass: profil yok, tamamlama adımı gösterilir
+    if (userId == null) {
+      // dev bypass: profil yok, tamamlama adımı gösterilir
+      return null;
+    }
     final data = await _supabase
         .from('profiles')
         .select(
