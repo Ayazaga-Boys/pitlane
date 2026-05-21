@@ -27,6 +27,7 @@ import {
   V2CreateCommentSchema,
   V2CreateCommunityEventSchema,
   V2CreateCommunityInviteSchema,
+  V2CreateCommunityNeedSchema,
   V2CreateCommunityPollSchema,
   V2CreateCommunityRoleSchema,
   V2CreatePostSchema,
@@ -182,6 +183,26 @@ describe('v2 social schemas', () => {
     expect(V2CreateCommunityPollSchema.safeParse({
       question: 'One option?',
       options: ['Only'],
+    }).success).toBe(false);
+  });
+
+  it('accepts community tagged needs', () => {
+    const parsed = V2CreateCommunityNeedSchema.parse({
+      type: 'parts',
+      urgency_color: 'red',
+      body: 'Need a spare chain near the meet point.',
+    });
+
+    expect(parsed.urgency_color).toBe('red');
+    expect(V2CreateCommunityNeedSchema.safeParse({
+      type: 'fuel',
+      urgency_color: 'blue',
+      body: 'Need fuel',
+    }).success).toBe(false);
+    expect(V2CreateCommunityNeedSchema.safeParse({
+      type: 'parts',
+      urgency_color: 'yellow',
+      body: '',
     }).success).toBe(false);
   });
 });

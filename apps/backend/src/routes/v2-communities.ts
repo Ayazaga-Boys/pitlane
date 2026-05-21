@@ -5,8 +5,10 @@ import {
   V2CommunityEventsQuerySchema,
   V2CommunityIdParamSchema,
   V2CommunityMemberRoleParamSchema,
+  V2CommunityNeedsQuerySchema,
   V2CommunityRoleParamSchema,
   V2CreateCommunityEventSchema,
+  V2CreateCommunityNeedSchema,
   V2CreateCommunityPollSchema,
   V2CreateCommunityRoleSchema,
   V2EventIdParamSchema,
@@ -26,6 +28,8 @@ const EVENT_SELECT =
   'id,community_id,creator_id,title,description,starts_at,location_h3,status,created_at,updated_at,profiles!community_events_creator_id_fkey(username,display_name,avatar_url)';
 const RSVP_SELECT = 'event_id,user_id,response,created_at,updated_at';
 const POLL_SELECT = 'id,event_id,creator_id,question,options,created_at,updated_at';
+const NEED_SELECT =
+  'id,community_id,creator_id,type,urgency_color,body,status,created_at,updated_at,profiles!community_needs_creator_id_fkey(username,display_name,avatar_url)';
 
 const ROLE_PRESETS = {
   motorcycle: [
@@ -181,6 +185,71 @@ v2CommunityRoutes.post('/:id/members/:userId/role', async (c) => {
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
   if (!data) return c.json({ code: 'NOT_FOUND', error: 'Community member not found' }, 404);
   return c.json({ data });
+});
+
+v2CommunityRoutes.post('/:id/needs', async (c) => {
+  const params = V2CommunityIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+  const body = await c.req.json().catch(() => null);
+  const parsed = V2CreateCommunityNeedSchema.safeParse(body);
+  if (!parsed.success) return validationError(c, parsed.error);
+
+  const actorId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const access = await getActorAccess(supabase, params.data.id, actorId);
+  if (access.error) return c.json({ code: 'INTERNAL_ERROR', error: access.error.message }, 500);
+  if (!access.data) return c.json({ code: 'NOT_FOUND', error: 'Community not found' }, 404);
+  if (!access.data.isOwner && !access.data.legacyRole) {
+    return c.json({ code: 'FORBIDDEN', error: 'Community membership required' }, 403);
+  }
+
+  const { data, error } = await supabase
+    .from('community_needs')
+    .insert({
+      community_id: params.data.id,
+      creator_id: actorId,
+      type: parsed.data.type,
+      urgency_color: parsed.data.urgency_color,
+      body: parsed.data.body,
+      status: 'open',
+    })
+    .select(NEED_SELECT)
+    .single();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  return c.json({ data }, 201);
+});
+
+v2CommunityRoutes.get('/:id/needs', async (c) => {
+  const params = V2CommunityIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+  const query = V2CommunityNeedsQuerySchema.safeParse(c.req.query());
+  if (!query.success) return validationError(c, query.error);
+
+  const actorId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const visibility = await canViewCommunity(supabase, params.data.id, actorId);
+  if (visibility.error) return c.json({ code: 'INTERNAL_ERROR', error: visibility.error.message }, 500);
+  if (!visibility.exists) return c.json({ code: 'NOT_FOUND', error: 'Community not found' }, 404);
+  if (!visibility.allowed) return c.json({ code: 'FORBIDDEN', error: 'Community membership required' }, 403);
+
+  let needsQuery = supabase
+    .from('community_needs')
+    .select(NEED_SELECT)
+    .eq('community_id', params.data.id)
+    .eq('status', query.data.status)
+    .order('created_at', { ascending: false })
+    .limit(query.data.limit);
+
+  if (query.data.cursor) needsQuery = needsQuery.lt('created_at', query.data.cursor);
+
+  const { data, error } = await needsQuery;
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  return c.json({ data, next_cursor: data.at(-1)?.created_at ?? null });
 });
 
 v2CommunityRoutes.post('/:id/events', async (c) => {

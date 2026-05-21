@@ -102,6 +102,8 @@ describe('app routes', () => {
       nearbyBusinessLocationsResponse,
       v2HeatmapResponse,
       v2HelpResponse,
+      createNeedResponse,
+      listNeedsResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -136,6 +138,8 @@ describe('app routes', () => {
       app.request('/v2/business/locations/nearby?h3cell=8928308280fffff'),
       app.request('/v2/map/heatmap?vehicle_type=car'),
       app.request('/v2/help', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs?status=open'),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -171,6 +175,8 @@ describe('app routes', () => {
     expect(nearbyBusinessLocationsResponse.status).toBe(401);
     expect(v2HeatmapResponse.status).toBe(401);
     expect(v2HelpResponse.status).toBe(401);
+    expect(createNeedResponse.status).toBe(401);
+    expect(listNeedsResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
