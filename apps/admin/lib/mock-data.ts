@@ -146,6 +146,33 @@ export interface MockModerationStory {
   isExpiringSoon: boolean;
 }
 
+export interface MockFeedOverride {
+  id: string;
+  postId: string;
+  postCaption: string;
+  authorName: string;
+  authorUsername: string;
+  actionType: "boost" | "shadowban";
+  reason: string;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface MockTrendingPost {
+  postId: string;
+  caption: string;
+  authorName: string;
+  authorUsername: string;
+  visibility: "public" | "followers" | "private";
+  mediaPreviewUrl: string | null;
+  score: number;
+  engagementRate: number;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  overrideState: "boost" | "shadowban" | "none";
+}
+
 export interface MockHelpRequest {
   id: string;
   requester: string;
@@ -678,6 +705,76 @@ export const mockModerationStories: MockModerationStory[] = [
     createdAt: "2026-05-20 08:00",
     deletedAt: "2026-05-20 12:40",
     isExpiringSoon: false,
+  },
+];
+
+export const mockFeedOverrides: MockFeedOverride[] = [
+  {
+    id: "feed_override_01",
+    postId: "post_demo_02",
+    postCaption: "Track day kareleri ve setup notlari.",
+    authorName: "Alp Koc",
+    authorUsername: "alpdrive",
+    actionType: "boost",
+    reason: "Toplulukta teknik içerik kalitesini öne çıkarmak için manuel feature verildi.",
+    expiresAt: "2026-05-24 23:59",
+    createdAt: "2026-05-21 09:10",
+  },
+  {
+    id: "feed_override_02",
+    postId: "post_demo_03",
+    postCaption: "Satilik jant duyurusu tekrar tekrar paylasildi.",
+    authorName: "Ece Karaca",
+    authorUsername: "pitqueen",
+    actionType: "shadowban",
+    reason: "Tekrarlayan ilan ve zayif engagement kalitesi nedeniyle akistan gizlendi.",
+    expiresAt: null,
+    createdAt: "2026-05-20 16:45",
+  },
+];
+
+export const mockTrendingPosts: MockTrendingPost[] = [
+  {
+    postId: "post_demo_01",
+    caption: "Gece surusunden sonra bos otoparkta donut videosu. Acik yolda tekrar denemeyin.",
+    authorName: "Ayga Zengin",
+    authorUsername: "aygaz",
+    visibility: "public",
+    mediaPreviewUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+    score: 0.88,
+    engagementRate: 0.74,
+    likeCount: 58,
+    commentCount: 12,
+    createdAt: "2026-05-20 23:18",
+    overrideState: "none",
+  },
+  {
+    postId: "post_demo_02",
+    caption: "Track day kareleri ve setup notlari.",
+    authorName: "Alp Koc",
+    authorUsername: "alpdrive",
+    visibility: "followers",
+    mediaPreviewUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+    score: 0.81,
+    engagementRate: 0.69,
+    likeCount: 44,
+    commentCount: 9,
+    createdAt: "2026-05-20 15:12",
+    overrideState: "boost",
+  },
+  {
+    postId: "post_demo_03",
+    caption: "Satilik jant duyurusu tekrar tekrar paylasildi.",
+    authorName: "Ece Karaca",
+    authorUsername: "pitqueen",
+    visibility: "public",
+    mediaPreviewUrl: null,
+    score: 0.34,
+    engagementRate: 0.12,
+    likeCount: 4,
+    commentCount: 1,
+    createdAt: "2026-05-18 12:30",
+    overrideState: "shadowban",
   },
 ];
 

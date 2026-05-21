@@ -2,6 +2,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import type {
   AnalyticsPoint,
   MockCommunity,
+  MockFeedOverride,
   MockHelpRequest,
   MockInviteCode,
   MockModerationComment,
@@ -13,6 +14,7 @@ import type {
   MockReport,
   MockStatusPage,
   MockSystemNotification,
+  MockTrendingPost,
   MockUser,
   MockWaitingListEntry,
 } from "@/lib/mock-data";
@@ -22,6 +24,7 @@ import type {
   CommunityMemberRow,
   CommunityRow,
   FlareRow,
+  FeedOverrideRow,
   FollowRow,
   HelpRequestRow,
   InviteCodeRow,
@@ -30,6 +33,7 @@ import type {
   MessageRow,
   NotificationRow,
   PostRow,
+  PostDiscoveryScoreRow,
   ProfileRow,
   ReportRow,
   RemoteConfigRow,
@@ -271,6 +275,33 @@ export interface AdminModerationStoryDetail {
   }>;
 }
 
+export interface AdminFeedOverride {
+  id: string;
+  postId: string;
+  postCaption: string;
+  authorName: string;
+  authorUsername: string;
+  actionType: FeedOverrideRow["action_type"];
+  reason: string;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminTrendingPost {
+  postId: string;
+  caption: string;
+  authorName: string;
+  authorUsername: string;
+  visibility: PostRow["visibility"];
+  mediaPreviewUrl: string | null;
+  score: number;
+  engagementRate: number;
+  likeCount: number;
+  commentCount: number;
+  createdAt: string;
+  overrideState: FeedOverrideRow["action_type"] | "none";
+}
+
 interface PinRecord
   extends Pick<
     BusinessPinRow,
@@ -387,6 +418,16 @@ interface StoryRecord extends Pick<StoryRow, "id" | "author_id" | "audience" | "
 interface StoryViewRecord extends Pick<StoryViewRow, "story_id" | "viewer_id" | "viewed_at"> {
   viewer: Pick<ProfileRow, "id" | "username" | "display_name"> | null;
 }
+
+interface FeedOverrideRecord extends Pick<FeedOverrideRow, "id" | "post_id" | "action_type" | "reason" | "expires_at" | "created_at" | "updated_at"> {
+  post: PostRecord | null;
+}
+
+interface DiscoverScoreRecord
+  extends Pick<
+    PostDiscoveryScoreRow,
+    "post_id" | "author_id" | "author_is_private" | "visibility" | "created_at" | "like_count" | "comment_count" | "engagement_rate" | "base_score" | "refreshed_at"
+  > {}
 
 const defaultStatusComponents: AdminStatusComponent[] = [
   { key: "api", label: "API", status: "operational", note: "Servis yanıt süreleri normal." },
@@ -941,6 +982,41 @@ function mapModerationStory(story: StoryRecord, viewsCount: number): AdminModera
     createdAt: formatDateTime(story.created_at),
     deletedAt: story.deleted_at ? formatDateTime(story.deleted_at) : null,
     isExpiringSoon: !story.deleted_at && isExpiringSoon(story.expires_at),
+  };
+}
+
+function mapFeedOverride(override: FeedOverrideRecord): AdminFeedOverride {
+  return {
+    id: override.id,
+    postId: override.post_id,
+    postCaption: override.post?.caption ?? "Post caption bulunamadı.",
+    authorName: profileLabel(override.post?.author_profile ?? null, shortenId(override.post?.author_id ?? override.post_id)),
+    authorUsername: override.post?.author_profile?.username ?? shortenId(override.post?.author_id ?? override.post_id),
+    actionType: override.action_type,
+    reason: override.reason ?? "Neden girilmedi.",
+    expiresAt: override.expires_at ? formatDateTime(override.expires_at) : null,
+    createdAt: formatDateTime(override.created_at),
+  };
+}
+
+function mapTrendingPost(
+  score: DiscoverScoreRecord,
+  post: PostRecord | null,
+  overrideState: AdminTrendingPost["overrideState"],
+): AdminTrendingPost {
+  return {
+    postId: score.post_id,
+    caption: post?.caption ?? "Caption girilmemiş.",
+    authorName: profileLabel(post?.author_profile ?? null, shortenId(score.author_id)),
+    authorUsername: post?.author_profile?.username ?? shortenId(score.author_id),
+    visibility: score.visibility,
+    mediaPreviewUrl: resolveMediaPreviewUrl(post?.media ?? null),
+    score: Number(Number(score.base_score).toFixed(3)),
+    engagementRate: Number(Number(score.engagement_rate).toFixed(3)),
+    likeCount: score.like_count,
+    commentCount: score.comment_count,
+    createdAt: formatDateTime(score.created_at),
+    overrideState,
   };
 }
 
@@ -2337,6 +2413,82 @@ export async function getAdminStoryByIdOrMock(
     return { data: { story, viewers }, usingMockData: false };
   } catch {
     return { data: null, usingMockData: false };
+  }
+}
+
+export async function getAdminFeedOverridesOrMock(
+  mockOverrides: MockFeedOverride[],
+): Promise<AdminDataResult<AdminFeedOverride[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("feed_overrides")
+      .select(
+        "id, post_id, action_type, reason, expires_at, created_at, updated_at, post:posts!feed_overrides_post_id_fkey(id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status))",
+      )
+      .order("updated_at", { ascending: false })
+      .limit(100);
+
+    if (result.error || !result.data) {
+      return { data: mockOverrides, usingMockData: true };
+    }
+
+    return {
+      data: (result.data as unknown as FeedOverrideRecord[]).map(mapFeedOverride),
+      usingMockData: false,
+    };
+  } catch {
+    return { data: mockOverrides, usingMockData: true };
+  }
+}
+
+export async function getAdminTrendingPostsOrMock(
+  mockTrendingPosts: MockTrendingPost[],
+): Promise<AdminDataResult<AdminTrendingPost[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [scoresResult, overridesResult] = await Promise.all([
+      supabase
+        .from("post_discovery_scores")
+        .select("post_id, author_id, author_is_private, visibility, created_at, like_count, comment_count, engagement_rate, base_score, refreshed_at")
+        .order("base_score", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(50),
+      supabase.from("feed_overrides").select("post_id, action_type"),
+    ]);
+
+    if (scoresResult.error || !scoresResult.data) {
+      return { data: mockTrendingPosts, usingMockData: true };
+    }
+
+    const scoreRows = scoresResult.data as unknown as DiscoverScoreRecord[];
+    const postIds = scoreRows.map((row) => row.post_id);
+    const postsResult = await supabase
+      .from("posts")
+      .select(
+        "id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status)",
+      )
+      .in("id", postIds)
+      .is("deleted_at", null);
+
+    if (postsResult.error || !postsResult.data) {
+      return { data: mockTrendingPosts, usingMockData: true };
+    }
+
+    const postsById = new Map((postsResult.data as unknown as PostRecord[]).map((post) => [post.id, post]));
+    const overridesByPost = new Map<string, FeedOverrideRow["action_type"]>();
+    if (!overridesResult.error && overridesResult.data) {
+      for (const override of overridesResult.data as Array<Pick<FeedOverrideRow, "post_id" | "action_type">>) {
+        overridesByPost.set(override.post_id, override.action_type);
+      }
+    }
+
+    return {
+      data: scoreRows.map((row) => mapTrendingPost(row, postsById.get(row.post_id) ?? null, overridesByPost.get(row.post_id) ?? "none")),
+      usingMockData: false,
+    };
+  } catch {
+    return { data: mockTrendingPosts, usingMockData: true };
   }
 }
 

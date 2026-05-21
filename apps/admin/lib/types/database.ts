@@ -163,6 +163,31 @@ export interface StoryViewRow {
   viewed_at: string;
 }
 
+export interface PostDiscoveryScoreRow {
+  post_id: string;
+  author_id: string;
+  author_is_private: boolean;
+  visibility: "public" | "followers" | "private";
+  created_at: string;
+  like_count: number;
+  comment_count: number;
+  engagement_rate: number;
+  recency_decay: number;
+  base_score: number;
+  refreshed_at: string;
+}
+
+export interface FeedOverrideRow {
+  id: string;
+  post_id: string;
+  action_type: "boost" | "shadowban";
+  reason: string | null;
+  created_by: string | null;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NotificationRow {
   id: string;
   user_id: string;
