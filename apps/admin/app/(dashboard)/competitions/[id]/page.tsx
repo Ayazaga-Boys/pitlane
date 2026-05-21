@@ -5,7 +5,9 @@ import { DataStateBanner } from "@/components/dashboard/data-state-banner";
 import { PageShell } from "@/components/dashboard/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getAdminCompetitionByIdOrMock } from "@/lib/admin-data";
 import { mockCompetitions } from "@/lib/mock-data";
+import { cancelCompetition, pauseCompetitionVoting, rejectCompetitionEntry } from "./actions";
 
 function mapStatus(status: "draft" | "voting" | "completed" | "canceled") {
   if (status === "voting") return { label: "oylama", tone: "success" as const };
@@ -14,11 +16,20 @@ function mapStatus(status: "draft" | "voting" | "completed" | "canceled") {
   return { label: "taslak", tone: "warning" as const };
 }
 
-export default function CompetitionDetailPage({ params }: { params: { id: string } }) {
-  const competition = mockCompetitions.find((entry) => entry.id === params.id);
+export default async function CompetitionDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams?: { result?: string };
+}) {
+  const { data: competition, usingMockData } = await getAdminCompetitionByIdOrMock(params.id, mockCompetitions);
   if (!competition) notFound();
 
   const status = mapStatus(competition.status);
+  const cancelAction = cancelCompetition;
+  const pauseAction = pauseCompetitionVoting;
+  const rejectEntryAction = rejectCompetitionEntry;
 
   return (
     <PageShell
@@ -34,9 +45,25 @@ export default function CompetitionDetailPage({ params }: { params: { id: string
         Yarışma listesine dön
       </Link>
 
+      {searchParams?.result === "canceled" ? (
+        <div className="rounded-md border border-error/30 bg-error/10 p-md text-sm leading-6 text-text-primary">
+          Yarışma admin override ile iptal edildi ve audit log’a işlendi.
+        </div>
+      ) : null}
+      {searchParams?.result === "paused" ? (
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
+          Oylama geçici olarak durduruldu. Karar audit log üzerinde saklanıyor.
+        </div>
+      ) : null}
+      {searchParams?.result === "entry_rejected" ? (
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
+          Seçilen entry reddedildi ve liste üzerinde bloklu olarak işaretlendi.
+        </div>
+      ) : null}
+
       <DataStateBanner
-        usingMockData
-        mockLabel="Entry ve vote endpoint’leri tamamlanmadığı için detay ekranı mock operasyon görünümünde."
+        usingMockData={usingMockData}
+        mockLabel="Entry ve vote endpoint’leri tamamlanmadığı için detay ekranı mock veriyle çalışıyor; admin override aksiyonları audit log’dan geri okunuyor."
         liveLabel=""
       />
 
@@ -54,6 +81,7 @@ export default function CompetitionDetailPage({ params }: { params: { id: string
               <Badge tone={competition.suspicious ? "warning" : "default"}>
                 {competition.suspicious ? "şüpheli akış" : "normal akış"}
               </Badge>
+              {competition.adminActionLabel ? <Badge tone="info">{competition.adminActionLabel}</Badge> : null}
             </div>
           </div>
 
@@ -74,6 +102,14 @@ export default function CompetitionDetailPage({ params }: { params: { id: string
               <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Oy</p>
               <p className="mt-xs text-sm text-text-primary">{competition.votesCount}</p>
             </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Bloklu entry</p>
+              <p className="mt-xs text-sm text-text-primary">{competition.blockedEntriesCount}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Son admin aksiyonu</p>
+              <p className="mt-xs text-sm text-text-primary">{competition.adminActionAt ?? "Henüz yok"}</p>
+            </div>
           </div>
         </div>
       </section>
@@ -93,8 +129,15 @@ export default function CompetitionDetailPage({ params }: { params: { id: string
                     <div className="flex gap-xs">
                       <Badge tone="info">entry</Badge>
                       {entry.flagged ? <Badge tone="warning">incele</Badge> : null}
+                      {entry.rejectedByAdmin ? <Badge tone="error">reddedildi</Badge> : null}
                     </div>
                   </div>
+                  {entry.rejectedByAdmin ? (
+                    <p className="mt-md text-sm leading-6 text-text-secondary">
+                      {entry.rejectionReason ?? "Bu entry admin override ile reddedildi."}
+                      {entry.rejectedAt ? ` · ${entry.rejectedAt}` : ""}
+                    </p>
+                  ) : null}
                 </div>
               ))
             ) : (
@@ -108,18 +151,72 @@ export default function CompetitionDetailPage({ params }: { params: { id: string
         <section className="surface-panel p-xl">
           <h3 className="text-lg font-semibold text-text-primary">Moderasyon aksiyonları</h3>
           <p className="mt-md text-sm leading-6 text-text-secondary">
-            İptal, entry reddetme ve oy temizleme aksiyonları için backend endpoint bekleniyor. Bu ekran operasyon kararını hazırlamak için açık.
+            Backend yarışma kontratı beklenirken bu aksiyonlar audit tabanlı admin override olarak kaydedilir ve sayfaya geri yansır.
           </p>
           <div className="mt-lg grid gap-md">
-            <Button className="w-full" disabled type="button" variant="secondary">
-              Yarışmayı iptal et
-            </Button>
-            <Button className="w-full" disabled type="button" variant="ghost">
-              Şüpheli entry’leri ayıkla
-            </Button>
-            <Button className="w-full" disabled type="button" variant="destructive">
-              Oylamayı durdur
-            </Button>
+            <form action={cancelAction} className="space-y-sm">
+              <input name="competitionId" type="hidden" value={competition.id} />
+              <label className="block space-y-sm">
+                <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">İptal nedeni</span>
+                <textarea
+                  className="focus-ring min-h-24 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary"
+                  defaultValue="Manipülatif oy veya kural dışı akış nedeniyle yarışma iptal edildi."
+                  name="reason"
+                />
+              </label>
+              <Button className="w-full" type="submit" variant="destructive">
+                Yarışmayı iptal et
+              </Button>
+            </form>
+
+            <form action={pauseAction} className="space-y-sm">
+              <input name="competitionId" type="hidden" value={competition.id} />
+              <label className="block space-y-sm">
+                <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Durdurma nedeni</span>
+                <textarea
+                  className="focus-ring min-h-24 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary"
+                  defaultValue="Ani oy sıçraması nedeniyle oylama manuel incelemeye alındı."
+                  name="reason"
+                />
+              </label>
+              <Button className="w-full" disabled={competition.status !== "voting"} type="submit" variant="secondary">
+                {competition.status === "voting" ? "Oylamayı durdur" : "Oylama aktif değil"}
+              </Button>
+            </form>
+
+            <form action={rejectEntryAction} className="space-y-sm">
+              <input name="competitionId" type="hidden" value={competition.id} />
+              <label className="block space-y-sm">
+                <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Reddedilecek entry</span>
+                <select
+                  className="focus-ring min-h-12 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary"
+                  defaultValue=""
+                  name="entryId"
+                >
+                  <option disabled value="">
+                    Entry seç
+                  </option>
+                  {competition.topEntries
+                    .filter((entry) => !entry.rejectedByAdmin)
+                    .map((entry) => (
+                      <option key={entry.id} value={entry.id}>
+                        {entry.title}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label className="block space-y-sm">
+                <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Reddetme nedeni</span>
+                <textarea
+                  className="focus-ring min-h-24 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary"
+                  defaultValue="Entry yarışma kurallarını karşılamadığı için admin tarafından reddedildi."
+                  name="reason"
+                />
+              </label>
+              <Button className="w-full" disabled={competition.topEntries.every((entry) => entry.rejectedByAdmin)} type="submit" variant="ghost">
+                {competition.topEntries.every((entry) => entry.rejectedByAdmin) ? "Reddedilecek entry kalmadı" : "Entry reddet"}
+              </Button>
+            </form>
           </div>
         </section>
       </div>

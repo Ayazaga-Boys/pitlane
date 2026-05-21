@@ -7,6 +7,7 @@ import type {
   MockBusinessApplication,
   MockBusinessLocation,
   MockCommunityNeed,
+  MockCompetition,
   MockFeedOverride,
   MockHelpRequest,
   MockInviteCode,
@@ -143,6 +144,37 @@ export interface AdminCommunityNeed {
   createdAt: string;
   createdWithin24h: number;
   flaggedAsSpam: boolean;
+}
+
+export interface AdminCompetitionEntry {
+  id: string;
+  title: string;
+  votes: number;
+  flagged: boolean;
+  rejectedByAdmin: boolean;
+  rejectionReason: string | null;
+  rejectedAt: string | null;
+}
+
+export interface AdminCompetition {
+  id: string;
+  communityName: string;
+  title: string;
+  status: MockCompetition["status"];
+  startsAt: string;
+  endsAt: string;
+  entriesCount: number;
+  votesCount: number;
+  reportsCount: number;
+  suspicious: boolean;
+  filtersSummary: string;
+  moderationNote: string;
+  topEntries: AdminCompetitionEntry[];
+  blockedEntriesCount: number;
+  adminActionLabel: string | null;
+  adminActionAt: string | null;
+  votingPaused: boolean;
+  canceledByAdmin: boolean;
 }
 
 export interface AdminUserDetail {
@@ -696,6 +728,16 @@ function summarizeAuditMetadata(metadata: Record<string, unknown> | null) {
   }
 
   if (typeof metadata.action === "string") {
+    if (metadata.action === "competition_canceled") {
+      return `Yarışma iptal edildi${typeof metadata.reason === "string" ? `: ${metadata.reason}` : "."}`;
+    }
+    if (metadata.action === "competition_voting_paused") {
+      return `Yarışma oylaması durduruldu${typeof metadata.reason === "string" ? `: ${metadata.reason}` : "."}`;
+    }
+    if (metadata.action === "competition_entry_rejected") {
+      const title = typeof metadata.entry_title === "string" ? metadata.entry_title : "Entry";
+      return `${title} katılımı reddedildi${typeof metadata.reason === "string" ? `: ${metadata.reason}` : "."}`;
+    }
     return `Aksiyon: ${metadata.action}`;
   }
 
@@ -792,6 +834,160 @@ function mapReason(reason: ReportRow["reason"]): string {
       return "Sahte içerik";
     default:
       return "Diğer";
+  }
+}
+
+type CompetitionAuditAction = "competition_canceled" | "competition_voting_paused" | "competition_entry_rejected";
+
+interface CompetitionAuditOverrideState {
+  competitionActions: Map<
+    string,
+    {
+      action: Exclude<CompetitionAuditAction, "competition_entry_rejected">;
+      reason: string | null;
+      createdAt: string;
+    }
+  >;
+  rejectedEntries: Map<
+    string,
+    Map<
+      string,
+      {
+        reason: string | null;
+        createdAt: string;
+      }
+    >
+  >;
+}
+
+function buildAdminCompetitionFromMock(
+  competition: MockCompetition,
+  overrides: CompetitionAuditOverrideState,
+): AdminCompetition {
+  const latestAction = overrides.competitionActions.get(competition.id);
+  const rejectedEntries = overrides.rejectedEntries.get(competition.id) ?? new Map();
+  const topEntries: AdminCompetitionEntry[] = competition.topEntries.map((entry) => {
+    const rejectedState = rejectedEntries.get(entry.id);
+    return {
+      ...entry,
+      rejectedByAdmin: Boolean(rejectedState),
+      rejectionReason: rejectedState?.reason ?? null,
+      rejectedAt: rejectedState ? formatDateTime(rejectedState.createdAt) : null,
+    };
+  });
+
+  const moderationNotes = [competition.moderationNote];
+  if (latestAction?.action === "competition_canceled") {
+    moderationNotes.push(
+      latestAction.reason
+        ? `Admin iptal notu: ${latestAction.reason}`
+        : "Admin bu yarışmayı operasyon kararıyla iptal etti.",
+    );
+  }
+  if (latestAction?.action === "competition_voting_paused") {
+    moderationNotes.push(
+      latestAction.reason
+        ? `Oylama durdurma notu: ${latestAction.reason}`
+        : "Admin şüpheli oy akışı nedeniyle oylamayı geçici olarak durdurdu.",
+    );
+  }
+  if (rejectedEntries.size > 0) {
+    moderationNotes.push(`${rejectedEntries.size} entry admin override ile reddedildi.`);
+  }
+
+  let adminActionLabel: string | null = null;
+  if (latestAction?.action === "competition_canceled") {
+    adminActionLabel = "admin iptal etti";
+  } else if (latestAction?.action === "competition_voting_paused") {
+    adminActionLabel = "oylama durduruldu";
+  } else if (rejectedEntries.size > 0) {
+    adminActionLabel = `${rejectedEntries.size} entry reddedildi`;
+  }
+
+  return {
+    id: competition.id,
+    communityName: competition.communityName,
+    title: competition.title,
+    status: latestAction?.action === "competition_canceled" ? "canceled" : competition.status,
+    startsAt: competition.startsAt,
+    endsAt: competition.endsAt,
+    entriesCount: competition.entriesCount,
+    votesCount: competition.votesCount,
+    reportsCount: competition.reportsCount,
+    suspicious: competition.suspicious || latestAction?.action === "competition_voting_paused" || rejectedEntries.size > 0,
+    filtersSummary: competition.filtersSummary,
+    moderationNote: moderationNotes.join(" "),
+    topEntries,
+    blockedEntriesCount: rejectedEntries.size,
+    adminActionLabel,
+    adminActionAt: latestAction ? formatDateTime(latestAction.createdAt) : null,
+    votingPaused: latestAction?.action === "competition_voting_paused",
+    canceledByAdmin: latestAction?.action === "competition_canceled",
+  };
+}
+
+async function getCompetitionAuditOverrides(competitionIds: string[]): Promise<CompetitionAuditOverrideState> {
+  const emptyState: CompetitionAuditOverrideState = {
+    competitionActions: new Map(),
+    rejectedEntries: new Map(),
+  };
+
+  if (competitionIds.length === 0) {
+    return emptyState;
+  }
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const result = await supabase
+      .from("audit_logs")
+      .select("id, created_at, target_type, target_id, metadata")
+      .in("target_type", ["competition", "competition_entry"])
+      .order("created_at", { ascending: false })
+      .limit(250);
+
+    if (result.error || !result.data) {
+      return emptyState;
+    }
+
+    const competitionIdSet = new Set(competitionIds);
+
+    for (const entry of result.data as Array<Pick<AuditLogRow, "id" | "created_at" | "target_type" | "target_id" | "metadata">>) {
+      const metadata = entry.metadata as Record<string, unknown> | null;
+      const action = metadata?.action;
+
+      if (entry.target_type === "competition" && entry.target_id && competitionIdSet.has(entry.target_id)) {
+        if (
+          (action === "competition_canceled" || action === "competition_voting_paused") &&
+          !emptyState.competitionActions.has(entry.target_id)
+        ) {
+          emptyState.competitionActions.set(entry.target_id, {
+            action,
+            reason: typeof metadata?.reason === "string" ? metadata.reason : null,
+            createdAt: entry.created_at,
+          });
+        }
+      }
+
+      if (entry.target_type === "competition_entry" && entry.target_id && action === "competition_entry_rejected") {
+        const competitionId = typeof metadata?.competition_id === "string" ? metadata.competition_id : null;
+        if (!competitionId || !competitionIdSet.has(competitionId)) {
+          continue;
+        }
+
+        const rejectedEntries = emptyState.rejectedEntries.get(competitionId) ?? new Map();
+        if (!rejectedEntries.has(entry.target_id)) {
+          rejectedEntries.set(entry.target_id, {
+            reason: typeof metadata?.reason === "string" ? metadata.reason : null,
+            createdAt: entry.created_at,
+          });
+          emptyState.rejectedEntries.set(competitionId, rejectedEntries);
+        }
+      }
+    }
+
+    return emptyState;
+  } catch {
+    return emptyState;
   }
 }
 
@@ -2621,6 +2817,32 @@ export async function getAdminCommunityNeedsOrMock(
   } catch {
     return toMockResult();
   }
+}
+
+export async function getAdminCompetitionsOrMock(
+  mockEntries: MockCompetition[],
+): Promise<AdminDataResult<AdminCompetition[]>> {
+  const overrides = await getCompetitionAuditOverrides(mockEntries.map((entry) => entry.id));
+  return {
+    data: mockEntries.map((entry) => buildAdminCompetitionFromMock(entry, overrides)),
+    usingMockData: true,
+  };
+}
+
+export async function getAdminCompetitionByIdOrMock(
+  competitionId: string,
+  mockEntries: MockCompetition[],
+): Promise<AdminDataResult<AdminCompetition | null>> {
+  const competition = mockEntries.find((entry) => entry.id === competitionId) ?? null;
+  if (!competition) {
+    return { data: null, usingMockData: true };
+  }
+
+  const overrides = await getCompetitionAuditOverrides([competitionId]);
+  return {
+    data: buildAdminCompetitionFromMock(competition, overrides),
+    usingMockData: true,
+  };
 }
 
 export async function getAdminUsersOrMock(mockUsers: MockUser[]): Promise<AdminDataResult<MockUser[]>> {

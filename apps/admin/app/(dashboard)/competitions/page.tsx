@@ -3,6 +3,7 @@ import { PageShell } from "@/components/dashboard/page-shell";
 import { CompetitionsTable } from "@/components/competitions/competitions-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getAdminCompetitionsOrMock } from "@/lib/admin-data";
 import { mockCompetitions } from "@/lib/mock-data";
 
 export default async function CompetitionsPage({
@@ -10,11 +11,12 @@ export default async function CompetitionsPage({
 }: {
   searchParams?: { q?: string; status?: string; risk?: string };
 }) {
+  const { data: competitions, usingMockData } = await getAdminCompetitionsOrMock(mockCompetitions);
   const query = searchParams?.q?.trim().toLocaleLowerCase("tr-TR") ?? "";
   const status = searchParams?.status?.trim() ?? "";
   const risk = searchParams?.risk?.trim() ?? "";
 
-  const filteredCompetitions = mockCompetitions.filter((competition) => {
+  const filteredCompetitions = competitions.filter((competition) => {
     const matchesQuery =
       !query ||
       [competition.title, competition.communityName, competition.filtersSummary]
@@ -26,8 +28,9 @@ export default async function CompetitionsPage({
     return matchesQuery && matchesStatus && matchesRisk;
   });
 
-  const suspiciousCount = mockCompetitions.filter((competition) => competition.suspicious).length;
-  const activeVotingCount = mockCompetitions.filter((competition) => competition.status === "voting").length;
+  const suspiciousCount = competitions.filter((competition) => competition.suspicious).length;
+  const activeVotingCount = competitions.filter((competition) => competition.status === "voting").length;
+  const blockedEntriesCount = competitions.reduce((total, competition) => total + competition.blockedEntriesCount, 0);
 
   return (
     <PageShell
@@ -36,8 +39,8 @@ export default async function CompetitionsPage({
       description="Backend yarışma kontratı tamamlanana kadar admin risk görünümü ve operasyon hazırlığını mock data ile sürdürür."
     >
       <DataStateBanner
-        usingMockData
-        mockLabel="Competitions ve competition_entries backend’de henüz tamamlanmadığı için bu ekran mock operasyon görünümünde çalışıyor."
+        usingMockData={usingMockData}
+        mockLabel="Competitions backend’i beklenirken liste mock veriyle akıyor; admin override kararları audit log üzerinden geri yansıtılıyor."
         liveLabel=""
       />
 
@@ -96,9 +99,13 @@ export default async function CompetitionsPage({
               <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Şüpheli yarışma</p>
               <p className="mt-xs text-3xl font-semibold text-text-primary">{suspiciousCount}</p>
             </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Bloklu entry</p>
+              <p className="mt-xs text-3xl font-semibold text-text-primary">{blockedEntriesCount}</p>
+            </div>
             <div className="rounded-md border border-warning/25 bg-warning/10 p-lg text-sm leading-6 text-text-primary">
               Backend açıkları:
-              `competitions`, `competition_entries` ve vote akışı henüz tamamlanmadı. Gerçek admin aksiyonları bu kontrat geldiğinde bağlanacak.
+              `competitions`, `competition_entries` ve vote akışı henüz tamamlanmadı. O zamana kadar admin aksiyonları audit tabanlı override olarak tutuluyor.
             </div>
           </div>
         </section>
