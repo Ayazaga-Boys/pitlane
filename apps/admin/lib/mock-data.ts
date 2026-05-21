@@ -284,6 +284,20 @@ export interface MockCommunityNeed {
   flaggedAsSpam: boolean;
 }
 
+export interface MockCompetition {
+  id: string;
+  communityName: string;
+  title: string;
+  status: "draft" | "voting" | "completed" | "canceled";
+  startsAt: string;
+  endsAt: string;
+  entriesCount: number;
+  votesCount: number;
+  reportsCount: number;
+  suspicious: boolean;
+  filtersSummary: string;
+}
+
 export interface MockWaitingListEntry {
   id: string;
   email: string;
@@ -1206,6 +1220,48 @@ export const mockCommunityNeeds: MockCommunityNeed[] = [
     createdAt: "2026-05-20 19:30",
     createdWithin24h: 1,
     flaggedAsSpam: false,
+  },
+];
+
+export const mockCompetitions: MockCompetition[] = [
+  {
+    id: "competition_01",
+    communityName: "Ankara Track Days",
+    title: "Mayıs Pist Fotoğraf Yarışması",
+    status: "voting",
+    startsAt: "2026-05-20 10:00",
+    endsAt: "2026-05-27 23:59",
+    entriesCount: 18,
+    votesCount: 144,
+    reportsCount: 0,
+    suspicious: false,
+    filtersSummary: "car · trackday · street-legal",
+  },
+  {
+    id: "competition_02",
+    communityName: "Route 35 Garage",
+    title: "En İyi Gece Çekimi",
+    status: "voting",
+    startsAt: "2026-05-18 20:00",
+    endsAt: "2026-05-24 23:00",
+    entriesCount: 42,
+    votesCount: 389,
+    reportsCount: 4,
+    suspicious: true,
+    filtersSummary: "all vehicles · night shot · community vote",
+  },
+  {
+    id: "competition_03",
+    communityName: "Bogaz Night Riders",
+    title: "Haziran Açılış Yarışması",
+    status: "draft",
+    startsAt: "2026-06-01 12:00",
+    endsAt: "2026-06-08 23:59",
+    entriesCount: 0,
+    votesCount: 0,
+    reportsCount: 0,
+    suspicious: false,
+    filtersSummary: "motorcycle · ride group only",
   },
 ];
 
