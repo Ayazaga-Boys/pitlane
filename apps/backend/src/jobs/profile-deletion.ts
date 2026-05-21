@@ -110,6 +110,8 @@ async function anonymizeProfile(supabase: SupabaseClient, userId: string): Promi
       deletion_requested_at: null,
       delete_after: null,
       deletion_reason: null,
+      deletion_cancel_token_hash: null,
+      deletion_cancel_token_expires_at: null,
     })
     .eq('id', userId);
 

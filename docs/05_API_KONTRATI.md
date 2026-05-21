@@ -95,9 +95,15 @@ type DeleteProfileResponse = {
     deletion_requested_at: string;
     delete_after: string; // deletion_requested_at + 30 gün
     ghost_mode: true;
+    deletion_cancel_token: string; // Tek seferlik, sadece bu response'ta döner
+    deletion_cancel_url: string;   // rollpit.com/undelete?token=...
   };
 };
 ```
+
+### POST /v1/profiles/deletion/cancel/:token — Public
+
+E-posta/derin linkten gelen tek kullanımlık token ile hesap silme penceresini iptal eder.
 
 ### POST /v1/profiles/me/deletion/cancel — Response
 

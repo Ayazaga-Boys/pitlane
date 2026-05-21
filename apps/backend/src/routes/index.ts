@@ -12,7 +12,7 @@ import { mediaRoutes, mediaWebhookRoutes } from './media.js';
 import { messageRoutes } from './messages.js';
 import { notificationRoutes } from './notifications.js';
 import { pinRoutes } from './pins.js';
-import { profileRoutes } from './profiles.js';
+import { profileRoutes, publicProfileRoutes } from './profiles.js';
 import { reportRoutes } from './reports.js';
 import { v2AdminBusinessRoutes, v2BusinessRoutes } from './v2-business.js';
 import { v2CommunityRoutes, v2EventRoutes } from './v2-communities.js';
@@ -36,6 +36,7 @@ export function mountPublicRoutes(app: Hono) {
   app.route('/config', configRoutes);
   app.route('/internal/jobs', internalJobRoutes);
   app.route('/media', mediaWebhookRoutes);
+  app.route('/profiles', publicProfileRoutes);
 }
 
 export function mountPublicV2Routes(app: Hono) {

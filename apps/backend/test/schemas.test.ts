@@ -16,7 +16,7 @@ import {
   TaxDocumentUploadUrlSchema,
   UpdatePinSchema,
 } from '../src/schemas/pin.schema.js';
-import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
+import { CreateVehicleSchema, ProfileDeletionCancelTokenParamSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 import {
   V2BusinessApplicationDocumentSchema,
   V2BusinessLocationsNearbyQuerySchema,
@@ -87,6 +87,15 @@ describe('profile schemas', () => {
       model: 'E30',
       year: 1800,
     })).toThrow();
+  });
+
+  it('accepts deletion cancel tokens', () => {
+    expect(ProfileDeletionCancelTokenParamSchema.safeParse({
+      token: 'a'.repeat(43),
+    }).success).toBe(true);
+    expect(ProfileDeletionCancelTokenParamSchema.safeParse({
+      token: 'bad token',
+    }).success).toBe(false);
   });
 });
 

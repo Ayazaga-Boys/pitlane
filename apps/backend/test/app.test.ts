@@ -51,12 +51,13 @@ describe('app routes', () => {
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse] = await Promise.all([
+    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse, publicCancelResponse] = await Promise.all([
       app.request('/v1/profiles/me'),
       app.request('/v1/profiles/me/vehicles'),
       app.request('/v1/profiles/me/export'),
       app.request('/v1/profiles/me', { method: 'DELETE' }),
       app.request('/v1/profiles/me/deletion/cancel', { method: 'POST' }),
+      app.request('/v1/profiles/deletion/cancel/test-token', { method: 'POST' }),
     ]);
 
     expect(profileResponse.status).toBe(401);
@@ -64,6 +65,7 @@ describe('app routes', () => {
     expect(exportResponse.status).toBe(401);
     expect(deleteResponse.status).toBe(401);
     expect(cancelDeletionResponse.status).toBe(401);
+    expect(publicCancelResponse.status).not.toBe(401);
   });
 
   it('keeps v2 social routes protected', async () => {

@@ -118,7 +118,8 @@ Uygulamanın omurgası senin elinde. Tüm API endpoint'leri, iş mantığı, Sup
 - [x] Supabase migration: `blocks`, `media_assets`, `reports`, `audit_logs`
 - [x] Engelleme endpoint'leri (`POST /v1/blocks/:userId`, `DELETE`, `GET`)
 - [ ] **Hesap silme akışı (UF-10)**: 30 gün soft-delete + Trigger.dev hard-delete job
-- [ ] Hesap silme: e-posta + iptal linki (`rollpit.com/undelete?token=`)
+- [x] Hesap silme: iptal token/link altyapısı (`rollpit.com/undelete?token=`)
+- [ ] Hesap silme: e-posta gönderimi (Resend/Trigger.dev provider bağlama)
 - [ ] `GET /v1/profiles/me/export` — Trigger.dev job, JSON arşiv, R2 presigned 48 sa
 - [x] `POST /v1/reports` — şikayet endpoint
 - [ ] Retention cron jobs (`04_VERITABANI_SEMA.md` retention tablosu): notifications/flares/help temizliği

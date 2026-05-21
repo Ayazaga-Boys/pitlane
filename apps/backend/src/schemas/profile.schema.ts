@@ -31,6 +31,10 @@ export const DeleteProfileSchema = z.object({
   reason: z.string().trim().max(300).optional(),
 }).default({});
 
+export const ProfileDeletionCancelTokenParamSchema = z.object({
+  token: z.string().regex(/^[A-Za-z0-9_-]{32,128}$/),
+});
+
 export const CreateVehicleSchema = z.object({
   type: z.enum(['car', 'motorcycle', 'other']),
   make: z.string().trim().min(1).max(60),
