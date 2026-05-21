@@ -17,6 +17,12 @@ import {
 } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 import {
+  V2BusinessApplicationDocumentSchema,
+  V2BusinessLocationsNearbyQuerySchema,
+  V2CreateBusinessApplicationSchema,
+  V2RejectBusinessApplicationSchema,
+} from '../src/schemas/v2-business.schema.js';
+import {
   V2CreateCommentSchema,
   V2CreateCommunityEventSchema,
   V2CreateCommunityInviteSchema,
@@ -175,6 +181,58 @@ describe('v2 social schemas', () => {
     expect(V2CreateCommunityPollSchema.safeParse({
       question: 'One option?',
       options: ['Only'],
+    }).success).toBe(false);
+  });
+});
+
+describe('v2 business schemas', () => {
+  it('accepts business applications and documents', () => {
+    const parsed = V2CreateBusinessApplicationSchema.parse({
+      business_name: 'Pit Garage',
+      category: 'garage',
+      h3_cell: '8928308280fffff',
+      latitude: 41.0082,
+      longitude: 28.9784,
+      address: 'Istanbul paddock',
+      working_hours: { monday: ['09:00', '18:00'] },
+    });
+
+    expect(parsed.category).toBe('garage');
+    expect(V2CreateBusinessApplicationSchema.safeParse({
+      business_name: 'Bad',
+      category: 'garage',
+      h3_cell: 'bad-cell',
+      latitude: 91,
+      longitude: 28.9784,
+      address: 'Istanbul paddock',
+    }).success).toBe(false);
+    expect(V2BusinessApplicationDocumentSchema.safeParse({
+      document_type: 'tax_license',
+      filename: 'tax.pdf',
+      content_type: 'application/pdf',
+      size_bytes: 2_000_000,
+    }).success).toBe(true);
+    expect(V2BusinessApplicationDocumentSchema.safeParse({
+      document_type: 'tax_license',
+      filename: 'tax.exe',
+      content_type: 'application/octet-stream',
+      size_bytes: 2_000_000,
+    }).success).toBe(false);
+  });
+
+  it('accepts business admin and nearby queries', () => {
+    expect(V2RejectBusinessApplicationSchema.parse({ reason: 'Missing document' }).reason).toBe('Missing document');
+    expect(V2RejectBusinessApplicationSchema.safeParse({ reason: '' }).success).toBe(false);
+    const nearby = V2BusinessLocationsNearbyQuerySchema.parse({
+      h3cell: '8928308280fffff',
+      k: '3',
+      category: 'repair',
+    });
+
+    expect(nearby.k).toBe(3);
+    expect(V2BusinessLocationsNearbyQuerySchema.safeParse({
+      h3cell: '8928308280fffff',
+      k: '6',
     }).success).toBe(false);
   });
 });

@@ -14,6 +14,7 @@ import { notificationRoutes } from './notifications.js';
 import { pinRoutes } from './pins.js';
 import { profileRoutes } from './profiles.js';
 import { reportRoutes } from './reports.js';
+import { v2AdminBusinessRoutes, v2BusinessRoutes } from './v2-business.js';
 import { v2CommunityRoutes, v2EventRoutes } from './v2-communities.js';
 import { v2DiscoverRoutes } from './v2-discover.js';
 import { v2FollowRequestRoutes, v2FollowRoutes } from './v2-follows.js';
@@ -55,6 +56,8 @@ export function mountProtectedRoutes(app: Hono<AppEnv>) {
 }
 
 export function mountProtectedV2Routes(app: Hono<AppEnv>) {
+  app.route('/admin/business', v2AdminBusinessRoutes);
+  app.route('/business', v2BusinessRoutes);
   app.route('/communities', v2CommunityInviteRoutes);
   app.route('/comments', v2CommentRoutes);
   app.route('/communities', v2CommunityRoutes);

@@ -139,18 +139,18 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.5 — İşletme Self-Onboarding + Harita Lokasyonları (Hafta 9-10)
 
 **Migration:**
-- [ ] `business_applications` — başvuru state machine (`pending`, `approved`, `rejected`, `under_review`)
-- [ ] `business_locations` — onaylanmış işletmeler (lat/lng + h3_cell, foto, çalışma saatleri)
-- [ ] `business_documents` — vergi levhası, ruhsat (R2 private bucket)
+- [x] `business_applications` — başvuru state machine (`pending`, `approved`, `rejected`, `under_review`)
+- [x] `business_locations` — onaylanmış işletmeler (lat/lng + h3_cell, foto, çalışma saatleri)
+- [x] `business_documents` — vergi levhası, ruhsat (R2 private bucket)
 
 **Endpoint:**
-- [ ] `POST /v2/business/applications` — başvuru oluştur
-- [ ] `POST /v2/business/applications/:id/documents` — belge yükle (private R2)
-- [ ] `GET /v2/business/applications/me`
-- [ ] **Admin** (Tufan kullanacak): `GET /v2/admin/business/applications?status=pending`
-- [ ] **Admin**: `POST /v2/admin/business/applications/:id/approve` (+ location yarat)
-- [ ] **Admin**: `POST /v2/admin/business/applications/:id/reject` (+ neden)
-- [ ] `GET /v2/business/locations/nearby?h3cell=&k=` — Burak'ın harita çağırışı
+- [x] `POST /v2/business/applications` — başvuru oluştur
+- [x] `POST /v2/business/applications/:id/documents` — belge yükle (private R2)
+- [x] `GET /v2/business/applications/me`
+- [x] **Admin** (Tufan kullanacak): `GET /v2/admin/business/applications?status=pending`
+- [x] **Admin**: `POST /v2/admin/business/applications/:id/approve` (+ location yarat)
+- [x] **Admin**: `POST /v2/admin/business/applications/:id/reject` (+ neden)
+- [x] `GET /v2/business/locations/nearby?h3cell=&k=` — Burak'ın harita çağırışı
 
 **Harita Vehicle-Filtered Heatmap:**
 - [ ] `GET /v2/map/heatmap?vehicle_type=motorcycle|car|any` — Burak'ın V2.4 ihtiyacı
