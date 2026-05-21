@@ -131,6 +131,21 @@ export interface MockModerationComment {
   isDeleted: boolean;
 }
 
+export interface MockModerationStory {
+  id: string;
+  authorName: string;
+  authorUsername: string;
+  authorStatus: "active" | "suspended";
+  audience: "public" | "followers" | "private";
+  mediaKind: "image" | "video";
+  mediaPreviewUrl: string | null;
+  viewsCount: number;
+  expiresAt: string;
+  createdAt: string;
+  deletedAt: string | null;
+  isExpiringSoon: boolean;
+}
+
 export interface MockHelpRequest {
   id: string;
   requester: string;
@@ -618,6 +633,51 @@ export const mockModerationComments: MockModerationComment[] = [
     latestReportAt: null,
     createdAt: "2026-05-18 12:45",
     isDeleted: true,
+  },
+];
+
+export const mockModerationStories: MockModerationStory[] = [
+  {
+    id: "story_demo_01",
+    authorName: "Ayga Zengin",
+    authorUsername: "aygaz",
+    authorStatus: "active",
+    audience: "followers",
+    mediaKind: "video",
+    mediaPreviewUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+    viewsCount: 18,
+    expiresAt: "2026-05-22 11:30",
+    createdAt: "2026-05-21 11:30",
+    deletedAt: null,
+    isExpiringSoon: true,
+  },
+  {
+    id: "story_demo_02",
+    authorName: "Alp Koc",
+    authorUsername: "alpdrive",
+    authorStatus: "active",
+    audience: "public",
+    mediaKind: "image",
+    mediaPreviewUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+    viewsCount: 42,
+    expiresAt: "2026-05-22 20:10",
+    createdAt: "2026-05-21 20:10",
+    deletedAt: null,
+    isExpiringSoon: false,
+  },
+  {
+    id: "story_demo_03",
+    authorName: "Ece Karaca",
+    authorUsername: "pitqueen",
+    authorStatus: "suspended",
+    audience: "private",
+    mediaKind: "image",
+    mediaPreviewUrl: null,
+    viewsCount: 3,
+    expiresAt: "2026-05-21 08:00",
+    createdAt: "2026-05-20 08:00",
+    deletedAt: "2026-05-20 12:40",
+    isExpiringSoon: false,
   },
 ];
 

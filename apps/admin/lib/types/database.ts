@@ -147,6 +147,22 @@ export interface CommentRow {
   updated_at: string;
 }
 
+export interface StoryRow {
+  id: string;
+  author_id: string;
+  media_id: string;
+  audience: "public" | "followers" | "private";
+  expires_at: string;
+  deleted_at: string | null;
+  created_at: string;
+}
+
+export interface StoryViewRow {
+  story_id: string;
+  viewer_id: string;
+  viewed_at: string;
+}
+
 export interface NotificationRow {
   id: string;
   user_id: string;
@@ -363,6 +379,18 @@ export interface Database {
         Row: CommentRow;
         Insert: Partial<CommentRow> & { post_id: string; author_id: string; body: string };
         Update: Partial<CommentRow>;
+        Relationships: [];
+      };
+      stories: {
+        Row: StoryRow;
+        Insert: Partial<StoryRow> & { author_id: string; media_id: string; audience: StoryRow["audience"] };
+        Update: Partial<StoryRow>;
+        Relationships: [];
+      };
+      story_views: {
+        Row: StoryViewRow;
+        Insert: StoryViewRow;
+        Update: Partial<StoryViewRow>;
         Relationships: [];
       };
       notifications: {

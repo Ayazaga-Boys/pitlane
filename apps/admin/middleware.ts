@@ -57,7 +57,9 @@ export async function middleware(request: NextRequest) {
       pathname === "/posts" ||
       pathname.startsWith("/posts/") ||
       pathname === "/comments" ||
-      pathname.startsWith("/comments/");
+      pathname.startsWith("/comments/") ||
+      pathname === "/stories" ||
+      pathname.startsWith("/stories/");
     if (!moderatorAllowed) {
       return NextResponse.redirect(new URL("/reports", request.url));
     }

@@ -6,6 +6,7 @@ import type {
   MockInviteCode,
   MockModerationComment,
   MockModerationPost,
+  MockModerationStory,
   MockPin,
   MockCommunityRulesConfig,
   MockExportRequest,
@@ -32,6 +33,8 @@ import type {
   ProfileRow,
   ReportRow,
   RemoteConfigRow,
+  StoryRow,
+  StoryViewRow,
   UserRole,
   VehicleRow,
   WaitingListRow,
@@ -243,6 +246,31 @@ export interface AdminModerationPostDetail {
   recentComments: AdminModerationComment[];
 }
 
+export interface AdminModerationStory {
+  id: string;
+  authorName: string;
+  authorUsername: string;
+  authorStatus: "active" | "suspended";
+  audience: StoryRow["audience"];
+  mediaKind: "image" | "video";
+  mediaPreviewUrl: string | null;
+  viewsCount: number;
+  expiresAt: string;
+  createdAt: string;
+  deletedAt: string | null;
+  isExpiringSoon: boolean;
+}
+
+export interface AdminModerationStoryDetail {
+  story: AdminModerationStory;
+  viewers: Array<{
+    id: string;
+    username: string;
+    displayName: string;
+    viewedAt: string;
+  }>;
+}
+
 interface PinRecord
   extends Pick<
     BusinessPinRow,
@@ -349,6 +377,15 @@ interface PostRecord extends Pick<PostRow, "id" | "author_id" | "caption" | "vis
 interface CommentRecord extends Pick<CommentRow, "id" | "post_id" | "author_id" | "body" | "is_deleted" | "created_at" | "updated_at"> {
   author_profile: Pick<ProfileRow, "username" | "display_name" | "role"> | null;
   post: Pick<PostRow, "id" | "caption" | "deleted_at"> | null;
+}
+
+interface StoryRecord extends Pick<StoryRow, "id" | "author_id" | "audience" | "expires_at" | "deleted_at" | "created_at"> {
+  author_profile: Pick<ProfileRow, "username" | "display_name" | "role"> | null;
+  media: MediaAssetRecord | null;
+}
+
+interface StoryViewRecord extends Pick<StoryViewRow, "story_id" | "viewer_id" | "viewed_at"> {
+  viewer: Pick<ProfileRow, "id" | "username" | "display_name"> | null;
 }
 
 const defaultStatusComponents: AdminStatusComponent[] = [
@@ -883,6 +920,27 @@ function mapModerationComment(comment: CommentRecord, reports: ContentReportReco
     latestReportAt: latestReport ? formatDateTime(latestReport.created_at) : null,
     createdAt: formatDateTime(comment.created_at),
     isDeleted: comment.is_deleted,
+  };
+}
+
+function isExpiringSoon(expiresAt: string) {
+  return new Date(expiresAt).getTime() - Date.now() <= 2 * 60 * 60 * 1000;
+}
+
+function mapModerationStory(story: StoryRecord, viewsCount: number): AdminModerationStory {
+  return {
+    id: story.id,
+    authorName: profileLabel(story.author_profile, shortenId(story.author_id)),
+    authorUsername: story.author_profile?.username ?? shortenId(story.author_id),
+    authorStatus: deriveActorStatus(story.author_profile?.role),
+    audience: story.audience,
+    mediaKind: story.media?.asset_type ?? "image",
+    mediaPreviewUrl: resolveMediaPreviewUrl(story.media),
+    viewsCount,
+    expiresAt: formatDateTime(story.expires_at),
+    createdAt: formatDateTime(story.created_at),
+    deletedAt: story.deleted_at ? formatDateTime(story.deleted_at) : null,
+    isExpiringSoon: !story.deleted_at && isExpiringSoon(story.expires_at),
   };
 }
 
@@ -2181,6 +2239,104 @@ export async function getAdminCommentsOrMock(
     return { data, usingMockData: false };
   } catch {
     return { data: mockComments, usingMockData: true };
+  }
+}
+
+export async function getAdminStoriesOrMock(
+  mockStories: MockModerationStory[],
+): Promise<AdminDataResult<AdminModerationStory[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [storiesResult, viewsResult] = await Promise.all([
+      supabase
+        .from("stories")
+        .select(
+          "id, author_id, audience, expires_at, deleted_at, created_at, author_profile:profiles!stories_author_id_fkey(username, display_name, role), media:media_assets!stories_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase.from("story_views").select("story_id, viewer_id, viewed_at"),
+    ]);
+
+    if (storiesResult.error || viewsResult.error || !storiesResult.data || !viewsResult.data) {
+      return { data: mockStories, usingMockData: true };
+    }
+
+    const viewsCountByStory = new Map<string, number>();
+    for (const view of viewsResult.data as unknown as Array<Pick<StoryViewRow, "story_id">>) {
+      viewsCountByStory.set(view.story_id, (viewsCountByStory.get(view.story_id) ?? 0) + 1);
+    }
+
+    const data = (storiesResult.data as unknown as StoryRecord[])
+      .map((story) => mapModerationStory(story, viewsCountByStory.get(story.id) ?? 0))
+      .sort((left, right) => {
+        if (Number(right.isExpiringSoon) !== Number(left.isExpiringSoon)) {
+          return Number(right.isExpiringSoon) - Number(left.isExpiringSoon);
+        }
+        return (right.viewsCount - left.viewsCount);
+      });
+
+    return { data, usingMockData: false };
+  } catch {
+    return { data: mockStories, usingMockData: true };
+  }
+}
+
+export async function getAdminStoryByIdOrMock(
+  id: string,
+  mockStories: MockModerationStory[],
+): Promise<AdminDataResult<AdminModerationStoryDetail | null>> {
+  const mockStory = mockStories.find((story) => story.id === id);
+  if (mockStory) {
+    return {
+      data: {
+        story: mockStory,
+        viewers: [
+          {
+            id: "mock-viewer-1",
+            username: "mockviewer",
+            displayName: "Mock Viewer",
+            viewedAt: mockStory.createdAt,
+          },
+        ],
+      },
+      usingMockData: true,
+    };
+  }
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [storyResult, viewersResult] = await Promise.all([
+      supabase
+        .from("stories")
+        .select(
+          "id, author_id, audience, expires_at, deleted_at, created_at, author_profile:profiles!stories_author_id_fkey(username, display_name, role), media:media_assets!stories_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status)",
+        )
+        .eq("id", id)
+        .maybeSingle(),
+      supabase
+        .from("story_views")
+        .select("story_id, viewer_id, viewed_at, viewer:profiles!story_views_viewer_id_fkey(id, username, display_name)")
+        .eq("story_id", id)
+        .order("viewed_at", { ascending: false })
+        .limit(50),
+    ]);
+
+    if (storyResult.error || !storyResult.data) {
+      return { data: null, usingMockData: false };
+    }
+
+    const story = mapModerationStory(storyResult.data as unknown as StoryRecord, (viewersResult.data ?? []).length);
+    const viewers = (viewersResult.error ? [] : ((viewersResult.data as unknown as StoryViewRecord[]) ?? [])).map((entry) => ({
+      id: entry.viewer?.id ?? entry.viewer_id,
+      username: entry.viewer?.username ?? shortenId(entry.viewer_id),
+      displayName: entry.viewer?.display_name ?? entry.viewer?.username ?? shortenId(entry.viewer_id),
+      viewedAt: formatDateTime(entry.viewed_at),
+    }));
+
+    return { data: { story, viewers }, usingMockData: false };
+  } catch {
+    return { data: null, usingMockData: false };
   }
 }
 

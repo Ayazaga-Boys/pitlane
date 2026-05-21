@@ -16,6 +16,7 @@ import {
   ScrollText,
   Settings,
   Shield,
+  Sparkles,
   Users,
   Waves,
 } from "lucide-react";
@@ -34,6 +35,7 @@ export const navigationItems: NavigationItem[] = [
   { href: "/pins", label: "Pinler", icon: MapPinned, description: "İşletme doğrulama sırası" },
   { href: "/posts", label: "Post Moderasyonu", icon: Image, description: "Gönderi kuyruğu ve aksiyonlar" },
   { href: "/comments", label: "Yorum Moderasyonu", icon: MessageSquare, description: "Yorum kuyruğu ve hızlı aksiyonlar" },
+  { href: "/stories", label: "Story Moderasyonu", icon: Sparkles, description: "Aktif story kuyruğu ve acil müdahale" },
   { href: "/reports", label: "Şikayetler", icon: Flag, description: "Moderasyon kuyruğu" },
   { href: "/help-requests", label: "Yardım Talepleri", icon: LifeBuoy, description: "Acil yardım kuyruğu ve durumlar" },
   { href: "/invites", label: "Davet Kodları", icon: KeyRound, description: "Toplu kod üretimi ve kullanım" },
