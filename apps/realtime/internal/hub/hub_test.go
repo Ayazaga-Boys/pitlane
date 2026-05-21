@@ -398,6 +398,157 @@ func TestHubShutdownOnContextCancel(t *testing.T) {
 	}
 }
 
+func TestServeSocialEventStoryPosted(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	author := newTestClient(h, "author-user")
+	follower := newTestClient(h, "follower-user")
+	stranger := newTestClient(h, "stranger-user")
+	follower.subscribeUser(author.userID)
+
+	h.register <- author
+	h.register <- follower
+	h.register <- stranger
+	time.Sleep(20 * time.Millisecond)
+
+	// Drain register presence updates
+	for len(author.send) > 0 {
+		<-author.send
+	}
+	for len(follower.send) > 0 {
+		<-follower.send
+	}
+
+	body := []byte(`{"type":"story_posted","author_id":"author-user","story_id":"story-1"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/social-event", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer test-secret")
+	rec := httptest.NewRecorder()
+	h.ServeSocialEvent(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", rec.Code)
+	}
+
+	select {
+	case raw := <-follower.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if msg.Type != TypeStoryPosted || msg.UserID != "author-user" || msg.StoryID != "story-1" {
+			t.Fatalf("unexpected story event: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("follower did not receive story_posted")
+	}
+
+	select {
+	case raw := <-stranger.send:
+		t.Fatalf("stranger received story event: %s", raw)
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func TestServeSocialEventPostLiked(t *testing.T) {
+	h := newTestHub()
+
+	author := newTestClient(h, "post-author")
+	h.mu.Lock()
+	h.clients[author.userID] = author
+	h.mu.Unlock()
+
+	body := []byte(`{"type":"post_liked","author_id":"post-author","post_id":"post-1","liker_id":"liker-user"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/social-event", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer test-secret")
+	rec := httptest.NewRecorder()
+	h.ServeSocialEvent(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", rec.Code)
+	}
+
+	select {
+	case raw := <-author.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if msg.Type != TypePostLiked || msg.PostID != "post-1" || msg.LikerID != "liker-user" {
+			t.Fatalf("unexpected post_liked event: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("author did not receive post_liked")
+	}
+}
+
+func TestServeSocialEventRejectsNoAuth(t *testing.T) {
+	h := newTestHub()
+	body := []byte(`{"type":"story_posted","author_id":"user-1","story_id":"s-1"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/social-event", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+	h.ServeSocialEvent(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", rec.Code)
+	}
+}
+
+func TestServeHelpEventTargetedFollowers(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	target1 := newTestClient(h, "follower-1")
+	target2 := newTestClient(h, "follower-2")
+	other := newTestClient(h, "other-user")
+
+	h.register <- target1
+	h.register <- target2
+	h.register <- other
+	time.Sleep(20 * time.Millisecond)
+
+	for len(target1.send) > 0 {
+		<-target1.send
+	}
+	for len(target2.send) > 0 {
+		<-target2.send
+	}
+
+	body := []byte(`{"type":"help_created","help_request_id":"help-2","h3_cell":"8929a15b3a3ffff","requester_id":"requester","target_type":"followers","target_ids":["follower-1","follower-2"],"urgency":"critical"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/help-event", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer test-secret")
+	rec := httptest.NewRecorder()
+	h.ServeHelpEvent(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", rec.Code)
+	}
+
+	for _, c := range []*Client{target1, target2} {
+		select {
+		case raw := <-c.send:
+			var msg OutboundMessage
+			if err := json.Unmarshal(raw, &msg); err != nil {
+				t.Fatalf("unmarshal: %v", err)
+			}
+			if msg.Type != TypeHelpTargeted {
+				t.Fatalf("expected %s, got %s", TypeHelpTargeted, msg.Type)
+			}
+			if msg.Urgency != UrgencyCritical {
+				t.Fatalf("expected critical urgency, got %s", msg.Urgency)
+			}
+		case <-time.After(100 * time.Millisecond):
+			t.Fatalf("target %s did not receive help_targeted", c.userID)
+		}
+	}
+
+	select {
+	case raw := <-other.send:
+		t.Fatalf("non-target received %s", raw)
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
 func TestIsValidH3Cell(t *testing.T) {
 	tests := []struct {
 		input string

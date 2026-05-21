@@ -11,24 +11,35 @@ type InboundMessage struct {
 
 // OutboundMessage — Flutter'a gönderilen mesaj tipleri
 type OutboundMessage struct {
-	Type    string         `json:"type"`
-	Cells   map[string]int `json:"cells,omitempty"`    // heatmap_update
-	HelpID  string         `json:"help_id,omitempty"`  // help_nearby
-	FlareID string         `json:"flare_id,omitempty"` // flare_nearby
-	H3Cell  string         `json:"h3_cell,omitempty"`  // help_nearby
-	UserID  string         `json:"user_id,omitempty"`  // help_nearby
-	Status  string         `json:"status,omitempty"`   // presence_update
-	Code    string         `json:"code,omitempty"`     // error
-	Message string         `json:"message,omitempty"`  // error
+	Type        string         `json:"type"`
+	Cells       map[string]int `json:"cells,omitempty"`        // heatmap_update
+	HelpID      string         `json:"help_id,omitempty"`      // help_nearby / help_targeted
+	FlareID     string         `json:"flare_id,omitempty"`     // flare_nearby
+	H3Cell      string         `json:"h3_cell,omitempty"`      // help_nearby
+	UserID      string         `json:"user_id,omitempty"`      // help_nearby, presence, story
+	Status      string         `json:"status,omitempty"`       // presence_update
+	Urgency     string         `json:"urgency,omitempty"`      // help_targeted
+	TargetType  string         `json:"target_type,omitempty"`  // help_targeted
+	IssueType   string         `json:"issue_type,omitempty"`   // help_targeted
+	StoryID     string         `json:"story_id,omitempty"`     // story_posted
+	PostID      string         `json:"post_id,omitempty"`      // post_liked / post_commented
+	LikerID     string         `json:"liker_id,omitempty"`     // post_liked
+	CommenterID string         `json:"commenter_id,omitempty"` // post_commented
+	Code        string         `json:"code,omitempty"`         // error
+	Message     string         `json:"message,omitempty"`      // error
 }
 
 // Sunucu→istemci mesaj type sabitleri
 const (
 	TypeHeatmapUpdate  = "heatmap_update"
 	TypeHelpNearby     = "help_nearby"
+	TypeHelpTargeted   = "help_targeted"
 	TypeFlareNearby    = "flare_nearby"
 	TypePresenceUpdate = "presence_update"
 	TypeLocationShare  = "location_share"
+	TypeStoryPosted    = "story_posted"
+	TypePostLiked      = "post_liked"
+	TypePostCommented  = "post_commented"
 	TypePong           = "pong"
 	TypeError          = "error"
 )
@@ -36,6 +47,20 @@ const (
 const (
 	TypeHelpCreated  = "help_created"
 	TypeHelpAssigned = "help_assigned"
+)
+
+// SOS hedef tipleri
+const (
+	HelpTargetNearby    = "nearby"
+	HelpTargetFollowers = "followers"
+	HelpTargetGroup     = "group"
+)
+
+// SOS aciliyet seviyeleri
+const (
+	UrgencyCritical = "critical"
+	UrgencyUrgent   = "urgent"
+	UrgencyRequest  = "request"
 )
 
 // İstemci→sunucu mesaj type sabitleri
