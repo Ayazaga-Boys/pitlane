@@ -42,6 +42,7 @@ dependencies:
 
   # Harita & Konum (Sprint 2)
   google_maps_flutter: ^2.6.0
+  google_maps_cluster_manager_2: ^3.2.0
   geolocator: ^12.0.0
   permission_handler: ^11.3.0
   h3_dart: ^0.7.0
@@ -76,6 +77,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/vehicle_icons/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

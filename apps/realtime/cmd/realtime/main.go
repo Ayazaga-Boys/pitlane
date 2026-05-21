@@ -90,6 +90,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws/location", h.ServeWS)
 	mux.HandleFunc("/internal/realtime/help-event", h.ServeHelpEvent)
+	mux.HandleFunc("/internal/realtime/social-event", h.ServeSocialEvent)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprintf(w, `{"ok":true,"connections":%d,"uptime_s":%d}`,

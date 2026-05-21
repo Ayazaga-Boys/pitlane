@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rollpit/src/features/map/data/ws_service.dart';
 import 'package:rollpit/src/features/map/providers/ghost_mode_provider.dart';
+import 'package:rollpit/src/features/map/providers/location_sharing_provider.dart';
 import 'package:rollpit/src/features/map/providers/map_pins_provider.dart';
 import 'package:rollpit/src/features/map/ui/map_filter_sheet.dart';
 
@@ -26,6 +27,12 @@ const _mockPins = [
     title: 'Test Help',
     position: LatLng(40.9900, 29.0230),
   ),
+  MapPin(
+    id: 'followed-user-1',
+    type: MapPinType.followedUser,
+    title: 'Followed Driver',
+    position: LatLng(41.0369, 28.9850),
+  ),
 ];
 
 ProviderContainer _containerWithPins() => ProviderContainer(
@@ -45,7 +52,7 @@ void main() {
       await container.read(allPinsProvider.future);
 
       final pins = container.read(filteredPinsProvider(const MapFilters()));
-      expect(pins.length, equals(3));
+      expect(pins.length, equals(4));
     });
 
     test('flare filter returns only flare pins', () async {
@@ -83,6 +90,32 @@ void main() {
         filteredPinsProvider(const MapFilters(pin: PinFilter.business)),
       );
       expect(pins.every((p) => p.type == MapPinType.business), isTrue);
+    });
+
+    test('followed filter returns only followed user pins', () async {
+      final container = _containerWithPins();
+      addTearDown(container.dispose);
+
+      await container.read(allPinsProvider.future);
+
+      final pins = container.read(
+        filteredPinsProvider(const MapFilters(pin: PinFilter.followed)),
+      );
+      expect(pins.every((p) => p.type == MapPinType.followedUser), isTrue);
+      expect(pins.length, equals(1));
+    });
+
+    test('hide businesses excludes business pins', () async {
+      final container = _containerWithPins();
+      addTearDown(container.dispose);
+
+      await container.read(allPinsProvider.future);
+
+      final pins = container.read(
+        filteredPinsProvider(const MapFilters(hideBusinesses: true)),
+      );
+      expect(pins.any((p) => p.type == MapPinType.business), isFalse);
+      expect(pins.length, equals(3));
     });
 
     test('API error returns empty list (uygulama cokpmez)', () async {
@@ -137,6 +170,15 @@ void main() {
       container.read(mapFiltersProvider.notifier).setPin(PinFilter.help);
       container.read(mapFiltersProvider.notifier).reset();
       expect(container.read(mapFiltersProvider).isDefault, isTrue);
+    });
+
+    test('hide businesses marks filters active', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(mapFiltersProvider.notifier).setHideBusinesses(true);
+      expect(container.read(mapFiltersProvider).hideBusinesses, isTrue);
+      expect(container.read(mapFiltersProvider).isDefault, isFalse);
     });
   });
 
@@ -202,6 +244,26 @@ void main() {
       container.read(ghostModeProvider.notifier).enable();
       container.read(ghostModeProvider.notifier).enable(); // noop
       expect(container.read(ghostModeProvider), isTrue);
+    });
+  });
+
+  group('locationSharingProvider', () {
+    test('initial state is enabled', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      expect(container.read(locationSharingProvider), isTrue);
+    });
+
+    test('can disable and enable location sharing', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      container.read(locationSharingProvider.notifier).disable();
+      expect(container.read(locationSharingProvider), isFalse);
+
+      container.read(locationSharingProvider.notifier).enable();
+      expect(container.read(locationSharingProvider), isTrue);
     });
   });
 

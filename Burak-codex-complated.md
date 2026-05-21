@@ -203,6 +203,31 @@ Doğrulama:
 - `flutter test` geçti.
 - `go test ./... -race` geçti.
 
+### İş 11 — V2 Sprint 1 Map Filtreleri, Konum Paylaşımı ve Araç İkon Altyapısı
+
+Kişi 1 sınırında yapıldı:
+
+- Map filter modeline `hideBusinesses` eklendi.
+- Filter sheet'e "Takip" filtresi, "İşletmeleri gizle" ve "Konumumu takipçilerle paylaş" kontrolleri eklendi.
+- "Sadece takip ettiklerim" filtresi `followedUserPinsProvider` ile bağlandı.
+- "İşletmeleri gizle" filtresi business marker'larını haritadan düşürüyor.
+- Araç tipi heatmap filtresi `/v2/map/heatmap?vehicle_type=any|car|motorcycle` kontratına bağlandı.
+- Konum paylaşımı kapalıyken mobile tarafı WS `location` mesajı göndermiyor; yerel H3 takibi ve cell subscription devam ediyor.
+- Araç ikonları için local `VehicleIconSlug` katalog modeli eklendi.
+- Marker başına tekrar render yapmamak için `VehicleMarkerIconCache` / `BitmapDescriptor` cache altyapısı eklendi.
+- `docs/KISI_1_TRACK_V2.md` içinde V2.1 konum paylaşımı ve V2.4 Flutter filtre maddeleri tamamlandı olarak işaretlendi.
+
+Not:
+
+- `GET /v2/vehicles/icons` ve `vehicles.icon_slug` backend kontratı bekleniyor; araç ikon cache'i şimdilik altyapı olarak hazır.
+
+Doğrulama:
+
+- `dart format --output=none --set-exit-if-changed lib/ test/` geçti.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./... -race` geçti.
+
 ### İş 7 — V2 Vehicle Filtered Heatmap Snapshot Kontratı
 
 Erol'dan gelen kontrat:
