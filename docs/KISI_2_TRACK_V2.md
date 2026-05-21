@@ -159,14 +159,14 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.6 — SOS Hedefleme + Tagged Needs + Yarışma (Hafta 11-12)
 
 **Migration:**
-- [ ] `help_requests` tablosuna kolon ekle: `target_type` ENUM('nearby','followers','group'), `target_id` UUID nullable, `urgency` ENUM
+- [x] `help_requests` tablosuna kolon ekle: `target_type` ENUM('nearby','followers','group'), `target_id` UUID nullable, `urgency` ENUM
 - [ ] `community_needs` — yedek parça/yakıt ilanları (`community_id`, `type`, `urgency_color`, `body`)
 - [ ] `competitions` — yarışmalar (`id`, `community_id`, `title`, `filters` JSONB, `voting_starts_at`, `voting_ends_at`)
 - [ ] `competition_entries`
 - [ ] `competition_votes`
 
 **Endpoint:**
-- [ ] `POST /v2/help` — `target_type` ve `target_id` ile (Burak realtime'a iletecek)
+- [x] `POST /v2/help` — `target_type` ve `target_id` ile (Burak realtime'a iletecek)
 - [ ] `POST /v2/communities/:id/needs` — tagged need (sarı/kırmızı)
 - [ ] `GET /v2/communities/:id/needs?status=open`
 - [ ] `POST /v2/competitions` (rol kontrolü)
@@ -174,9 +174,9 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [ ] `POST /v2/competitions/:id/entries/:entryId/vote`
 
 **Realtime Integration (Burak'la):**
-- [ ] `help_targeted` payload Go realtime'a — `POST /internal/realtime/help-event` extend et
-- [ ] `target_type === 'followers'` ise → `helper_ids: [user1, user2, ...]` payload
-- [ ] `target_type === 'group'` ise → `community_id` payload, Burak grup üyelerini broadcast eder
+- [x] `help_targeted` payload Go realtime'a — `POST /internal/realtime/help-event` extend et
+- [x] `target_type === 'followers'` ise → `helper_ids: [user1, user2, ...]` payload
+- [x] `target_type === 'group'` ise → `community_id` payload, Burak grup üyelerini broadcast eder
 
 ---
 

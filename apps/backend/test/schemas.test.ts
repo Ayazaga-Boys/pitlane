@@ -8,6 +8,7 @@ import { UploadUrlSchema } from '../src/schemas/media.schema.js';
 import { SendMessageSchema } from '../src/schemas/message.schema.js';
 import { CreateReportSchema, UserIdParamSchema } from '../src/schemas/moderation.schema.js';
 import { RegisterDeviceSchema } from '../src/schemas/notification.schema.js';
+import { V2CreateHelpSchema } from '../src/schemas/v2-help.schema.js';
 import {
   CreatePinSchema,
   StartCampaignSchema,
@@ -367,6 +368,26 @@ describe('help schemas', () => {
       h3_cell: '8928308280fffff',
       issue_type: 'fuel',
       description: 'x'.repeat(301),
+    }).success).toBe(false);
+  });
+
+  it('accepts targeted v2 help requests', () => {
+    expect(V2CreateHelpSchema.parse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'breakdown',
+      target_type: 'followers',
+      urgency: 'critical',
+    }).target_type).toBe('followers');
+    expect(V2CreateHelpSchema.safeParse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'fuel',
+      target_type: 'group',
+    }).success).toBe(false);
+    expect(V2CreateHelpSchema.safeParse({
+      h3_cell: '8928308280fffff',
+      issue_type: 'fuel',
+      target_type: 'nearby',
+      target_id: '00000000-0000-4000-8000-000000000001',
     }).success).toBe(false);
   });
 });

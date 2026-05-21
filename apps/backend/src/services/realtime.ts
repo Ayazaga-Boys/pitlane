@@ -11,6 +11,19 @@ type HelpCreatedEvent = {
   issue_type: string;
 };
 
+type HelpTargetedEvent = {
+  type: 'help_targeted';
+  help_request_id: string;
+  h3_cell: string;
+  requester_id: string;
+  issue_type: string;
+  target_type: 'nearby' | 'followers' | 'group';
+  target_id?: string | null;
+  urgency: 'low' | 'normal' | 'high' | 'critical';
+  helper_ids?: string[];
+  community_id?: string;
+};
+
 type HelpAssignedEvent = {
   type: 'help_assigned';
   help_request_id: string;
@@ -19,7 +32,7 @@ type HelpAssignedEvent = {
   helper_id: string;
 };
 
-export type RealtimeHelpEvent = HelpCreatedEvent | HelpAssignedEvent;
+export type RealtimeHelpEvent = HelpCreatedEvent | HelpTargetedEvent | HelpAssignedEvent;
 
 function realtimeHelpEventUrl(): string | null {
   const baseUrl = process.env.REALTIME_INTERNAL_URL;
