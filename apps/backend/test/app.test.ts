@@ -68,12 +68,26 @@ describe('app routes', () => {
 
   it('keeps v2 social routes protected', async () => {
     const app = createApp();
-    const [avatarResponse, privacyResponse, followResponse, followersResponse, requestResponse] = await Promise.all([
+    const [
+      avatarResponse,
+      privacyResponse,
+      followResponse,
+      followersResponse,
+      requestResponse,
+      createPostResponse,
+      postResponse,
+      userPostsResponse,
+      commentLikeResponse,
+    ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
       app.request('/v2/follows/00000000-0000-4000-8000-000000000001', { method: 'POST' }),
       app.request('/v2/follows/followers?user_id=00000000-0000-4000-8000-000000000001'),
       app.request('/v2/follow-requests/incoming'),
+      app.request('/v2/posts', { method: 'POST' }),
+      app.request('/v2/posts/00000000-0000-4000-8000-000000000001'),
+      app.request('/v2/users/erol/posts'),
+      app.request('/v2/comments/00000000-0000-4000-8000-000000000001/like', { method: 'POST' }),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -81,6 +95,10 @@ describe('app routes', () => {
     expect(followResponse.status).toBe(401);
     expect(followersResponse.status).toBe(401);
     expect(requestResponse.status).toBe(401);
+    expect(createPostResponse.status).toBe(401);
+    expect(postResponse.status).toBe(401);
+    expect(userPostsResponse.status).toBe(401);
+    expect(commentLikeResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {

@@ -16,7 +16,12 @@ import {
   UpdatePinSchema,
 } from '../src/schemas/pin.schema.js';
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
-import { V2FollowListQuerySchema, V2PrivacySchema } from '../src/schemas/v2-social.schema.js';
+import {
+  V2CreateCommentSchema,
+  V2CreatePostSchema,
+  V2FollowListQuerySchema,
+  V2PrivacySchema,
+} from '../src/schemas/v2-social.schema.js';
 
 describe('auth schemas', () => {
   it('normalizes invite codes', () => {
@@ -95,6 +100,20 @@ describe('v2 social schemas', () => {
       user_id: '00000000-0000-4000-8000-000000000001',
       limit: '51',
     }).success).toBe(false);
+  });
+
+  it('accepts post drafts with caption or media', () => {
+    expect(V2CreatePostSchema.parse({ caption: 'Pist gunu', visibility: 'followers' }).visibility).toBe('followers');
+    expect(V2CreatePostSchema.safeParse({
+      media_id: '00000000-0000-4000-8000-000000000001',
+    }).success).toBe(true);
+    expect(V2CreatePostSchema.safeParse({ visibility: 'public' }).success).toBe(false);
+  });
+
+  it('bounds comment bodies', () => {
+    expect(V2CreateCommentSchema.parse({ body: 'Harika!' }).body).toBe('Harika!');
+    expect(V2CreateCommentSchema.safeParse({ body: '' }).success).toBe(false);
+    expect(V2CreateCommentSchema.safeParse({ body: 'x'.repeat(501) }).success).toBe(false);
   });
 });
 

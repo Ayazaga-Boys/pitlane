@@ -42,23 +42,23 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.2 — Post & Yorum & Beğeni (Hafta 3-4)
 
 **Migration:**
-- [ ] `posts` (`id`, `author_id`, `caption`, `media_id`, `visibility`, `created_at`)
-- [ ] `post_likes` (`post_id`, `user_id`, `created_at`, UNIQUE)
-- [ ] `comments` (`id`, `post_id`, `author_id`, `parent_id` nullable, `body`, `created_at`)
-- [ ] `comment_likes`
-- [ ] `media_assets` tablosu zaten var, post'larla ilişkilendir (`owner_type='post'`)
+- [x] `posts` (`id`, `author_id`, `caption`, `media_id`, `visibility`, `created_at`)
+- [x] `post_likes` (`post_id`, `user_id`, `created_at`, UNIQUE)
+- [x] `comments` (`id`, `post_id`, `author_id`, `parent_id` nullable, `body`, `created_at`)
+- [x] `comment_likes`
+- [x] `media_assets` tablosu zaten var, post'larla ilişkilendir (`owner_type='post'`)
 
 **Endpoint:**
-- [ ] `POST /v2/posts` (caption + media_id)
-- [ ] `GET /v2/posts/:id`
-- [ ] `DELETE /v2/posts/:id` (sadece yazar)
-- [ ] `GET /v2/users/:username/posts` (privacy check)
-- [ ] `POST /v2/posts/:id/like` — idempotent
-- [ ] `DELETE /v2/posts/:id/like`
-- [ ] `POST /v2/posts/:id/comments`
-- [ ] `GET /v2/posts/:id/comments?cursor=`
-- [ ] `POST /v2/comments/:id/like`
-- [ ] `GET /v2/posts/:id/likes` (kim beğendi listesi)
+- [x] `POST /v2/posts` (caption + media_id)
+- [x] `GET /v2/posts/:id`
+- [x] `DELETE /v2/posts/:id` (sadece yazar)
+- [x] `GET /v2/users/:username/posts` (privacy check)
+- [x] `POST /v2/posts/:id/like` — idempotent
+- [x] `DELETE /v2/posts/:id/like`
+- [x] `POST /v2/posts/:id/comments`
+- [x] `GET /v2/posts/:id/comments?cursor=`
+- [x] `POST /v2/comments/:id/like`
+- [x] `GET /v2/posts/:id/likes` (kim beğendi listesi)
 
 **Push:**
 - [ ] Trigger.dev job: post yorum geldiğinde push (eğer kullanıcı uygulamada değilse — Burak'ın presence kontrolü)
