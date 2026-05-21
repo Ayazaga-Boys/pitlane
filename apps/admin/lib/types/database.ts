@@ -1,4 +1,5 @@
 export type UserRole = "user" | "moderator" | "admin" | "banned";
+export type LocationShareMode = "everyone" | "followers" | "none";
 
 export interface ProfileRow {
   id: string;
@@ -6,11 +7,28 @@ export interface ProfileRow {
   display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  is_private: boolean;
+  location_share_mode: LocationShareMode;
   ghost_mode: boolean;
   is_verified: boolean;
   role: UserRole;
   created_at: string;
   updated_at: string;
+}
+
+export interface FollowRow {
+  follower_id: string;
+  followee_id: string;
+  created_at: string;
+}
+
+export interface FollowRequestRow {
+  id: string;
+  requester_id: string;
+  target_id: string;
+  status: "pending" | "accepted" | "rejected" | "canceled";
+  created_at: string;
+  responded_at: string | null;
 }
 
 export interface FlareRow {
@@ -66,7 +84,7 @@ export interface BusinessPinRow {
 export interface ReportRow {
   id: string;
   reporter_id: string;
-  content_type: "message" | "flare" | "community" | "profile" | "business_pin";
+  content_type: "message" | "flare" | "community" | "profile" | "business_pin" | "post" | "comment";
   content_id: string;
   reason: "spam" | "harassment" | "inappropriate" | "fake" | "other";
   description: string | null;
@@ -87,6 +105,46 @@ export interface MessageRow {
   media_asset_id: string | null;
   is_deleted: boolean;
   created_at: string;
+}
+
+export interface MediaAssetRow {
+  id: string;
+  uploader_id: string;
+  asset_type: "image" | "video";
+  content_type: string;
+  storage_key: string;
+  cf_image_id: string | null;
+  cf_stream_id: string | null;
+  width: number | null;
+  height: number | null;
+  duration_sec: number | null;
+  size_bytes: number | null;
+  status: "pending" | "processing" | "ready" | "failed";
+  owner_type: "post" | "story" | null;
+  owner_id: string | null;
+  created_at: string;
+}
+
+export interface PostRow {
+  id: string;
+  author_id: string;
+  caption: string | null;
+  media_id: string | null;
+  visibility: "public" | "followers" | "private";
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommentRow {
+  id: string;
+  post_id: string;
+  author_id: string;
+  parent_id: string | null;
+  body: string;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface NotificationRow {
@@ -175,7 +233,15 @@ export interface CommunityMemberRow {
 export interface AuditLogRow {
   id: string;
   actor_id: string;
-  action: "user_banned" | "user_unbanned" | "content_deleted" | "pin_verified" | "pin_rejected" | "config_changed" | "report_resolved";
+  action:
+    | "user_banned"
+    | "user_unbanned"
+    | "content_deleted"
+    | "content_restored"
+    | "pin_verified"
+    | "pin_rejected"
+    | "config_changed"
+    | "report_resolved";
   target_type: string | null;
   target_id: string | null;
   metadata: Record<string, unknown> | null;
@@ -189,6 +255,18 @@ export interface Database {
         Row: ProfileRow;
         Insert: Partial<ProfileRow> & { id: string };
         Update: Partial<ProfileRow>;
+        Relationships: [];
+      };
+      follows: {
+        Row: FollowRow;
+        Insert: FollowRow;
+        Update: Partial<FollowRow>;
+        Relationships: [];
+      };
+      follow_requests: {
+        Row: FollowRequestRow;
+        Insert: Partial<FollowRequestRow>;
+        Update: Partial<FollowRequestRow>;
         Relationships: [];
       };
       flares: {
@@ -256,10 +334,35 @@ export interface Database {
         Update: Partial<ReportRow>;
         Relationships: [];
       };
+      media_assets: {
+        Row: MediaAssetRow;
+        Insert: Partial<MediaAssetRow> & {
+          id: string;
+          uploader_id: string;
+          asset_type: MediaAssetRow["asset_type"];
+          content_type: string;
+          storage_key: string;
+          status: MediaAssetRow["status"];
+        };
+        Update: Partial<MediaAssetRow>;
+        Relationships: [];
+      };
       messages: {
         Row: MessageRow;
         Insert: Partial<MessageRow> & { id: string; sender_id: string; body: string };
         Update: Partial<MessageRow>;
+        Relationships: [];
+      };
+      posts: {
+        Row: PostRow;
+        Insert: Partial<PostRow> & { author_id: string };
+        Update: Partial<PostRow>;
+        Relationships: [];
+      };
+      comments: {
+        Row: CommentRow;
+        Insert: Partial<CommentRow> & { post_id: string; author_id: string; body: string };
+        Update: Partial<CommentRow>;
         Relationships: [];
       };
       notifications: {

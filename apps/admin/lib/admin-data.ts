@@ -4,6 +4,8 @@ import type {
   MockCommunity,
   MockHelpRequest,
   MockInviteCode,
+  MockModerationComment,
+  MockModerationPost,
   MockPin,
   MockCommunityRulesConfig,
   MockExportRequest,
@@ -19,16 +21,21 @@ import type {
   CommunityMemberRow,
   CommunityRow,
   FlareRow,
+  FollowRow,
   HelpRequestRow,
   InviteCodeRow,
+  LocationShareMode,
+  MediaAssetRow,
   MessageRow,
   NotificationRow,
+  PostRow,
   ProfileRow,
   ReportRow,
   RemoteConfigRow,
   UserRole,
   VehicleRow,
   WaitingListRow,
+  CommentRow,
 } from "@/lib/types/database";
 
 export interface AdminDataResult<T> {
@@ -192,6 +199,50 @@ export interface AdminSupportSearchUser {
   createdAt: string;
 }
 
+export interface AdminModerationPost {
+  id: string;
+  authorName: string;
+  authorUsername: string;
+  authorStatus: "active" | "suspended";
+  caption: string;
+  visibility: PostRow["visibility"];
+  mediaKind: "image" | "video" | "none";
+  mediaPreviewUrl: string | null;
+  reportsCount: number;
+  commentsCount: number;
+  latestReportReason: string | null;
+  latestReportAt: string | null;
+  createdAt: string;
+  deletedAt: string | null;
+}
+
+export interface AdminModerationComment {
+  id: string;
+  postId: string;
+  postCaption: string;
+  authorName: string;
+  authorUsername: string;
+  authorStatus: "active" | "suspended";
+  body: string;
+  reportsCount: number;
+  latestReportReason: string | null;
+  latestReportAt: string | null;
+  createdAt: string;
+  isDeleted: boolean;
+}
+
+export interface AdminModerationPostDetail {
+  post: AdminModerationPost;
+  relatedReports: Array<{
+    id: string;
+    reason: string;
+    reporterLabel: string;
+    createdAt: string;
+    status: ReportRow["status"];
+  }>;
+  recentComments: AdminModerationComment[];
+}
+
 interface PinRecord
   extends Pick<
     BusinessPinRow,
@@ -204,15 +255,35 @@ interface ReportRecord extends Pick<ReportRow, "id" | "content_type" | "reason" 
   reporter_profile: Pick<ProfileRow, "username" | "display_name"> | null;
 }
 
-interface UserRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio" | "role" | "created_at" | "updated_at"> {}
+interface UserRecord
+  extends Pick<
+    ProfileRow,
+    "id" | "username" | "display_name" | "avatar_url" | "bio" | "is_private" | "location_share_mode" | "role" | "created_at" | "updated_at"
+  > {}
 
 interface VehicleRecord extends Pick<VehicleRow, "id" | "user_id" | "type" | "make" | "model" | "year" | "is_primary"> {}
+
+interface FollowRecord extends Pick<FollowRow, "follower_id" | "followee_id" | "created_at"> {}
+
+interface FollowProfileRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "avatar_url" | "is_private"> {}
+
+interface FollowerRelationRecord extends Pick<FollowRow, "created_at"> {
+  follower: FollowProfileRecord | null;
+}
+
+interface FollowingRelationRecord extends Pick<FollowRow, "created_at"> {
+  followee: FollowProfileRecord | null;
+}
 
 interface CommunityMembershipRecord extends Pick<CommunityMemberRow, "community_id" | "user_id" | "role"> {
   community: Pick<CommunityRow, "id" | "name" | "city"> | null;
 }
 
 interface UserReportRecord extends Pick<ReportRow, "id" | "reason" | "status" | "created_at"> {}
+
+interface ContentReportRecord extends Pick<ReportRow, "id" | "content_id" | "reason" | "status" | "created_at"> {
+  reporter_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
 
 interface SupportNoteRecord extends Pick<AuditLogRow, "id" | "created_at" | "metadata"> {}
 
@@ -250,6 +321,10 @@ interface BusinessPinContentRecord extends Pick<BusinessPinRow, "id" | "owner_id
 
 interface ProfileContentRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio"> {}
 
+interface PostContentRecord extends Pick<PostRow, "id" | "author_id" | "caption" | "visibility" | "deleted_at"> {}
+
+interface CommentContentPreviewRecord extends Pick<CommentRow, "id" | "post_id" | "author_id" | "body" | "is_deleted"> {}
+
 interface AuditLogRecord extends Pick<AuditLogRow, "id" | "created_at" | "action" | "target_type" | "target_id" | "metadata"> {
   actor_profile: Pick<ProfileRow, "username" | "display_name" | "role"> | null;
 }
@@ -263,6 +338,18 @@ interface InviteCodeRecord extends Pick<InviteCodeRow, "code" | "uses_count" | "
   inviter_profile: Pick<ProfileRow, "username" | "display_name"> | null;
 }
 type WaitingListRecord = Pick<WaitingListRow, "id" | "email" | "vehicle_type" | "city" | "invited_at" | "created_at">;
+
+interface MediaAssetRecord extends Pick<MediaAssetRow, "id" | "asset_type" | "storage_key" | "cf_image_id" | "cf_stream_id" | "status"> {}
+
+interface PostRecord extends Pick<PostRow, "id" | "author_id" | "caption" | "visibility" | "deleted_at" | "created_at" | "updated_at"> {
+  author_profile: Pick<ProfileRow, "username" | "display_name" | "avatar_url" | "role"> | null;
+  media: MediaAssetRecord | null;
+}
+
+interface CommentRecord extends Pick<CommentRow, "id" | "post_id" | "author_id" | "body" | "is_deleted" | "created_at" | "updated_at"> {
+  author_profile: Pick<ProfileRow, "username" | "display_name" | "role"> | null;
+  post: Pick<PostRow, "id" | "caption" | "deleted_at"> | null;
+}
 
 const defaultStatusComponents: AdminStatusComponent[] = [
   { key: "api", label: "API", status: "operational", note: "Servis yanıt süreleri normal." },
@@ -298,6 +385,8 @@ function formatAuditAction(action: AuditLogRow["action"]) {
       return "Kullanıcı banı kaldırıldı";
     case "content_deleted":
       return "İçerik silindi";
+    case "content_restored":
+      return "İçerik geri yüklendi";
     case "pin_verified":
       return "Pin doğrulandı";
     case "pin_rejected":
@@ -442,6 +531,10 @@ function mapContentType(contentType: ReportRow["content_type"]): MockReport["con
       return "message";
     case "flare":
       return "flare";
+    case "post":
+      return "post";
+    case "comment":
+      return "comment";
     default:
       return "community_post";
   }
@@ -655,6 +748,10 @@ function buildMockUser(
   memberships: CommunityMembershipRecord[],
   reportHistory: UserReportRecord[],
   supportNote: string | null,
+  followersCount = 0,
+  followingCount = 0,
+  followers: MockUser["followers"] = [],
+  following: MockUser["following"] = [],
 ): MockUser {
   const displayName = user.display_name ?? user.username ?? shortenId(user.id);
   const username = user.username ?? user.id.slice(0, 8);
@@ -665,6 +762,11 @@ function buildMockUser(
     username,
     displayName,
     role: mapUserRole(user.role),
+    avatarUrl: user.avatar_url,
+    isPrivate: user.is_private,
+    followersCount,
+    followingCount,
+    locationShareMode: mapLocationShareMode(user.location_share_mode),
     city,
     reports: reportHistory.length,
     createdAt: formatDate(user.created_at),
@@ -692,6 +794,95 @@ function buildMockUser(
       status: mapReportStatus(report.status),
       createdAt: formatDateTime(report.created_at),
     })),
+    followers,
+    following,
+  };
+}
+
+function mapLocationShareMode(mode: LocationShareMode | null | undefined): MockUser["locationShareMode"] {
+  if (mode === "followers" || mode === "none") {
+    return mode;
+  }
+
+  return "everyone";
+}
+
+function buildUserFollowRelation(profile: FollowProfileRecord | null, createdAt: string): MockUser["followers"][number] | null {
+  if (!profile) {
+    return null;
+  }
+
+  return {
+    id: profile.id,
+    username: profile.username ?? shortenId(profile.id),
+    displayName: profile.display_name ?? profile.username ?? shortenId(profile.id),
+    avatarUrl: profile.avatar_url,
+    isPrivate: Boolean(profile.is_private),
+    followedAt: formatDateTime(createdAt),
+  };
+}
+
+function deriveActorStatus(role: UserRole | null | undefined): "active" | "suspended" {
+  return role === "banned" ? "suspended" : "active";
+}
+
+function resolveMediaPreviewUrl(media: MediaAssetRecord | null): string | null {
+  if (!media) {
+    return null;
+  }
+
+  if (media.storage_key.startsWith("http://") || media.storage_key.startsWith("https://")) {
+    return media.storage_key;
+  }
+
+  return null;
+}
+
+function mapModerationPost(
+  post: PostRecord,
+  reports: ContentReportRecord[],
+  commentsCount: number,
+): AdminModerationPost {
+  const latestReport = reports
+    .slice()
+    .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())[0];
+
+  return {
+    id: post.id,
+    authorName: profileLabel(post.author_profile, shortenId(post.author_id)),
+    authorUsername: post.author_profile?.username ?? shortenId(post.author_id),
+    authorStatus: deriveActorStatus(post.author_profile?.role),
+    caption: post.caption ?? "Caption girilmemiş.",
+    visibility: post.visibility,
+    mediaKind: post.media?.asset_type ?? "none",
+    mediaPreviewUrl: resolveMediaPreviewUrl(post.media),
+    reportsCount: reports.length,
+    commentsCount,
+    latestReportReason: latestReport ? mapReason(latestReport.reason) : null,
+    latestReportAt: latestReport ? formatDateTime(latestReport.created_at) : null,
+    createdAt: formatDateTime(post.created_at),
+    deletedAt: post.deleted_at ? formatDateTime(post.deleted_at) : null,
+  };
+}
+
+function mapModerationComment(comment: CommentRecord, reports: ContentReportRecord[]): AdminModerationComment {
+  const latestReport = reports
+    .slice()
+    .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())[0];
+
+  return {
+    id: comment.id,
+    postId: comment.post_id,
+    postCaption: comment.post?.caption ?? "Post caption bulunamadı.",
+    authorName: profileLabel(comment.author_profile, shortenId(comment.author_id)),
+    authorUsername: comment.author_profile?.username ?? shortenId(comment.author_id),
+    authorStatus: deriveActorStatus(comment.author_profile?.role),
+    body: comment.body,
+    reportsCount: reports.length,
+    latestReportReason: latestReport ? mapReason(latestReport.reason) : null,
+    latestReportAt: latestReport ? formatDateTime(latestReport.created_at) : null,
+    createdAt: formatDateTime(comment.created_at),
+    isDeleted: comment.is_deleted,
   };
 }
 
@@ -1624,7 +1815,10 @@ export async function getAdminUsersOrMock(mockUsers: MockUser[]): Promise<AdminD
     const supabase = createAdminSupabaseClient();
     const [{ data: profiles, error: profilesError }, { data: vehicles, error: vehiclesError }, { data: memberships, error: membershipsError }] =
       await Promise.all([
-        supabase.from("profiles").select("id, username, display_name, bio, role, created_at, updated_at").order("created_at", { ascending: false }),
+        supabase
+          .from("profiles")
+          .select("id, username, display_name, avatar_url, bio, is_private, location_share_mode, role, created_at, updated_at")
+          .order("created_at", { ascending: false }),
         supabase.from("vehicles").select("id, user_id, type, make, model, year, is_primary"),
         supabase.from("community_members").select("community_id, user_id, role, community:communities(id, name, city)"),
       ]);
@@ -1634,11 +1828,11 @@ export async function getAdminUsersOrMock(mockUsers: MockUser[]): Promise<AdminD
     }
 
     const profileIds = (profiles as unknown as UserRecord[]).map((profile) => profile.id);
-    const reportsResult = await supabase
-      .from("reports")
-      .select("id, content_id, reason, status, created_at")
-      .eq("content_type", "profile")
-      .in("content_id", profileIds);
+    const [reportsResult, followerRowsResult, followingRowsResult] = await Promise.all([
+      supabase.from("reports").select("id, content_id, reason, status, created_at").eq("content_type", "profile").in("content_id", profileIds),
+      supabase.from("follows").select("follower_id, followee_id, created_at").in("followee_id", profileIds),
+      supabase.from("follows").select("follower_id, followee_id, created_at").in("follower_id", profileIds),
+    ]);
 
     const reportsByUser = new Map<string, UserReportRecord[]>();
     if (!reportsResult.error && reportsResult.data) {
@@ -1663,6 +1857,20 @@ export async function getAdminUsersOrMock(mockUsers: MockUser[]): Promise<AdminD
       membershipsByUser.set(membership.user_id, current);
     }
 
+    const followerCountsByUser = new Map<string, number>();
+    if (!followerRowsResult.error && followerRowsResult.data) {
+      for (const follow of followerRowsResult.data as unknown as FollowRecord[]) {
+        followerCountsByUser.set(follow.followee_id, (followerCountsByUser.get(follow.followee_id) ?? 0) + 1);
+      }
+    }
+
+    const followingCountsByUser = new Map<string, number>();
+    if (!followingRowsResult.error && followingRowsResult.data) {
+      for (const follow of followingRowsResult.data as unknown as FollowRecord[]) {
+        followingCountsByUser.set(follow.follower_id, (followingCountsByUser.get(follow.follower_id) ?? 0) + 1);
+      }
+    }
+
     return {
       data: (profiles as unknown as UserRecord[]).map((profile) =>
         buildMockUser(
@@ -1671,6 +1879,8 @@ export async function getAdminUsersOrMock(mockUsers: MockUser[]): Promise<AdminD
           membershipsByUser.get(profile.id) ?? [],
           reportsByUser.get(profile.id) ?? [],
           null,
+          followerCountsByUser.get(profile.id) ?? 0,
+          followingCountsByUser.get(profile.id) ?? 0,
         ),
       ),
       usingMockData: false,
@@ -1694,11 +1904,15 @@ export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]):
       { data: memberships, error: membershipsError },
       { data: reports, error: reportsError },
       { data: supportNotes, error: supportNotesError },
+      { data: followers, error: followersError },
+      { data: following, error: followingError },
+      { count: followersCount, error: followersCountError },
+      { count: followingCount, error: followingCountError },
     ] =
       await Promise.all([
         supabase
           .from("profiles")
-          .select("id, username, display_name, bio, role, created_at, updated_at")
+          .select("id, username, display_name, avatar_url, bio, is_private, location_share_mode, role, created_at, updated_at")
           .eq("id", id)
           .maybeSingle(),
         supabase.from("vehicles").select("id, user_id, type, make, model, year, is_primary").eq("user_id", id),
@@ -1711,6 +1925,20 @@ export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]):
           .eq("target_id", id)
           .order("created_at", { ascending: false })
           .limit(5),
+        supabase
+          .from("follows")
+          .select("created_at, follower:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url, is_private)")
+          .eq("followee_id", id)
+          .order("created_at", { ascending: false })
+          .limit(25),
+        supabase
+          .from("follows")
+          .select("created_at, followee:profiles!follows_followee_id_fkey(id, username, display_name, avatar_url, is_private)")
+          .eq("follower_id", id)
+          .order("created_at", { ascending: false })
+          .limit(25),
+        supabase.from("follows").select("*", { count: "exact", head: true }).eq("followee_id", id),
+        supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", id),
       ]);
 
     if (profileError || !profile) {
@@ -1727,6 +1955,12 @@ export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]):
         createdAt: formatDateTime(entry.created_at),
       }))
       .filter((entry) => entry.note.length > 0);
+    const mappedFollowers = (followersError ? [] : ((followers as unknown as FollowerRelationRecord[]) ?? []))
+      .map((entry) => buildUserFollowRelation(entry.follower, entry.created_at))
+      .filter((entry): entry is MockUser["followers"][number] => Boolean(entry));
+    const mappedFollowing = (followingError ? [] : ((following as unknown as FollowingRelationRecord[]) ?? []))
+      .map((entry) => buildUserFollowRelation(entry.followee, entry.created_at))
+      .filter((entry): entry is MockUser["following"][number] => Boolean(entry));
 
     const user = buildMockUser(
       profile as unknown as UserRecord,
@@ -1734,6 +1968,10 @@ export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]):
       safeMemberships,
       safeReports,
       mappedSupportNotes[0]?.note ?? null,
+      followersCountError ? mappedFollowers.length : (followersCount ?? 0),
+      followingCountError ? mappedFollowing.length : (followingCount ?? 0),
+      mappedFollowers,
+      mappedFollowing,
     );
 
     return {
@@ -1742,6 +1980,207 @@ export async function getAdminUserByIdOrMock(id: string, mockUsers: MockUser[]):
     };
   } catch {
     return { data: null, usingMockData: false };
+  }
+}
+
+export async function getAdminPostsOrMock(
+  mockPosts: MockModerationPost[],
+): Promise<AdminDataResult<AdminModerationPost[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [{ data: posts, error: postsError }, { data: comments, error: commentsError }] = await Promise.all([
+      supabase
+        .from("posts")
+        .select(
+          "id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status)",
+        )
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase.from("comments").select("id, post_id"),
+    ]);
+
+    if (postsError || commentsError || !posts || !comments) {
+      return { data: mockPosts, usingMockData: true };
+    }
+
+    const postIds = (posts as unknown as PostRecord[]).map((post) => post.id);
+    const reportsResult = await supabase
+      .from("reports")
+      .select("id, content_id, reason, status, created_at, reporter_profile:profiles!reports_reporter_id_fkey(username, display_name)")
+      .eq("content_type", "post")
+      .in("content_id", postIds);
+
+    const reportsByPost = new Map<string, ContentReportRecord[]>();
+    if (!reportsResult.error && reportsResult.data) {
+      for (const report of reportsResult.data as unknown as ContentReportRecord[]) {
+        const current = reportsByPost.get(report.content_id) ?? [];
+        current.push(report);
+        reportsByPost.set(report.content_id, current);
+      }
+    }
+
+    const commentsCountByPost = new Map<string, number>();
+    for (const comment of comments as unknown as Array<Pick<CommentRow, "id" | "post_id">>) {
+      commentsCountByPost.set(comment.post_id, (commentsCountByPost.get(comment.post_id) ?? 0) + 1);
+    }
+
+    const data = (posts as unknown as PostRecord[])
+      .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+      .map((post) => mapModerationPost(post, reportsByPost.get(post.id) ?? [], commentsCountByPost.get(post.id) ?? 0))
+      .sort((left, right) => {
+        if (right.reportsCount !== left.reportsCount) return right.reportsCount - left.reportsCount;
+        return (right.latestReportAt ? 1 : 0) - (left.latestReportAt ? 1 : 0);
+      });
+
+    return {
+      data,
+      usingMockData: false,
+    };
+  } catch {
+    return { data: mockPosts, usingMockData: true };
+  }
+}
+
+export async function getAdminPostByIdOrMock(
+  id: string,
+  mockPosts: MockModerationPost[],
+  mockComments: MockModerationComment[],
+): Promise<AdminDataResult<AdminModerationPostDetail | null>> {
+  const mockPost = mockPosts.find((entry) => entry.id === id);
+  if (mockPost) {
+    return {
+      data: {
+        post: mockPost,
+        relatedReports: mockPost.latestReportReason
+          ? [
+              {
+                id: `mock-report-${mockPost.id}`,
+                reason: mockPost.latestReportReason,
+                reporterLabel: "mock reporter",
+                createdAt: mockPost.latestReportAt ?? mockPost.createdAt,
+                status: "pending",
+              },
+            ]
+          : [],
+        recentComments: mockComments.filter((comment) => comment.postId === id).slice(0, 5),
+      },
+      usingMockData: true,
+    };
+  }
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [{ data: post, error: postError }, { data: comments, error: commentsError }, { data: reports, error: reportsError }] = await Promise.all([
+      supabase
+        .from("posts")
+        .select(
+          "id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status)",
+        )
+        .eq("id", id)
+        .maybeSingle(),
+      supabase
+        .from("comments")
+        .select(
+          "id, post_id, author_id, body, is_deleted, created_at, updated_at, author_profile:profiles!comments_author_id_fkey(username, display_name, role), post:posts!comments_post_id_fkey(id, caption, deleted_at)",
+        )
+        .eq("post_id", id)
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("reports")
+        .select("id, content_id, reason, status, created_at, reporter_profile:profiles!reports_reporter_id_fkey(username, display_name)")
+        .eq("content_type", "post")
+        .eq("content_id", id)
+        .order("created_at", { ascending: false }),
+    ]);
+
+    if (postError || !post) {
+      return { data: null, usingMockData: false };
+    }
+
+    const commentReportsResult = await supabase
+      .from("reports")
+      .select("id, content_id, reason, status, created_at, reporter_profile:profiles!reports_reporter_id_fkey(username, display_name)")
+      .eq("content_type", "comment")
+      .in("content_id", ((comments as unknown as CommentRecord[]) ?? []).map((comment) => comment.id));
+
+    const reportsByComment = new Map<string, ContentReportRecord[]>();
+    if (!commentReportsResult.error && commentReportsResult.data) {
+      for (const report of commentReportsResult.data as unknown as ContentReportRecord[]) {
+        const current = reportsByComment.get(report.content_id) ?? [];
+        current.push(report);
+        reportsByComment.set(report.content_id, current);
+      }
+    }
+
+    const mappedPost = mapModerationPost(post as unknown as PostRecord, (reports as unknown as ContentReportRecord[]) ?? [], (comments ?? []).length);
+    const relatedReports = ((reportsError ? [] : ((reports as unknown as ContentReportRecord[]) ?? [])) ?? []).map((report) => ({
+      id: report.id,
+      reason: mapReason(report.reason),
+      reporterLabel: profileLabel(report.reporter_profile, "anonim"),
+      createdAt: formatDateTime(report.created_at),
+      status: report.status,
+    }));
+    const recentComments = (commentsError ? [] : ((comments as unknown as CommentRecord[]) ?? []))
+      .map((comment) => mapModerationComment(comment, reportsByComment.get(comment.id) ?? []));
+
+    return {
+      data: {
+        post: mappedPost,
+        relatedReports,
+        recentComments,
+      },
+      usingMockData: false,
+    };
+  } catch {
+    return { data: null, usingMockData: false };
+  }
+}
+
+export async function getAdminCommentsOrMock(
+  mockComments: MockModerationComment[],
+): Promise<AdminDataResult<AdminModerationComment[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const commentsResult = await supabase
+      .from("comments")
+      .select(
+        "id, post_id, author_id, body, is_deleted, created_at, updated_at, author_profile:profiles!comments_author_id_fkey(username, display_name, role), post:posts!comments_post_id_fkey(id, caption, deleted_at)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(150);
+
+    if (commentsResult.error || !commentsResult.data) {
+      return { data: mockComments, usingMockData: true };
+    }
+
+    const commentIds = (commentsResult.data as unknown as CommentRecord[]).map((comment) => comment.id);
+    const reportsResult = await supabase
+      .from("reports")
+      .select("id, content_id, reason, status, created_at, reporter_profile:profiles!reports_reporter_id_fkey(username, display_name)")
+      .eq("content_type", "comment")
+      .in("content_id", commentIds);
+
+    const reportsByComment = new Map<string, ContentReportRecord[]>();
+    if (!reportsResult.error && reportsResult.data) {
+      for (const report of reportsResult.data as unknown as ContentReportRecord[]) {
+        const current = reportsByComment.get(report.content_id) ?? [];
+        current.push(report);
+        reportsByComment.set(report.content_id, current);
+      }
+    }
+
+    const data = (commentsResult.data as unknown as CommentRecord[])
+      .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+      .map((comment) => mapModerationComment(comment, reportsByComment.get(comment.id) ?? []))
+      .sort((left, right) => {
+        if (right.reportsCount !== left.reportsCount) return right.reportsCount - left.reportsCount;
+        return (right.latestReportAt ? 1 : 0) - (left.latestReportAt ? 1 : 0);
+      });
+
+    return { data, usingMockData: false };
+  } catch {
+    return { data: mockComments, usingMockData: true };
   }
 }
 
@@ -1977,6 +2416,32 @@ export async function getAdminReportByIdOrMock(id: string, mockReports: MockRepo
         targetLabel = profile.display_name ?? profile.username ?? shortenId(profile.id);
         contentPreviewTitle = "Profil raporu";
         contentPreviewBody = profile.bio ?? "Profil biyografisi bulunmuyor.";
+      }
+    } else if (report.content_type === "post") {
+      const postResult = await supabase
+        .from("posts")
+        .select("id, author_id, caption, visibility, deleted_at")
+        .eq("id", report.content_id)
+        .maybeSingle();
+      const post = postResult.data as unknown as PostContentRecord | null;
+      if (post) {
+        targetUserId = post.author_id;
+        targetLabel = shortenId(post.author_id);
+        contentPreviewTitle = post.deleted_at ? "Kaldırılmış gönderi" : "Gönderi içeriği";
+        contentPreviewBody = post.caption ?? `Visibility: ${post.visibility}`;
+      }
+    } else if (report.content_type === "comment") {
+      const commentResult = await supabase
+        .from("comments")
+        .select("id, post_id, author_id, body, is_deleted")
+        .eq("id", report.content_id)
+        .maybeSingle();
+      const comment = commentResult.data as unknown as CommentContentPreviewRecord | null;
+      if (comment) {
+        targetUserId = comment.author_id;
+        targetLabel = shortenId(comment.author_id);
+        contentPreviewTitle = comment.is_deleted ? "Kaldırılmış yorum" : "Yorum içeriği";
+        contentPreviewBody = comment.body;
       }
     }
 

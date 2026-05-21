@@ -335,6 +335,24 @@ describe('moderation schemas', () => {
     expect(parsed.reason).toBe('spam');
   });
 
+  it('accepts post and comment report targets', () => {
+    expect(
+      CreateReportSchema.safeParse({
+        content_type: 'post',
+        content_id: '00000000-0000-4000-8000-000000000001',
+        reason: 'inappropriate',
+      }).success,
+    ).toBe(true);
+
+    expect(
+      CreateReportSchema.safeParse({
+        content_type: 'comment',
+        content_id: '00000000-0000-4000-8000-000000000001',
+        reason: 'harassment',
+      }).success,
+    ).toBe(true);
+  });
+
   it('validates block user params', () => {
     expect(UserIdParamSchema.safeParse({ userId: '00000000-0000-4000-8000-000000000001' }).success).toBe(true);
     expect(UserIdParamSchema.safeParse({ userId: 'bad-id' }).success).toBe(false);

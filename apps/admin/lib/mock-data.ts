@@ -3,6 +3,11 @@ export interface MockUser {
   username: string;
   displayName: string;
   role: "user" | "moderator" | "admin";
+  avatarUrl: string | null;
+  isPrivate: boolean;
+  followersCount: number;
+  followingCount: number;
+  locationShareMode: "everyone" | "followers" | "none";
   city: string;
   reports: number;
   createdAt: string;
@@ -29,6 +34,22 @@ export interface MockUser {
     reason: string;
     status: "pending" | "reviewing" | "resolved";
     createdAt: string;
+  }>;
+  followers: Array<{
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+    isPrivate: boolean;
+    followedAt: string;
+  }>;
+  following: Array<{
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl: string | null;
+    isPrivate: boolean;
+    followedAt: string;
   }>;
 }
 
@@ -70,12 +91,44 @@ export interface MockPin {
 
 export interface MockReport {
   id: string;
-  contentType: "message" | "flare" | "community_post";
+  contentType: "message" | "flare" | "community_post" | "post" | "comment";
   reason: string;
   reporter: string;
   createdAt: string;
   severity: "low" | "medium" | "high";
   status: "pending" | "reviewing";
+}
+
+export interface MockModerationPost {
+  id: string;
+  authorName: string;
+  authorUsername: string;
+  authorStatus: "active" | "suspended";
+  caption: string;
+  visibility: "public" | "followers" | "private";
+  mediaKind: "image" | "video" | "none";
+  mediaPreviewUrl: string | null;
+  reportsCount: number;
+  commentsCount: number;
+  latestReportReason: string | null;
+  latestReportAt: string | null;
+  createdAt: string;
+  deletedAt: string | null;
+}
+
+export interface MockModerationComment {
+  id: string;
+  postId: string;
+  postCaption: string;
+  authorName: string;
+  authorUsername: string;
+  authorStatus: "active" | "suspended";
+  body: string;
+  reportsCount: number;
+  latestReportReason: string | null;
+  latestReportAt: string | null;
+  createdAt: string;
+  isDeleted: boolean;
 }
 
 export interface MockHelpRequest {
@@ -116,7 +169,7 @@ export interface MockAuditEntry {
   createdAt: string;
   actorLabel: string;
   actorRole: "admin" | "moderator" | "user" | "unknown";
-  action: "user_banned" | "user_unbanned" | "content_deleted" | "pin_verified" | "pin_rejected" | "config_changed" | "report_resolved";
+  action: "user_banned" | "user_unbanned" | "content_deleted" | "content_restored" | "pin_verified" | "pin_rejected" | "config_changed" | "report_resolved";
   targetType: string;
   targetId: string;
   summary: string;
@@ -171,6 +224,11 @@ export const mockUsers: MockUser[] = [
     username: "aygaz",
     displayName: "Ayga Zengin",
     role: "moderator",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+    isPrivate: false,
+    followersCount: 2,
+    followingCount: 1,
+    locationShareMode: "everyone",
     city: "Istanbul",
     reports: 1,
     createdAt: "2026-05-01",
@@ -190,12 +248,45 @@ export const mockUsers: MockUser[] = [
     reportHistory: [
       { id: "rpt_hist_01", reason: "Yanit dili sert", status: "resolved", createdAt: "2026-05-02 12:10" },
     ],
+    followers: [
+      {
+        id: "usr_02",
+        username: "alpdrive",
+        displayName: "Alp Koc",
+        avatarUrl: null,
+        isPrivate: true,
+        followedAt: "2026-05-05 14:20",
+      },
+      {
+        id: "usr_03",
+        username: "pitqueen",
+        displayName: "Ece Karaca",
+        avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=256&q=80",
+        isPrivate: false,
+        followedAt: "2026-05-04 09:15",
+      },
+    ],
+    following: [
+      {
+        id: "usr_03",
+        username: "pitqueen",
+        displayName: "Ece Karaca",
+        avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=256&q=80",
+        isPrivate: false,
+        followedAt: "2026-05-06 21:10",
+      },
+    ],
   },
   {
     id: "usr_02",
     username: "alpdrive",
     displayName: "Alp Koc",
     role: "user",
+    avatarUrl: null,
+    isPrivate: true,
+    followersCount: 0,
+    followingCount: 1,
+    locationShareMode: "followers",
     city: "Ankara",
     reports: 3,
     createdAt: "2026-04-28",
@@ -215,12 +306,28 @@ export const mockUsers: MockUser[] = [
       { id: "rpt_hist_03", reason: "Spam yorum", status: "resolved", createdAt: "2026-05-01 18:45" },
       { id: "rpt_hist_04", reason: "Kurallara aykiri dil", status: "pending", createdAt: "2026-04-30 22:11" },
     ],
+    followers: [],
+    following: [
+      {
+        id: "usr_01",
+        username: "aygaz",
+        displayName: "Ayga Zengin",
+        avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+        isPrivate: false,
+        followedAt: "2026-05-05 14:20",
+      },
+    ],
   },
   {
     id: "usr_03",
     username: "pitqueen",
     displayName: "Ece Karaca",
     role: "user",
+    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=256&q=80",
+    isPrivate: false,
+    followersCount: 1,
+    followingCount: 1,
+    locationShareMode: "none",
     city: "Izmir",
     reports: 0,
     createdAt: "2026-04-17",
@@ -236,6 +343,26 @@ export const mockUsers: MockUser[] = [
       { id: "com_03", name: "Route 35 Garage", role: "member" },
     ],
     reportHistory: [],
+    followers: [
+      {
+        id: "usr_01",
+        username: "aygaz",
+        displayName: "Ayga Zengin",
+        avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+        isPrivate: false,
+        followedAt: "2026-05-06 21:10",
+      },
+    ],
+    following: [
+      {
+        id: "usr_01",
+        username: "aygaz",
+        displayName: "Ayga Zengin",
+        avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+        isPrivate: false,
+        followedAt: "2026-05-04 09:15",
+      },
+    ],
   },
 ];
 
@@ -395,6 +522,102 @@ export const mockReports: MockReport[] = [
     createdAt: "2026-05-06 21:40",
     severity: "low",
     status: "pending",
+  },
+];
+
+export const mockModerationPosts: MockModerationPost[] = [
+  {
+    id: "post_demo_01",
+    authorName: "Ayga Zengin",
+    authorUsername: "aygaz",
+    authorStatus: "active",
+    caption: "Gece surusunden sonra bos otoparkta donut videosu. Acik yolda tekrar denemeyin.",
+    visibility: "public",
+    mediaKind: "video",
+    mediaPreviewUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
+    reportsCount: 4,
+    commentsCount: 7,
+    latestReportReason: "Tehlikeli surus davranisini ozendiriyor",
+    latestReportAt: "2026-05-21 10:42",
+    createdAt: "2026-05-20 23:18",
+    deletedAt: null,
+  },
+  {
+    id: "post_demo_02",
+    authorName: "Alp Koc",
+    authorUsername: "alpdrive",
+    authorStatus: "active",
+    caption: "Track day kareleri ve setup notlari.",
+    visibility: "followers",
+    mediaKind: "image",
+    mediaPreviewUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80",
+    reportsCount: 1,
+    commentsCount: 3,
+    latestReportReason: "Marka mentionlariyla gereksiz tartisma cikariyor",
+    latestReportAt: "2026-05-20 18:05",
+    createdAt: "2026-05-20 15:12",
+    deletedAt: null,
+  },
+  {
+    id: "post_demo_03",
+    authorName: "Ece Karaca",
+    authorUsername: "pitqueen",
+    authorStatus: "suspended",
+    caption: "Satilik jant duyurusu tekrar tekrar paylasildi.",
+    visibility: "public",
+    mediaKind: "none",
+    mediaPreviewUrl: null,
+    reportsCount: 0,
+    commentsCount: 1,
+    latestReportReason: null,
+    latestReportAt: null,
+    createdAt: "2026-05-18 12:30",
+    deletedAt: "2026-05-19 08:10",
+  },
+];
+
+export const mockModerationComments: MockModerationComment[] = [
+  {
+    id: "comment_demo_01",
+    postId: "post_demo_01",
+    postCaption: "Gece surusunden sonra bos otoparkta donut videosu.",
+    authorName: "Kaan Efe",
+    authorUsername: "kaane",
+    authorStatus: "active",
+    body: "Aynisini E5'te dene gorelim :)",
+    reportsCount: 3,
+    latestReportReason: "Tehlikeli davranis ve tahrik",
+    latestReportAt: "2026-05-21 10:55",
+    createdAt: "2026-05-21 00:14",
+    isDeleted: false,
+  },
+  {
+    id: "comment_demo_02",
+    postId: "post_demo_02",
+    postCaption: "Track day kareleri ve setup notlari.",
+    authorName: "Sena Akin",
+    authorUsername: "senaakin",
+    authorStatus: "active",
+    body: "Bu setup bilgisi eksik, yeni baslayanlari yanlis yonlendiriyor.",
+    reportsCount: 1,
+    latestReportReason: "Kisileri hedef alan sert uslup",
+    latestReportAt: "2026-05-20 19:22",
+    createdAt: "2026-05-20 18:40",
+    isDeleted: false,
+  },
+  {
+    id: "comment_demo_03",
+    postId: "post_demo_03",
+    postCaption: "Satilik jant duyurusu tekrar tekrar paylasildi.",
+    authorName: "Mert Caglar",
+    authorUsername: "mertc",
+    authorStatus: "active",
+    body: "Ayni ilan ucuncu kez acilmis, kaldiralim.",
+    reportsCount: 0,
+    latestReportReason: null,
+    latestReportAt: null,
+    createdAt: "2026-05-18 12:45",
+    isDeleted: true,
   },
 ];
 
@@ -567,6 +790,16 @@ export const mockAuditEntries: MockAuditEntry[] = [
     targetType: "report",
     targetId: "rep_demo_01",
     summary: "Küfür içeren mesaj raporu için moderasyon akışı başlatıldı.",
+  },
+  {
+    id: "audit_02b",
+    createdAt: "11.05.2026 18:02",
+    actorLabel: "admin@rollpit.test",
+    actorRole: "admin",
+    action: "content_restored",
+    targetType: "post",
+    targetId: "post_demo_03",
+    summary: "Yanlış kaldırılan gönderi moderasyon sonrası geri açıldı.",
   },
   {
     id: "audit_03",

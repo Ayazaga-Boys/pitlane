@@ -56,6 +56,22 @@ const baseSuggestions: SearchSuggestion[] = [
     description: `${pin.owner} · ${pin.city}`,
     keywords: [pin.name, pin.owner, pin.city, pin.category],
   })),
+  {
+    id: "posts-moderation",
+    label: "Post Moderasyonu",
+    href: "/posts",
+    category: "Sayfalar" as const,
+    description: "Gönderi kuyruğu ve aksiyonlar",
+    keywords: ["post", "gonderi", "moderasyon", "reports"],
+  },
+  {
+    id: "comments-moderation",
+    label: "Yorum Moderasyonu",
+    href: "/comments",
+    category: "Sayfalar" as const,
+    description: "Yorum kuyruğu ve hızlı aksiyonlar",
+    keywords: ["comment", "yorum", "moderasyon", "reports"],
+  },
   ...mockReports.map((report) => ({
     id: `report-${report.id}`,
     label: report.reason,
