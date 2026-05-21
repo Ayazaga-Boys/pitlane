@@ -124,11 +124,11 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] **Şablonlar**: Motor/Otomobil/Genel için preset rol kataloğu
 
 **Endpoint — Davet:**
-- [ ] `POST /v2/communities/:id/invites` — link veya kod oluştur (mode + expires_at)
-- [ ] `GET /v2/invites/:slug` — public preview (community foto + bilgi, "Anında katıl" mı "İstek gönder" mi)
-- [ ] `POST /v2/invites/:slug/accept`
-- [ ] `POST /v2/communities/:id/invite-user` — yönetici direkt davet eder → kullanıcıya bildirim
-- [ ] `POST /v2/community-invites/:id/respond` — accept/reject
+- [x] `POST /v2/communities/:id/invites` — link veya kod oluştur (mode + expires_at)
+- [x] `GET /v2/invites/:slug` — public preview (community foto + bilgi, "Anında katıl" mı "İstek gönder" mi)
+- [x] `POST /v2/invites/:slug/accept`
+- [x] `POST /v2/communities/:id/invite-user` — yönetici direkt davet eder → kullanıcıya bildirim
+- [x] `POST /v2/community-invites/:id/respond` — accept/reject
 
 **Endpoint — Etkinlik:**
 - [ ] `POST /v2/communities/:id/events` (rol kontrolü: `can_create_event`)

@@ -130,3 +130,37 @@ export const V2UpdateCommunityRoleSchema = z.object({
 export const V2AssignCommunityRoleSchema = z.object({
   role_id: z.string().uuid(),
 });
+
+export const V2InviteSlugParamSchema = z.object({
+  slug: z.string().regex(/^[a-zA-Z0-9_-]{6,64}$/),
+});
+
+export const V2CommunityInviteIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const V2CreateCommunityInviteSchema = z.object({
+  type: z.enum(['link', 'code']).default('link'),
+  mode: z.enum(['instant', 'request']).default('instant'),
+  expires_at: z.string().datetime().optional(),
+  max_uses: z.number().int().min(1).max(10_000).optional(),
+}).superRefine((value, ctx) => {
+  if (!value.expires_at) return;
+
+  const expiresAt = Date.parse(value.expires_at);
+  if (expiresAt <= Date.now()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['expires_at'],
+      message: 'expires_at must be in the future',
+    });
+  }
+});
+
+export const V2InviteUserSchema = z.object({
+  user_id: z.string().uuid(),
+});
+
+export const V2RespondCommunityInviteSchema = z.object({
+  response: z.enum(['accept', 'reject']),
+});

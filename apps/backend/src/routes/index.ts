@@ -17,6 +17,12 @@ import { reportRoutes } from './reports.js';
 import { v2CommunityRoutes } from './v2-communities.js';
 import { v2DiscoverRoutes } from './v2-discover.js';
 import { v2FollowRequestRoutes, v2FollowRoutes } from './v2-follows.js';
+import {
+  v2CommunityInviteResponseRoutes,
+  v2CommunityInviteRoutes,
+  v2InviteRoutes,
+  v2PublicInviteRoutes,
+} from './v2-invites.js';
 import { v2CommentRoutes, v2PostRoutes, v2UserRoutes } from './v2-posts.js';
 import { v2ProfileRoutes } from './v2-profiles.js';
 import { v2StoryRoutes } from './v2-stories.js';
@@ -27,6 +33,10 @@ export function mountPublicRoutes(app: Hono) {
   app.route('/config', configRoutes);
   app.route('/internal/jobs', internalJobRoutes);
   app.route('/media', mediaWebhookRoutes);
+}
+
+export function mountPublicV2Routes(app: Hono) {
+  app.route('/invites', v2PublicInviteRoutes);
 }
 
 export function mountProtectedRoutes(app: Hono<AppEnv>) {
@@ -45,11 +55,14 @@ export function mountProtectedRoutes(app: Hono<AppEnv>) {
 }
 
 export function mountProtectedV2Routes(app: Hono<AppEnv>) {
+  app.route('/communities', v2CommunityInviteRoutes);
   app.route('/comments', v2CommentRoutes);
   app.route('/communities', v2CommunityRoutes);
+  app.route('/community-invites', v2CommunityInviteResponseRoutes);
   app.route('/discover', v2DiscoverRoutes);
   app.route('/follow-requests', v2FollowRequestRoutes);
   app.route('/follows', v2FollowRoutes);
+  app.route('/invites', v2InviteRoutes);
   app.route('/posts', v2PostRoutes);
   app.route('/profiles', v2ProfileRoutes);
   app.route('/stories', v2StoryRoutes);
