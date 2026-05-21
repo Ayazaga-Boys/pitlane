@@ -137,6 +137,7 @@ export interface AdminCommunityNeed {
   creatorId: string;
   creatorName: string;
   creatorUsername: string;
+  creatorStatus: "active" | "suspended";
   type: CommunityNeedRow["type"];
   urgencyColor: CommunityNeedRow["urgency_color"];
   body: string;
@@ -440,6 +441,7 @@ export interface AdminCommunityEvent {
   id: string;
   communityId: string;
   communityName: string;
+  creatorId: string;
   title: string;
   creatorName: string;
   startsAt: string;
@@ -448,6 +450,8 @@ export interface AdminCommunityEvent {
   attendeesMaybe: number;
   reportsCount: number;
   suspicious: boolean;
+  suspiciousReason: string | null;
+  priorityLabel: "kritik" | "incele" | "normal";
 }
 
 interface PinRecord
@@ -589,7 +593,7 @@ interface BusinessLocationRecord
 interface CommunityNeedRecord
   extends Pick<CommunityNeedRow, "id" | "community_id" | "creator_id" | "type" | "urgency_color" | "body" | "status" | "created_at"> {
   community: Pick<CommunityRow, "name"> | null;
-  creator_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+  creator_profile: Pick<ProfileRow, "username" | "display_name" | "role"> | null;
 }
 
 interface ProfileContentRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio"> {}
@@ -1323,6 +1327,7 @@ function mapCommunityNeed(
     creatorId: need.creator_id,
     creatorName: profileLabel(need.creator_profile, shortenId(need.creator_id)),
     creatorUsername: need.creator_profile?.username ?? shortenId(need.creator_id),
+    creatorStatus: deriveActorStatus(need.creator_profile?.role),
     type: need.type,
     urgencyColor: need.urgency_color,
     body: need.body,
@@ -1590,11 +1595,23 @@ function mapCommunityEvent(
   rsvpCounts: { yes: number; maybe: number },
 ): AdminCommunityEvent {
   const reportsCount = rsvpCounts.yes >= 80 ? 2 : rsvpCounts.yes >= 50 ? 1 : 0;
+  const suspicious = event.status === "scheduled" && rsvpCounts.yes >= 50 && reportsCount >= 1;
+  const suspiciousReason =
+    suspicious && rsvpCounts.yes >= 80
+      ? "Yüksek RSVP hacmi ve rapor sinyali birlikte yükseldi."
+      : suspicious
+        ? "Katılım eşiği aşıldı ve event rapor sinyali üretti."
+        : rsvpCounts.yes >= 50
+          ? "Katılım yüksek, ancak rapor sinyali henüz düşük."
+          : null;
+  const priorityLabel: AdminCommunityEvent["priorityLabel"] =
+    suspicious && rsvpCounts.yes >= 80 ? "kritik" : suspicious ? "incele" : "normal";
 
   return {
     id: event.id,
     communityId: event.community_id,
     communityName: event.community?.name ?? shortenId(event.community_id),
+    creatorId: event.creator_id,
     title: event.title,
     creatorName: profileLabel(event.creator_profile, shortenId(event.creator_id)),
     startsAt: formatDateTime(event.starts_at),
@@ -1602,7 +1619,9 @@ function mapCommunityEvent(
     attendeesYes: rsvpCounts.yes,
     attendeesMaybe: rsvpCounts.maybe,
     reportsCount,
-    suspicious: event.status === "scheduled" && rsvpCounts.yes >= 50 && reportsCount >= 1,
+    suspicious,
+    suspiciousReason,
+    priorityLabel,
   };
 }
 
@@ -2764,14 +2783,15 @@ export async function getAdminBusinessLocationsOrMock(
 export async function getAdminCommunityNeedsOrMock(
   mockNeeds: MockCommunityNeed[],
 ): Promise<AdminDataResult<AdminCommunityNeed[]>> {
-  const toMockResult = () => ({
-    data: mockNeeds.map((need) => ({
+  const toMockResult = (): AdminDataResult<AdminCommunityNeed[]> => ({
+    data: mockNeeds.map((need): AdminCommunityNeed => ({
       id: need.id,
       communityId: need.id,
       communityName: need.communityName,
       creatorId: need.id,
       creatorName: need.creatorName,
       creatorUsername: need.creatorUsername,
+      creatorStatus: "active",
       type: need.type,
       urgencyColor: need.urgencyColor,
       body: need.body,
@@ -2789,7 +2809,7 @@ export async function getAdminCommunityNeedsOrMock(
     const result = await supabase
       .from("community_needs")
       .select(
-        "id, community_id, creator_id, type, urgency_color, body, status, created_at, community:communities(name), creator_profile:profiles!community_needs_creator_id_fkey(username, display_name)",
+        "id, community_id, creator_id, type, urgency_color, body, status, created_at, community:communities(name), creator_profile:profiles!community_needs_creator_id_fkey(username, display_name, role)",
       )
       .order("created_at", { ascending: false })
       .limit(200);

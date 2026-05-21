@@ -1,6 +1,9 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableWrapper, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import type { AdminCommunityNeed } from "@/lib/admin-data";
+import { suspendCommunityNeedCreator } from "@/app/(dashboard)/community-needs/actions";
 
 function mapType(type: AdminCommunityNeed["type"]) {
   switch (type) {
@@ -17,7 +20,7 @@ function mapType(type: AdminCommunityNeed["type"]) {
   }
 }
 
-export function CommunityNeedsTable({ needs }: { needs: AdminCommunityNeed[] }) {
+export function CommunityNeedsTable({ needs, usingMockData }: { needs: AdminCommunityNeed[]; usingMockData: boolean }) {
   return (
     <TableWrapper>
       <Table>
@@ -29,6 +32,7 @@ export function CommunityNeedsTable({ needs }: { needs: AdminCommunityNeed[] }) 
             <TH>Urgency</TH>
             <TH>Spam sinyali</TH>
             <TH>Durum</TH>
+            <TH>Aksiyon</TH>
           </TR>
         </THead>
         <TBody>
@@ -52,16 +56,39 @@ export function CommunityNeedsTable({ needs }: { needs: AdminCommunityNeed[] }) 
                   <div className="flex flex-wrap gap-xs">
                     <Badge tone={need.flaggedAsSpam ? "error" : "default"}>{need.createdWithin24h}/24s</Badge>
                     {need.flaggedAsSpam ? <Badge tone="warning">flag</Badge> : null}
+                    {need.creatorStatus === "suspended" ? <Badge tone="default">creator askıda</Badge> : null}
                   </div>
                 </TD>
                 <TD>
                   <Badge tone={need.status === "open" ? "success" : need.status === "resolved" ? "info" : "default"}>{need.status}</Badge>
                 </TD>
+                <TD>
+                  <div className="flex flex-wrap gap-sm">
+                    <Link
+                      className="focus-ring inline-flex min-h-11 items-center justify-center rounded-sm bg-surface-3 px-md py-sm text-sm font-semibold text-text-primary"
+                      href={`/users/${need.creatorId}`}
+                    >
+                      Kullanıcı
+                    </Link>
+                    {need.flaggedAsSpam ? (
+                      <form action={suspendCommunityNeedCreator}>
+                        <input name="userId" type="hidden" value={need.creatorId} />
+                        <Button
+                          disabled={usingMockData || need.creatorStatus === "suspended"}
+                          type="submit"
+                          variant="destructive"
+                        >
+                          {need.creatorStatus === "suspended" ? "Askıda" : "7 gün suspend"}
+                        </Button>
+                      </form>
+                    ) : null}
+                  </div>
+                </TD>
               </TR>
             ))
           ) : (
             <TR>
-              <TD className="py-xl text-sm text-text-secondary" colSpan={6}>
+              <TD className="py-xl text-sm text-text-secondary" colSpan={7}>
                 Gösterilecek community need bulunmuyor.
               </TD>
             </TR>

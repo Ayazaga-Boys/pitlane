@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableWrapper, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import type { AdminCommunityEvent } from "@/lib/admin-data";
@@ -32,7 +33,12 @@ export function EventsTable({ events }: { events: AdminCommunityEvent[] }) {
                   <TD>
                     <div>
                       <p className="font-medium text-text-primary">{event.title}</p>
-                      <p className="mt-1 text-xs text-text-tertiary">Oluşturan: {event.creatorName}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-xs text-xs text-text-tertiary">
+                        <span>Oluşturan: {event.creatorName}</span>
+                        <Link className="focus-ring rounded-xs text-text-primary hover:text-pit-red" href={`/users/${event.creatorId}`}>
+                          kullanıcıya git
+                        </Link>
+                      </div>
                     </div>
                   </TD>
                   <TD>{event.communityName}</TD>
@@ -45,8 +51,12 @@ export function EventsTable({ events }: { events: AdminCommunityEvent[] }) {
                       <Badge tone={event.suspicious ? "warning" : "default"}>
                         {event.suspicious ? "şüpheli" : "normal"}
                       </Badge>
+                      <Badge tone={event.priorityLabel === "kritik" ? "error" : event.priorityLabel === "incele" ? "warning" : "default"}>
+                        {event.priorityLabel}
+                      </Badge>
                       {event.reportsCount > 0 ? <Badge tone="error">{event.reportsCount} sinyal</Badge> : null}
                     </div>
+                    {event.suspiciousReason ? <p className="mt-1 text-xs text-text-tertiary">{event.suspiciousReason}</p> : null}
                   </TD>
                   <TD>
                     <Badge tone={status.tone}>{status.label}</Badge>

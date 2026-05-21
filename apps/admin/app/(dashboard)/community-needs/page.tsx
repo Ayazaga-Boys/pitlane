@@ -9,7 +9,7 @@ import { mockCommunityNeeds } from "@/lib/mock-data";
 export default async function CommunityNeedsPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; status?: string; urgency?: string; flagged?: string };
+  searchParams?: { q?: string; status?: string; urgency?: string; flagged?: string; result?: string };
 }) {
   const { data: needs, usingMockData } = await getAdminCommunityNeedsOrMock(mockCommunityNeeds);
   const query = searchParams?.q?.trim().toLocaleLowerCase("tr-TR") ?? "";
@@ -38,6 +38,12 @@ export default async function CommunityNeedsPage({
       title="Community Needs"
       description="Yedek parça, yakıt ve yardım ilanlarını izler; 24 saatte 5+ paylaşım yapan kullanıcıları spam sinyaliyle öne çıkarır."
     >
+      {searchParams?.result === "suspended" ? (
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
+          Spam sinyali üreten kullanıcı 7 gün askıya alındı ve user detail akışına yansıtıldı.
+        </div>
+      ) : null}
+
       <DataStateBanner
         usingMockData={usingMockData}
         mockLabel="Community needs kontratı için örnek spam izleme ekranı gösteriliyor."
@@ -84,7 +90,7 @@ export default async function CommunityNeedsPage({
             </div>
           </form>
 
-          <CommunityNeedsTable needs={filteredNeeds} />
+          <CommunityNeedsTable needs={filteredNeeds} usingMockData={usingMockData} />
         </section>
 
         <section className="surface-panel p-xl">
@@ -98,8 +104,12 @@ export default async function CommunityNeedsPage({
               <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Flagli kullanıcı</p>
               <p className="mt-xs text-3xl font-semibold text-text-primary">{flaggedCount}</p>
             </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Auto action eşiği</p>
+              <p className="mt-xs text-3xl font-semibold text-text-primary">5+</p>
+            </div>
             <p className="text-sm leading-6 text-text-secondary">
-              Şu an otomatik blok yerine operatör görünürlüğü sağlanıyor. Backend koruma kuralı geldiğinde aynı eşiğe server-side aksiyon bağlanabilir.
+              Aynı kullanıcı 24 saat içinde 5+ ilan ürettiğinde otomatik flag oluşur. Canlı veride operatör bu ekrandan 7 günlük suspend uygulayabilir.
             </p>
           </div>
         </section>

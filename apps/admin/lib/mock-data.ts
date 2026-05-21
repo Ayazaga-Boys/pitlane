@@ -91,6 +91,7 @@ export interface MockCommunityEvent {
   id: string;
   communityId: string;
   communityName: string;
+  creatorId: string;
   title: string;
   creatorName: string;
   startsAt: string;
@@ -99,6 +100,8 @@ export interface MockCommunityEvent {
   attendeesMaybe: number;
   reportsCount: number;
   suspicious: boolean;
+  suspiciousReason: string | null;
+  priorityLabel: "kritik" | "incele" | "normal";
 }
 
 export interface MockPin {
@@ -631,6 +634,7 @@ export const mockCommunityEvents: MockCommunityEvent[] = [
     id: "event_demo_01",
     communityId: "com_demo_alfistiler",
     communityName: "Alfistiler",
+    creatorId: "user_demo_01",
     title: "Pazar sabahi sahil konvoyu",
     creatorName: "Mert Caglar",
     startsAt: "2026-05-24 09:00",
@@ -639,11 +643,14 @@ export const mockCommunityEvents: MockCommunityEvent[] = [
     attendeesMaybe: 6,
     reportsCount: 0,
     suspicious: false,
+    suspiciousReason: null,
+    priorityLabel: "normal",
   },
   {
     id: "event_demo_02",
     communityId: "com_03",
     communityName: "Route 35 Garage",
+    creatorId: "user_demo_03",
     title: "Gece kafe bulusmasi ve karma rota",
     creatorName: "Doga Tunc",
     startsAt: "2026-05-22 21:30",
@@ -652,11 +659,14 @@ export const mockCommunityEvents: MockCommunityEvent[] = [
     attendeesMaybe: 19,
     reportsCount: 3,
     suspicious: true,
+    suspiciousReason: "Yüksek RSVP hacmi ve rapor sinyali birlikte yükseldi.",
+    priorityLabel: "kritik",
   },
   {
     id: "event_demo_03",
     communityId: "com_02",
     communityName: "Ankara Track Days",
+    creatorId: "user_demo_02",
     title: "Telemetri workshop",
     creatorName: "Mina Ates",
     startsAt: "2026-05-27 19:30",
@@ -665,6 +675,8 @@ export const mockCommunityEvents: MockCommunityEvent[] = [
     attendeesMaybe: 5,
     reportsCount: 0,
     suspicious: false,
+    suspiciousReason: null,
+    priorityLabel: "normal",
   },
 ];
 
