@@ -2,6 +2,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import type {
   AnalyticsPoint,
   MockCommunity,
+  MockCommunityEvent,
   MockFeedOverride,
   MockHelpRequest,
   MockInviteCode,
@@ -20,9 +21,12 @@ import type {
 } from "@/lib/mock-data";
 import type {
   AuditLogRow,
+  CommunityEventRow,
   BusinessPinRow,
   CommunityMemberRow,
   CommunityRow,
+  CommunityRoleRow,
+  EventRsvpRow,
   FlareRow,
   FeedOverrideRow,
   FollowRow,
@@ -302,6 +306,20 @@ export interface AdminTrendingPost {
   overrideState: FeedOverrideRow["action_type"] | "none";
 }
 
+export interface AdminCommunityEvent {
+  id: string;
+  communityId: string;
+  communityName: string;
+  title: string;
+  creatorName: string;
+  startsAt: string;
+  status: CommunityEventRow["status"];
+  attendeesYes: number;
+  attendeesMaybe: number;
+  reportsCount: number;
+  suspicious: boolean;
+}
+
 interface PinRecord
   extends Pick<
     BusinessPinRow,
@@ -351,11 +369,21 @@ interface CommunityRecord
   owner_profile: Pick<ProfileRow, "username" | "display_name"> | null;
 }
 
-interface CommunityMemberDetailRecord extends Pick<CommunityMemberRow, "community_id" | "user_id" | "role"> {
+interface CommunityRoleRecord extends Pick<CommunityRoleRow, "id" | "community_id" | "name" | "permissions" | "rank_order" | "created_at"> {}
+
+interface CommunityMemberDetailRecord extends Pick<CommunityMemberRow, "community_id" | "user_id" | "role" | "role_id"> {
   profile: Pick<ProfileRow, "username" | "display_name"> | null;
+  community_role: Pick<CommunityRoleRow, "id" | "name" | "permissions" | "rank_order"> | null;
 }
 
 interface CommunityFlareRecord extends Pick<FlareRow, "id" | "community_id" | "title" | "starts_at" | "rsvp_count" | "status"> {}
+
+interface CommunityEventRecord extends Pick<CommunityEventRow, "id" | "community_id" | "creator_id" | "title" | "starts_at" | "status"> {
+  community: Pick<CommunityRow, "name"> | null;
+  creator_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface EventRsvpAggregateRecord extends Pick<EventRsvpRow, "event_id" | "response"> {}
 
 interface ReportDetailRecord
   extends Pick<ReportRow, "id" | "content_type" | "content_id" | "reason" | "status" | "created_at" | "description" | "action_taken"> {
@@ -1024,6 +1052,7 @@ function buildMockCommunity(
   community: CommunityRecord,
   memberList: CommunityMemberDetailRecord[],
   activeFlares: CommunityFlareRecord[],
+  roleDefinitions: CommunityRoleRecord[] = [],
 ): MockCommunity {
   const captain =
     profileLabel(
@@ -1043,10 +1072,23 @@ function buildMockCommunity(
     foundedAt: formatDate(community.created_at),
     captain,
     moderationNote: deriveModerationNote(community, memberList.length, activeFlares.length),
+    customRoles: roleDefinitions
+      .slice()
+      .sort((left, right) => left.rank_order - right.rank_order)
+      .map((role) => ({
+        id: role.id,
+        name: role.name,
+        rankOrder: role.rank_order,
+        permissions: Object.entries(role.permissions ?? {})
+          .filter(([, enabled]) => Boolean(enabled))
+          .map(([permission]) => permission),
+        assignedCount: memberList.filter((member) => member.role_id === role.id).length,
+      })),
     memberList: memberList.map((member) => ({
       id: member.user_id,
       name: profileLabel(member.profile, shortenId(member.user_id)),
       role: member.role,
+      assignedRole: member.community_role?.name ?? null,
     })),
     activeFlares: activeFlares.map((flare) => ({
       id: flare.id,
@@ -1055,6 +1097,27 @@ function buildMockCommunity(
       rsvpCount: flare.rsvp_count,
       status: mapFlareStatus(flare.status),
     })),
+  };
+}
+
+function mapCommunityEvent(
+  event: CommunityEventRecord,
+  rsvpCounts: { yes: number; maybe: number },
+): AdminCommunityEvent {
+  const reportsCount = rsvpCounts.yes >= 80 ? 2 : rsvpCounts.yes >= 50 ? 1 : 0;
+
+  return {
+    id: event.id,
+    communityId: event.community_id,
+    communityName: event.community?.name ?? shortenId(event.community_id),
+    title: event.title,
+    creatorName: profileLabel(event.creator_profile, shortenId(event.creator_id)),
+    startsAt: formatDateTime(event.starts_at),
+    status: event.status,
+    attendeesYes: rsvpCounts.yes,
+    attendeesMaybe: rsvpCounts.maybe,
+    reportsCount,
+    suspicious: event.status === "scheduled" && rsvpCounts.yes >= 50 && reportsCount >= 1,
   };
 }
 
@@ -2553,7 +2616,7 @@ export async function getAdminCommunityByIdOrMock(id: string, mockCommunities: M
 
   try {
     const supabase = createAdminSupabaseClient();
-    const [{ data: community, error: communityError }, { data: members, error: membersError }, { data: flares, error: flaresError }] = await Promise.all([
+    const [{ data: community, error: communityError }, { data: members, error: membersError }, { data: flares, error: flaresError }, { data: roles, error: rolesError }] = await Promise.all([
       supabase
         .from("communities")
         .select("id, name, slug, city, member_count, type, vehicle_type, description, created_at, owner_profile:profiles!communities_owner_id_fkey(username, display_name)")
@@ -2561,12 +2624,13 @@ export async function getAdminCommunityByIdOrMock(id: string, mockCommunities: M
         .maybeSingle(),
       supabase
         .from("community_members")
-        .select("community_id, user_id, role, profile:profiles!community_members_user_id_fkey(username, display_name)")
+        .select("community_id, user_id, role, role_id, profile:profiles!community_members_user_id_fkey(username, display_name), community_role:community_roles(id, name, permissions, rank_order)")
         .eq("community_id", id),
       supabase.from("flares").select("id, community_id, title, starts_at, rsvp_count, status").eq("community_id", id).order("starts_at", { ascending: true }),
+      supabase.from("community_roles").select("id, community_id, name, permissions, rank_order, created_at").eq("community_id", id).order("rank_order", { ascending: true }),
     ]);
 
-    if (communityError || membersError || flaresError || !community) {
+    if (communityError || membersError || flaresError || rolesError || !community) {
       return { data: null, usingMockData: false };
     }
 
@@ -2575,11 +2639,50 @@ export async function getAdminCommunityByIdOrMock(id: string, mockCommunities: M
         community as unknown as CommunityRecord,
         (members as unknown as CommunityMemberDetailRecord[]) ?? [],
         (flares as unknown as CommunityFlareRecord[]) ?? [],
+        (roles as unknown as CommunityRoleRecord[]) ?? [],
       ),
       usingMockData: false,
     };
   } catch {
     return { data: null, usingMockData: false };
+  }
+}
+
+export async function getAdminEventsOrMock(
+  mockEvents: MockCommunityEvent[],
+): Promise<AdminDataResult<AdminCommunityEvent[]>> {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const [eventsResult, rsvpsResult] = await Promise.all([
+      supabase
+        .from("community_events")
+        .select(
+          "id, community_id, creator_id, title, starts_at, status, community:communities(name), creator_profile:profiles!community_events_creator_id_fkey(username, display_name)",
+        )
+        .order("starts_at", { ascending: true })
+        .limit(100),
+      supabase.from("event_rsvps").select("event_id, response"),
+    ]);
+
+    if (eventsResult.error || rsvpsResult.error || !eventsResult.data || !rsvpsResult.data) {
+      return { data: mockEvents, usingMockData: true };
+    }
+
+    const rsvpCountsByEvent = new Map<string, { yes: number; maybe: number }>();
+    for (const rsvp of rsvpsResult.data as unknown as EventRsvpAggregateRecord[]) {
+      const current = rsvpCountsByEvent.get(rsvp.event_id) ?? { yes: 0, maybe: 0 };
+      if (rsvp.response === "yes") current.yes += 1;
+      if (rsvp.response === "maybe") current.maybe += 1;
+      rsvpCountsByEvent.set(rsvp.event_id, current);
+    }
+
+    const data = (eventsResult.data as unknown as CommunityEventRecord[]).map((event) =>
+      mapCommunityEvent(event, rsvpCountsByEvent.get(event.id) ?? { yes: 0, maybe: 0 }),
+    );
+
+    return { data, usingMockData: false };
+  } catch {
+    return { data: mockEvents, usingMockData: true };
   }
 }
 

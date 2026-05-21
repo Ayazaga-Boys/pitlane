@@ -268,7 +268,39 @@ export interface CommunityMemberRow {
   community_id: string;
   user_id: string;
   role: "captain" | "moderator" | "member";
+  role_id: string | null;
   joined_at: string;
+}
+
+export interface CommunityRoleRow {
+  id: string;
+  community_id: string;
+  name: string;
+  permissions: Record<string, boolean>;
+  rank_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommunityEventRow {
+  id: string;
+  community_id: string;
+  creator_id: string;
+  title: string;
+  description: string | null;
+  starts_at: string;
+  location_h3: string | null;
+  status: "scheduled" | "canceled" | "completed";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EventRsvpRow {
+  event_id: string;
+  user_id: string;
+  response: "yes" | "maybe" | "no";
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuditLogRow {

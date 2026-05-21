@@ -65,10 +65,18 @@ export interface MockCommunity {
   foundedAt: string;
   captain: string;
   moderationNote: string;
+  customRoles: Array<{
+    id: string;
+    name: string;
+    rankOrder: number;
+    permissions: string[];
+    assignedCount: number;
+  }>;
   memberList: Array<{
     id: string;
     name: string;
     role: "captain" | "moderator" | "member";
+    assignedRole: string | null;
   }>;
   activeFlares: Array<{
     id: string;
@@ -77,6 +85,20 @@ export interface MockCommunity {
     rsvpCount: number;
     status: "active" | "draft" | "cancelled";
   }>;
+}
+
+export interface MockCommunityEvent {
+  id: string;
+  communityId: string;
+  communityName: string;
+  title: string;
+  creatorName: string;
+  startsAt: string;
+  status: "scheduled" | "canceled" | "completed";
+  attendeesYes: number;
+  attendeesMaybe: number;
+  reportsCount: number;
+  suspicious: boolean;
 }
 
 export interface MockPin {
@@ -421,10 +443,14 @@ export const mockCommunities: MockCommunity[] = [
     foundedAt: "2026-01-12",
     captain: "Mert Caglar",
     moderationNote: "Yeni buyuyen topluluk. Sohbet tonu sicak ama marka atismalari zaman zaman sertlesiyor.",
+    customRoles: [
+      { id: "role_alf_01", name: "Crew Lead", rankOrder: 10, permissions: ["can_invite", "can_create_event", "can_moderate"], assignedCount: 1 },
+      { id: "role_alf_02", name: "Meet Host", rankOrder: 30, permissions: ["can_invite", "can_create_event"], assignedCount: 1 },
+    ],
     memberList: [
-      { id: "usr_demo_01", name: "Mert Caglar", role: "captain" },
-      { id: "usr_demo_02", name: "Sena Akin", role: "moderator" },
-      { id: "usr_demo_03", name: "Kaan Efe", role: "member" },
+      { id: "usr_demo_01", name: "Mert Caglar", role: "captain", assignedRole: "Crew Lead" },
+      { id: "usr_demo_02", name: "Sena Akin", role: "moderator", assignedRole: "Meet Host" },
+      { id: "usr_demo_03", name: "Kaan Efe", role: "member", assignedRole: null },
     ],
     activeFlares: [
       { id: "flr_demo_01", title: "Pazar sabahi sahil konvoyu", startsAt: "2026-05-18 09:00", rsvpCount: 19, status: "active" },
@@ -443,10 +469,14 @@ export const mockCommunities: MockCommunity[] = [
     foundedAt: "2025-11-03",
     captain: "Ayga Zengin",
     moderationNote: "Rota duyurulari net. Son 30 gunde moderasyon aksiyonu gerektirmedi.",
+    customRoles: [
+      { id: "role_bog_01", name: "Ride Lead", rankOrder: 10, permissions: ["can_invite", "can_create_event", "can_moderate"], assignedCount: 1 },
+      { id: "role_bog_02", name: "Route Marshal", rankOrder: 30, permissions: ["can_create_event", "can_pin"], assignedCount: 1 },
+    ],
     memberList: [
-      { id: "usr_01", name: "Ayga Zengin", role: "moderator" },
-      { id: "usr_04", name: "Can Arda", role: "captain" },
-      { id: "usr_05", name: "Bora Sener", role: "member" },
+      { id: "usr_01", name: "Ayga Zengin", role: "moderator", assignedRole: "Ride Lead" },
+      { id: "usr_04", name: "Can Arda", role: "captain", assignedRole: null },
+      { id: "usr_05", name: "Bora Sener", role: "member", assignedRole: "Route Marshal" },
     ],
     activeFlares: [
       { id: "flr_01", title: "Cuma gece boğaz turu", startsAt: "2026-05-09 22:00", rsvpCount: 36, status: "active" },
@@ -465,10 +495,14 @@ export const mockCommunities: MockCommunity[] = [
     foundedAt: "2025-12-19",
     captain: "Emir Demir",
     moderationNote: "Uyelik talepleri manuel inceleniyor. Yeni gelen 4 rapor henuz risk olusturmuyor.",
+    customRoles: [
+      { id: "role_ank_01", name: "Crew Lead", rankOrder: 10, permissions: ["can_invite", "can_create_event", "can_moderate"], assignedCount: 1 },
+      { id: "role_ank_02", name: "Telemetry Host", rankOrder: 40, permissions: ["can_create_event"], assignedCount: 1 },
+    ],
     memberList: [
-      { id: "usr_02", name: "Alp Koc", role: "member" },
-      { id: "usr_06", name: "Emir Demir", role: "captain" },
-      { id: "usr_07", name: "Mina Ates", role: "moderator" },
+      { id: "usr_02", name: "Alp Koc", role: "member", assignedRole: "Telemetry Host" },
+      { id: "usr_06", name: "Emir Demir", role: "captain", assignedRole: "Crew Lead" },
+      { id: "usr_07", name: "Mina Ates", role: "moderator", assignedRole: null },
     ],
     activeFlares: [
       { id: "flr_03", title: "Hafta sonu pist seansı", startsAt: "2026-05-10 08:00", rsvpCount: 24, status: "active" },
@@ -487,14 +521,59 @@ export const mockCommunities: MockCommunity[] = [
     foundedAt: "2025-08-08",
     captain: "Doga Tunc",
     moderationNote: "Mesaj akisi hizli. Yeni moderasyon araclari geldiğinde topluluk sohbeti ilk adaylardan biri.",
+    customRoles: [
+      { id: "role_r35_01", name: "Moderator", rankOrder: 20, permissions: ["can_invite", "can_moderate"], assignedCount: 1 },
+    ],
     memberList: [
-      { id: "usr_03", name: "Ece Karaca", role: "member" },
-      { id: "usr_08", name: "Doga Tunc", role: "captain" },
-      { id: "usr_09", name: "Selin Ucar", role: "member" },
+      { id: "usr_03", name: "Ece Karaca", role: "member", assignedRole: null },
+      { id: "usr_08", name: "Doga Tunc", role: "captain", assignedRole: "Moderator" },
+      { id: "usr_09", name: "Selin Ucar", role: "member", assignedRole: null },
     ],
     activeFlares: [
       { id: "flr_05", title: "Moda rotası buluşması", startsAt: "2026-05-12 20:00", rsvpCount: 41, status: "active" },
     ],
+  },
+];
+
+export const mockCommunityEvents: MockCommunityEvent[] = [
+  {
+    id: "event_demo_01",
+    communityId: "com_demo_alfistiler",
+    communityName: "Alfistiler",
+    title: "Pazar sabahi sahil konvoyu",
+    creatorName: "Mert Caglar",
+    startsAt: "2026-05-24 09:00",
+    status: "scheduled",
+    attendeesYes: 28,
+    attendeesMaybe: 6,
+    reportsCount: 0,
+    suspicious: false,
+  },
+  {
+    id: "event_demo_02",
+    communityId: "com_03",
+    communityName: "Route 35 Garage",
+    title: "Gece kafe bulusmasi ve karma rota",
+    creatorName: "Doga Tunc",
+    startsAt: "2026-05-22 21:30",
+    status: "scheduled",
+    attendeesYes: 88,
+    attendeesMaybe: 19,
+    reportsCount: 3,
+    suspicious: true,
+  },
+  {
+    id: "event_demo_03",
+    communityId: "com_02",
+    communityName: "Ankara Track Days",
+    title: "Telemetri workshop",
+    creatorName: "Mina Ates",
+    startsAt: "2026-05-27 19:30",
+    status: "scheduled",
+    attendeesYes: 17,
+    attendeesMaybe: 5,
+    reportsCount: 0,
+    suspicious: false,
   },
 ];
 
