@@ -499,6 +499,7 @@ V1 canonical Cloudflare Images varyantları: `thumb` (120x120 cover), `feed` (64
 ```
 POST /v1/internal/jobs/retention/run — Retention cleanup çalıştır
 POST /v1/internal/jobs/profile-deletion/run — 30 günü dolan hesap silme taleplerini anonimleştir
+POST /v1/internal/jobs/help-expiration/run — Süresi dolan açık yardım taleplerini expired yap
 POST /v1/internal/jobs/user-export/run — Kullanıcı veri export JSON arşivini üret
 ```
 
@@ -512,6 +513,15 @@ type RetentionCleanupResponse = {
     deleted_read_notifications: number;
     deleted_resolved_help_requests: number;
     deleted_ended_flares: number;
+  };
+};
+```
+
+```typescript
+type HelpRequestExpirationResponse = {
+  data: {
+    expired_help_requests: number;
+    expired_at: string;
   };
 };
 ```
