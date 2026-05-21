@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -14,6 +15,12 @@ import (
 type valkeyStore struct {
 	client *redis.Client
 }
+
+const (
+	heatmapSnapshotKey           = "heatmap:snapshot"
+	heatmapSnapshotCarKey        = "heatmap:snapshot:vehicle:car"
+	heatmapSnapshotMotorcycleKey = "heatmap:snapshot:vehicle:motorcycle"
+)
 
 // NewValkeyStore — Valkey bağlantısı kurar; bağlantı başarısız olursa hata döner.
 func NewValkeyStore(addr string) (*valkeyStore, error) {
@@ -33,7 +40,23 @@ func NewValkeyStore(addr string) (*valkeyStore, error) {
 }
 
 func (s *valkeyStore) SetUserCell(ctx context.Context, userID, h3Cell string) error {
-	return s.client.Set(ctx, userKey(userID), h3Cell, locationTTL).Err()
+	return s.SetUserCellWithVehicle(ctx, userID, h3Cell, "")
+}
+
+func (s *valkeyStore) SetUserCellWithVehicle(ctx context.Context, userID, h3Cell, vehicleType string) error {
+	pipe := s.client.Pipeline()
+	pipe.Set(ctx, userKey(userID), h3Cell, locationTTL)
+
+	vehicleType = normalizeVehicleType(vehicleType)
+	if vehicleType == "" {
+		pipe.Del(ctx, userVehicleKey(userID))
+	} else {
+		pipe.Set(ctx, userVehicleKey(userID), vehicleType, locationTTL)
+	}
+	if _, err := pipe.Exec(ctx); err != nil {
+		return fmt.Errorf("location write failed: %w", err)
+	}
+	return nil
 }
 
 func (s *valkeyStore) GetUserCell(ctx context.Context, userID string) (string, error) {
@@ -41,16 +64,24 @@ func (s *valkeyStore) GetUserCell(ctx context.Context, userID string) (string, e
 	if err == redis.Nil {
 		return "", errNotFound
 	}
-	return val, err
+	if err != nil {
+		return "", err
+	}
+	return val, nil
 }
 
 func (s *valkeyStore) DeleteUserCell(ctx context.Context, userID string) error {
-	return s.client.Del(ctx, userKey(userID)).Err()
+	return s.client.Del(ctx, userKey(userID), userVehicleKey(userID)).Err()
 }
 
 // GetCellCounts — SCAN ile tüm kullanıcı hücrelerini okur, res-8 parent'a göre sayar.
 func (s *valkeyStore) GetCellCounts(ctx context.Context) map[string]int {
+	return s.GetCellCountsByVehicle(ctx, "")
+}
+
+func (s *valkeyStore) GetCellCountsByVehicle(ctx context.Context, vehicleType string) map[string]int {
 	counts := make(map[string]int)
+	wantVehicle := normalizeVehicleType(vehicleType)
 
 	var cursor uint64
 	for {
@@ -62,13 +93,30 @@ func (s *valkeyStore) GetCellCounts(ctx context.Context) map[string]int {
 		if len(keys) > 0 {
 			vals, err := s.client.MGet(ctx, keys...).Result()
 			if err == nil {
-				for _, v := range vals {
+				vehicleVals := make([]interface{}, len(keys))
+				if wantVehicle != "" {
+					vehicleKeys := make([]string, 0, len(keys))
+					for _, key := range keys {
+						vehicleKeys = append(vehicleKeys, userVehicleKey(strings.TrimPrefix(key, "loc:")))
+					}
+					if got, err := s.client.MGet(ctx, vehicleKeys...).Result(); err == nil {
+						vehicleVals = got
+					}
+				}
+
+				for i, v := range vals {
 					if v == nil {
 						continue
 					}
 					cell, ok := v.(string)
 					if !ok {
 						continue
+					}
+					if wantVehicle != "" {
+						vehicleType, ok := vehicleVals[i].(string)
+						if !ok || normalizeVehicleType(vehicleType) != wantVehicle {
+							continue
+						}
 					}
 					parent, err := h3CellToParent(cell, heatmapResolution)
 					if err != nil {
@@ -87,9 +135,30 @@ func (s *valkeyStore) GetCellCounts(ctx context.Context) map[string]int {
 	return counts
 }
 
+func (s *valkeyStore) WriteHeatmapSnapshots(ctx context.Context) error {
+	snapshots := map[string]map[string]int{
+		heatmapSnapshotKey:           s.GetCellCounts(ctx),
+		heatmapSnapshotCarKey:        s.GetCellCountsByVehicle(ctx, "car"),
+		heatmapSnapshotMotorcycleKey: s.GetCellCountsByVehicle(ctx, "motorcycle"),
+	}
+
+	pipe := s.client.Pipeline()
+	for key, counts := range snapshots {
+		raw, err := json.Marshal(counts)
+		if err != nil {
+			return fmt.Errorf("heatmap snapshot marshal failed: %w", err)
+		}
+		pipe.Set(ctx, key, raw, 2*locationTTL)
+	}
+	if _, err := pipe.Exec(ctx); err != nil {
+		return fmt.Errorf("heatmap snapshot write failed: %w", err)
+	}
+	return nil
+}
+
 // GetCellCountsSnapshot — Prometheus scrape için heatmap snapshot (pipeline ile hızlı)
 func (s *valkeyStore) GetCellCountsSnapshot(ctx context.Context) (map[string]int, error) {
-	raw, err := s.client.Get(ctx, "heatmap:snapshot").Result()
+	raw, err := s.client.Get(ctx, heatmapSnapshotKey).Result()
 	if err == redis.Nil {
 		return s.GetCellCounts(ctx), nil
 	}
@@ -109,4 +178,8 @@ func (s *valkeyStore) Close() error {
 
 func userKey(userID string) string {
 	return "loc:" + userID
+}
+
+func userVehicleKey(userID string) string {
+	return "locveh:" + userID
 }

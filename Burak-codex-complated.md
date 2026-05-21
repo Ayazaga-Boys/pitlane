@@ -163,6 +163,32 @@ Doğrulama:
 - `flutter analyze` geçti.
 - `flutter test` geçti.
 
+### İş 7 — V2 Vehicle Filtered Heatmap Snapshot Kontratı
+
+Erol'dan gelen kontrat:
+
+- Backend endpoint: `GET /v2/map/heatmap?vehicle_type=any|car|motorcycle`
+- Realtime/Valkey snapshot key'leri:
+  - `heatmap:snapshot`
+  - `heatmap:snapshot:vehicle:car`
+  - `heatmap:snapshot:vehicle:motorcycle`
+- Beklenen value formatı: H3 cell -> user count JSON map.
+
+Yapıldı:
+
+- WebSocket `location` mesajına opsiyonel `vehicle_type` alanı eklendi.
+- Go realtime store interface'i araç tipine göre cell count ve snapshot yazımı destekleyecek şekilde genişletildi.
+- In-memory store'da `car` ve `motorcycle` filtreli heatmap sayımları eklendi.
+- Valkey store'da `loc:<user>` raw H3 formatında bırakıldı; backend fallback kırılmasın diye araç tipi ayrı `locveh:<user>` key'inde tutuldu.
+- Broadcaster her heatmap yayını sırasında üç snapshot key'ini Valkey'e yazacak hale getirildi.
+- `docs/KISI_1_TRACK_V2.md` içinde V2.4 Go realtime/backend snapshot maddeleri tamamlandı olarak işaretlendi.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+
 ### İş 7 — Realtime Server-Side k-ring ve Valkey Pub/Sub
 
 Yapıldı:
