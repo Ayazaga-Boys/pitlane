@@ -11,7 +11,7 @@ import '../ui/map_filter_sheet.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
 
-enum MapPinType { flare, help, business }
+enum MapPinType { flare, help, business, followedUser }
 
 class MapPin {
   const MapPin({
@@ -70,7 +70,7 @@ const _knownCells = <String, LatLng>{
   '89283082893ffff': LatLng(41.1000, 29.0500), // Beykoz
 };
 
-LatLng _h3ToLatLng(String h3Cell) {
+LatLng h3ToLatLng(String h3Cell) {
   if (h3Cell.isEmpty) return const LatLng(41.0082, 28.9784);
   final known = _knownCells[h3Cell];
   if (known != null) return known;
@@ -103,7 +103,7 @@ Future<List<MapPin>> _fetchBusinessPins(Dio dio, String h3Cell) async {
       type: MapPinType.business,
       title: item['name'] as String? ?? '',
       subtitle: item['category'] as String?,
-      position: _h3ToLatLng(h3Cell),
+      position: h3ToLatLng(h3Cell),
     );
   }).toList();
 }
@@ -147,7 +147,7 @@ Future<List<MapPin>> _fetchHelpPins(Dio dio, String h3Cell) async {
       type: MapPinType.help,
       title: _issueTypeLabel(issueType),
       subtitle: item['description'] as String?,
-      position: _h3ToLatLng(h3Cell),
+      position: h3ToLatLng(h3Cell),
       peerId: item['requester_id'] as String?,
     );
   }).toList();
@@ -175,7 +175,7 @@ Future<List<MapPin>> _fetchFlarePins(Dio dio, String h3Cell) async {
       type: MapPinType.flare,
       title: item['title'] as String? ?? '',
       subtitle: _formatDate(item['starts_at'] as String?),
-      position: _h3ToLatLng(h3Cell),
+      position: h3ToLatLng(h3Cell),
     );
   }).toList();
 }
@@ -230,4 +230,5 @@ double pinHue(MapPinType type) => switch (type) {
       MapPinType.flare => BitmapDescriptor.hueOrange,
       MapPinType.help => BitmapDescriptor.hueRed,
       MapPinType.business => BitmapDescriptor.hueAzure,
+      MapPinType.followedUser => BitmapDescriptor.hueGreen,
     };
