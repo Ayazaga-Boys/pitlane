@@ -11,7 +11,7 @@ import {
 } from '../schemas/profile.schema.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import { serviceUnavailable, validationError } from '../lib/http.js';
-import { buildUserExportArchive, uploadUserExportArchive } from '../services/user-export.js';
+import { runUserExportJob } from '../jobs/user-export.js';
 import type { AppEnv } from '../types/hono.js';
 
 export const profileRoutes = new Hono<AppEnv>();
@@ -67,17 +67,15 @@ profileRoutes.get('/me', async (c) => {
 
 profileRoutes.get('/me/export', async (c) => {
   const userId = c.get('userId') as string;
-  const supabase = getServiceSupabaseClient();
-  if (!supabase) return serviceUnavailable(c);
 
   try {
-    const generatedAt = new Date();
-    const archive = await buildUserExportArchive(supabase, userId, generatedAt);
-    const delivery = await uploadUserExportArchive({ archive, generatedAt });
+    const delivery = await runUserExportJob({ userId });
     return c.json({ data: delivery });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Export failed';
-    if (message === 'Cloudflare R2 is not configured') return serviceUnavailable(c);
+    if (message === 'Cloudflare R2 is not configured' || message === 'Supabase service client is not configured') {
+      return serviceUnavailable(c);
+    }
     if (message.startsWith('R2 put failed')) {
       return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
     }
