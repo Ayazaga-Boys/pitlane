@@ -17,8 +17,9 @@ type cellEntry struct {
 // Store — konum hücrelerini saklar.
 // Üretimde Valkey (Redis uyumlu). Şu an in-memory + TTL (Sprint 2'de swap edilir).
 type Store struct {
-	mu   sync.RWMutex
-	data map[string]cellEntry // userID → entry
+	mu      sync.RWMutex
+	data    map[string]cellEntry // userID → entry
+	follows map[string]map[string]struct{}
 }
 
 func NewStore() *Store {
@@ -26,7 +27,10 @@ func NewStore() *Store {
 }
 
 func NewStoreWithContext(ctx context.Context) *Store {
-	s := &Store{data: make(map[string]cellEntry)}
+	s := &Store{
+		data:    make(map[string]cellEntry),
+		follows: make(map[string]map[string]struct{}),
+	}
 	go s.evict(ctx)
 	return s
 }
@@ -99,6 +103,26 @@ func (s *Store) GetCellCountsByVehicle(_ context.Context, vehicleType string) ma
 
 func (s *Store) WriteHeatmapSnapshots(_ context.Context) error {
 	return nil
+}
+
+func (s *Store) SetFollowees(_ context.Context, userID string, followeeIDs []string) error {
+	next := make(map[string]struct{}, len(followeeIDs))
+	for _, followeeID := range followeeIDs {
+		next[followeeID] = struct{}{}
+	}
+
+	s.mu.Lock()
+	s.follows[userID] = next
+	s.mu.Unlock()
+	return nil
+}
+
+func (s *Store) IsFollowing(_ context.Context, followerID, followeeID string) (bool, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	followees := s.follows[followerID]
+	_, ok := followees[followeeID]
+	return ok, nil
 }
 
 func normalizeVehicleType(vehicleType string) string {
