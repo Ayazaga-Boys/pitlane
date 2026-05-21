@@ -90,3 +90,43 @@ export const V2CreateStorySchema = z.object({
     });
   }
 });
+
+export const V2CommunityIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const V2CommunityRoleParamSchema = z.object({
+  id: z.string().uuid(),
+  roleId: z.string().uuid(),
+});
+
+export const V2CommunityMemberRoleParamSchema = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+});
+
+export const V2CommunityRolePermissionsSchema = z.object({
+  can_invite: z.boolean().optional(),
+  can_kick: z.boolean().optional(),
+  can_create_event: z.boolean().optional(),
+  can_pin: z.boolean().optional(),
+  can_moderate: z.boolean().optional(),
+}).strict();
+
+export const V2CreateCommunityRoleSchema = z.object({
+  name: z.string().trim().min(2).max(40),
+  permissions: V2CommunityRolePermissionsSchema.default({}),
+  rank_order: z.number().int().min(0).max(1000).default(100),
+});
+
+export const V2UpdateCommunityRoleSchema = z.object({
+  name: z.string().trim().min(2).max(40).optional(),
+  permissions: V2CommunityRolePermissionsSchema.optional(),
+  rank_order: z.number().int().min(0).max(1000).optional(),
+}).refine((value) => Object.keys(value).length > 0, {
+  message: 'At least one field is required',
+});
+
+export const V2AssignCommunityRoleSchema = z.object({
+  role_id: z.string().uuid(),
+});

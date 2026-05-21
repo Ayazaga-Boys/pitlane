@@ -110,18 +110,18 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.4 — Topluluk RBAC + Etkinlik + Davet (Hafta 7-8)
 
 **Migration:**
-- [ ] `community_roles` (`id`, `community_id`, `name`, `permissions` JSONB, `rank_order`)
+- [x] `community_roles` (`id`, `community_id`, `name`, `permissions` JSONB, `rank_order`)
   - Permissions: `can_invite`, `can_kick`, `can_create_event`, `can_pin`, `can_moderate`
-- [ ] `community_members` tablosuna `role_id` kolonu ekle
+- [x] `community_members` tablosuna `role_id` kolonu ekle
 - [ ] `community_events` (`id`, `community_id`, `creator_id`, `title`, `description`, `starts_at`, `location_h3`, `status`)
 - [ ] `event_rsvps` (`event_id`, `user_id`, `response` 'yes'|'maybe'|'no')
 - [ ] `community_polls` (`id`, `event_id`, `question`, `options` JSONB)
 
 **Endpoint — Roller:**
-- [ ] `POST /v2/communities/:id/roles` — rol oluştur
-- [ ] `PATCH /v2/communities/:id/roles/:roleId` — izinleri güncelle
-- [ ] `POST /v2/communities/:id/members/:userId/role` — kullanıcıya rol ata
-- [ ] **Şablonlar**: Motor/Otomobil/Genel için preset rol kataloğu
+- [x] `POST /v2/communities/:id/roles` — rol oluştur
+- [x] `PATCH /v2/communities/:id/roles/:roleId` — izinleri güncelle
+- [x] `POST /v2/communities/:id/members/:userId/role` — kullanıcıya rol ata
+- [x] **Şablonlar**: Motor/Otomobil/Genel için preset rol kataloğu
 
 **Endpoint — Davet:**
 - [ ] `POST /v2/communities/:id/invites` — link veya kod oluştur (mode + expires_at)

@@ -82,6 +82,9 @@ describe('app routes', () => {
       storyFeedResponse,
       storyViewResponse,
       discoverFeedResponse,
+      rolePresetsResponse,
+      createRoleResponse,
+      assignRoleResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -96,6 +99,9 @@ describe('app routes', () => {
       app.request('/v2/stories/feed'),
       app.request('/v2/stories/00000000-0000-4000-8000-000000000001/view', { method: 'POST' }),
       app.request('/v2/discover/feed'),
+      app.request('/v2/communities/role-presets'),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/roles', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/members/00000000-0000-4000-8000-000000000002/role', { method: 'POST' }),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -111,6 +117,9 @@ describe('app routes', () => {
     expect(storyFeedResponse.status).toBe(401);
     expect(storyViewResponse.status).toBe(401);
     expect(discoverFeedResponse.status).toBe(401);
+    expect(rolePresetsResponse.status).toBe(401);
+    expect(createRoleResponse.status).toBe(401);
+    expect(assignRoleResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {

@@ -18,10 +18,12 @@ import {
 import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 import {
   V2CreateCommentSchema,
+  V2CreateCommunityRoleSchema,
   V2CreatePostSchema,
   V2CreateStorySchema,
   V2FollowListQuerySchema,
   V2PrivacySchema,
+  V2UpdateCommunityRoleSchema,
 } from '../src/schemas/v2-social.schema.js';
 
 describe('auth schemas', () => {
@@ -125,6 +127,21 @@ describe('v2 social schemas', () => {
       media_id: '00000000-0000-4000-8000-000000000001',
       expires_at: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
     }).success).toBe(false);
+  });
+
+  it('accepts community role permissions', () => {
+    const parsed = V2CreateCommunityRoleSchema.parse({
+      name: 'Meet Host',
+      permissions: { can_invite: true, can_create_event: true },
+      rank_order: 25,
+    });
+
+    expect(parsed.permissions.can_create_event).toBe(true);
+    expect(V2CreateCommunityRoleSchema.safeParse({
+      name: 'Bad',
+      permissions: { can_delete_everything: true },
+    }).success).toBe(false);
+    expect(V2UpdateCommunityRoleSchema.safeParse({}).success).toBe(false);
   });
 });
 
