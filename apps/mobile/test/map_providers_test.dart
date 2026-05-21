@@ -245,4 +245,49 @@ void main() {
       expect(event, isNull);
     });
   });
+
+  group('WS social map events', () {
+    test('parses presence_update event', () {
+      final event = parseWsPresenceEvent({
+        'type': 'presence_update',
+        'user_id': 'user-1',
+        'status': 'online',
+      });
+
+      expect(event, isNotNull);
+      expect(event!.userId, 'user-1');
+      expect(event.status, WsPresenceStatus.online);
+    });
+
+    test('ignores malformed presence_update event', () {
+      final event = parseWsPresenceEvent({
+        'type': 'presence_update',
+        'user_id': 'user-1',
+        'status': 'busy',
+      });
+
+      expect(event, isNull);
+    });
+
+    test('parses location_share event', () {
+      final event = parseWsLocationShareEvent({
+        'type': 'location_share',
+        'user_id': 'user-1',
+        'h3_cell': '89283082803ffff',
+      });
+
+      expect(event, isNotNull);
+      expect(event!.userId, 'user-1');
+      expect(event.h3Cell, '89283082803ffff');
+    });
+
+    test('ignores malformed location_share event', () {
+      final event = parseWsLocationShareEvent({
+        'type': 'location_share',
+        'user_id': 'user-1',
+      });
+
+      expect(event, isNull);
+    });
+  });
 }

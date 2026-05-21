@@ -11,6 +11,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
 import '../data/ws_service.dart';
+import '../providers/followed_user_locations_provider.dart';
 import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/map_pins_provider.dart';
@@ -177,8 +178,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
     // allPinsProvider'ı direkt izle — async tamamlanınca harita yeniden çizilir
     final pinsAsync = ref.watch(allPinsProvider);
     final allPins = pinsAsync.valueOrNull ?? [];
+    final followedPins = ref.watch(followedUserPinsProvider);
     final pinsLoading = pinsAsync.isLoading;
-    final pinData = allPins.where((pin) {
+    final pinData = [...allPins, ...followedPins].where((pin) {
       if (filters.pin == PinFilter.all) {
         return true;
       }
@@ -354,6 +356,10 @@ void _navigateToPin(BuildContext context, MapPin pin) {
       showHelpDetailSheet(context, pin);
     case MapPinType.business:
       context.push('/pins/${pin.id}');
+    case MapPinType.followedUser:
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(pin.subtitle ?? pin.title)),
+      );
   }
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDeletedProfileUsername } from '../src/jobs/profile-deletion.js';
 import { getRetentionCutoffs } from '../src/jobs/retention.js';
+import { runUserExportJob } from '../src/jobs/user-export.js';
 import { parseSentryDsn } from '../src/services/sentry.js';
 import { createUserExportStorageKey } from '../src/services/user-export.js';
 import { normalizeLocationCellsToHeatmapCounts } from '../src/services/valkey.js';
@@ -26,6 +27,13 @@ describe('retention jobs', () => {
       '00000000-0000-4000-8000-000000000001',
       new Date('2026-05-20T13:45:30.000Z'),
     )).toBe('exports/00000000-0000-4000-8000-000000000001/rollpit-export-20260520T134530Z.json');
+  });
+
+  it('requires a service client for user export jobs', async () => {
+    await expect(runUserExportJob({
+      userId: '00000000-0000-4000-8000-000000000001',
+      supabase: null,
+    })).rejects.toThrow('Supabase service client is not configured');
   });
 
   it('groups realtime location cells into res-8 heatmap counts', () => {

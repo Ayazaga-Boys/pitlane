@@ -1,9 +1,16 @@
 import { Hono, type Context } from 'hono';
+import { z } from 'zod';
 import { refreshDiscoverFeedScores } from '../jobs/discover.js';
 import { runProfileDeletionCleanup } from '../jobs/profile-deletion.js';
 import { runRetentionCleanup } from '../jobs/retention.js';
+import { runUserExportJob } from '../jobs/user-export.js';
+import { serviceUnavailable, validationError } from '../lib/http.js';
 
 export const internalJobRoutes = new Hono();
+
+const UserExportJobRequestSchema = z.object({
+  user_id: z.string().uuid(),
+});
 
 internalJobRoutes.post('/retention/run', async (c) => {
   const authError = validateInternalJobAuth(c);
@@ -40,6 +47,29 @@ internalJobRoutes.post('/discover-refresh/run', async (c) => {
     return c.json({ data });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Discover feed refresh failed';
+    return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
+  }
+});
+
+internalJobRoutes.post('/user-export/run', async (c) => {
+  const authError = validateInternalJobAuth(c);
+  if (authError) return authError;
+
+  const body = await c.req.json().catch(() => null);
+  const parsed = UserExportJobRequestSchema.safeParse(body);
+  if (!parsed.success) return validationError(c, parsed.error);
+
+  try {
+    const data = await runUserExportJob({ userId: parsed.data.user_id });
+    return c.json({ data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'User export failed';
+    if (message === 'Cloudflare R2 is not configured' || message === 'Supabase service client is not configured') {
+      return serviceUnavailable(c);
+    }
+    if (message.startsWith('R2 put failed')) {
+      return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
+    }
     return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
   }
 });

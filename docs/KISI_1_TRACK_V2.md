@@ -41,7 +41,7 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 - [x] Go realtime: `follows` cache (Valkey) — kullanıcı kimi takip ediyor
 - [x] WS event: `presence_update` — takip ettiğim kullanıcı online/dnd/offline olduğunda
 - [x] WS event: `location_share` — takip ettiğim kullanıcı konum güncellediğinde (eğer paylaşıyorsa)
-- [ ] Flutter: `followed_users_locations_provider` — haritada takip ettiklerini gösterir
+- [x] Flutter: `followed_users_locations_provider` — haritada takip ettiklerini gösterir
 - [ ] Flutter: Konum paylaşımı kontrolü — kullanıcı kimlerle paylaşacağını seçer (ghost mode v2)
 
 Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend bu cache'i doldurmadığında `subscribe_user` güvenlik için `FORBIDDEN` döner.
