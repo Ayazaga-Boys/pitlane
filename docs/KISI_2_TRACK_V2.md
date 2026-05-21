@@ -102,9 +102,9 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [ ] Story expiry job — saatlik cron, `expires_at < now()` olanları sil + Cloudflare Stream/Images temizliği
 
 **Keşfet (Feed):**
-- [ ] `GET /v2/discover/feed?cursor=` — algoritma tabanlı
-- [ ] Score = `(0.5 * engagement_rate) + (0.3 * recency_decay) + (0.2 * follow_signal)`
-- [ ] V1: Postgres view + materialized refresh hourly
+- [x] `GET /v2/discover/feed?cursor=` — algoritma tabanlı
+- [x] Score = `(0.5 * engagement_rate) + (0.3 * recency_decay) + (0.2 * follow_signal)`
+- [x] V1: Postgres view + materialized refresh hourly
 - [ ] İlerleyen sürüm: Redis Sorted Set + score güncelleme
 
 ### V2.4 — Topluluk RBAC + Etkinlik + Davet (Hafta 7-8)
