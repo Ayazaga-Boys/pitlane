@@ -26,14 +26,14 @@ type helpEventRequest struct {
 	RequesterID   string   `json:"requester_id"`
 	HelperID      string   `json:"helper_id,omitempty"`
 	IssueType     string   `json:"issue_type,omitempty"`
-	TargetType    string   `json:"target_type,omitempty"`  // "nearby" | "followers" | "group"
-	TargetIDs     []string `json:"target_ids,omitempty"`   // backend'in hesapladığı hedef kullanıcı listesi
-	Urgency       string   `json:"urgency,omitempty"`      // "critical" | "urgent" | "request"
+	TargetType    string   `json:"target_type,omitempty"` // "nearby" | "followers" | "group"
+	TargetIDs     []string `json:"target_ids,omitempty"`  // backend'in hesapladığı hedef kullanıcı listesi
+	Urgency       string   `json:"urgency,omitempty"`     // "critical" | "urgent" | "request"
 }
 
 type socialEventRequest struct {
-	Type        string `json:"type"`         // "story_posted" | "post_liked" | "post_commented"
-	AuthorID    string `json:"author_id"`    // story: yazar; post: post sahibi
+	Type        string `json:"type"`      // "story_posted" | "post_liked" | "post_commented"
+	AuthorID    string `json:"author_id"` // story: yazar; post: post sahibi
 	StoryID     string `json:"story_id,omitempty"`
 	PostID      string `json:"post_id,omitempty"`
 	LikerID     string `json:"liker_id,omitempty"`

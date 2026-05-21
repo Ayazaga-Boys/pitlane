@@ -193,8 +193,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
       ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    canvas.drawCircle(
-        const Offset(size / 2, size / 2), size / 2 - 1.5, border);
+    canvas.drawCircle(const Offset(size / 2, size / 2), size / 2 - 1.5, border);
 
     final tp = TextPainter(
       text: TextSpan(
@@ -207,14 +206,11 @@ class _MapScreenState extends ConsumerState<MapScreen>
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas,
-        Offset((size - tp.width) / 2, (size - tp.height) / 2));
+    tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
 
-    final image = await recorder
-        .endRecording()
-        .toImage(size.toInt(), size.toInt());
-    final bytes =
-        await image.toByteData(format: ui.ImageByteFormat.png);
+    final image =
+        await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     final icon = BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
 
     return Marker(
