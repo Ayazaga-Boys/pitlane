@@ -1,4 +1,5 @@
 import { Hono, type Context } from 'hono';
+import { refreshDiscoverFeedScores } from '../jobs/discover.js';
 import { runProfileDeletionCleanup } from '../jobs/profile-deletion.js';
 import { runRetentionCleanup } from '../jobs/retention.js';
 
@@ -26,6 +27,19 @@ internalJobRoutes.post('/profile-deletion/run', async (c) => {
     return c.json({ data });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Profile deletion cleanup failed';
+    return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
+  }
+});
+
+internalJobRoutes.post('/discover-refresh/run', async (c) => {
+  const authError = validateInternalJobAuth(c);
+  if (authError) return authError;
+
+  try {
+    const data = await refreshDiscoverFeedScores();
+    return c.json({ data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Discover feed refresh failed';
     return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
   }
 });

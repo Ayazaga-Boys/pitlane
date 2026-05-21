@@ -81,6 +81,10 @@ describe('app routes', () => {
       createStoryResponse,
       storyFeedResponse,
       storyViewResponse,
+      discoverFeedResponse,
+      rolePresetsResponse,
+      createRoleResponse,
+      assignRoleResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -94,6 +98,10 @@ describe('app routes', () => {
       app.request('/v2/stories', { method: 'POST' }),
       app.request('/v2/stories/feed'),
       app.request('/v2/stories/00000000-0000-4000-8000-000000000001/view', { method: 'POST' }),
+      app.request('/v2/discover/feed'),
+      app.request('/v2/communities/role-presets'),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/roles', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/members/00000000-0000-4000-8000-000000000002/role', { method: 'POST' }),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -108,6 +116,10 @@ describe('app routes', () => {
     expect(createStoryResponse.status).toBe(401);
     expect(storyFeedResponse.status).toBe(401);
     expect(storyViewResponse.status).toBe(401);
+    expect(discoverFeedResponse.status).toBe(401);
+    expect(rolePresetsResponse.status).toBe(401);
+    expect(createRoleResponse.status).toBe(401);
+    expect(assignRoleResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
@@ -209,9 +221,10 @@ describe('app routes', () => {
     delete process.env.TRIGGER_SECRET_KEY;
 
     const app = createApp();
-    const [retentionResponse, profileDeletionResponse] = await Promise.all([
+    const [retentionResponse, profileDeletionResponse, discoverRefreshResponse] = await Promise.all([
       app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/profile-deletion/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/discover-refresh/run', { method: 'POST' }),
     ]);
 
     restoreEnv('INTERNAL_JOB_SECRET', previousSecret);
@@ -219,6 +232,7 @@ describe('app routes', () => {
 
     expect(retentionResponse.status).toBe(401);
     expect(profileDeletionResponse.status).toBe(401);
+    expect(discoverRefreshResponse.status).toBe(401);
   });
 
   it('keeps message routes protected', async () => {
