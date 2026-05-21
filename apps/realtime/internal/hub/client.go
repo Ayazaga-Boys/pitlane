@@ -102,7 +102,7 @@ func (c *Client) handleMessage(msg InboundMessage) {
 			c.sendError("BAD_PAYLOAD", "h3_cell invalid")
 			return
 		}
-		if err := c.hub.store.SetUserCell(ctx, c.userID, msg.H3Cell); err != nil {
+		if err := c.hub.store.SetUserCellWithVehicle(ctx, c.userID, msg.H3Cell, msg.VehicleType); err != nil {
 			log.Error().Err(err).Str("userID", c.userID).Msg("set_user_cell_failed")
 			return
 		}

@@ -70,8 +70,8 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
   - "Sadece motorcu yoğunluğu" (kullanıcının vehicle_type == motorcycle filter)
   - "Sadece takip ettiklerim"
   - "İşletmeleri gizle"
-- [ ] Go realtime: heatmap çağrısında `vehicle_type` filtresi
-- [ ] Backend (Erol'la birlikte): cell count'ları araç tipi başına ayrı tutma
+- [x] Go realtime: heatmap çağrısında `vehicle_type` filtresi
+- [x] Backend (Erol'la birlikte): cell count'ları araç tipi başına ayrı tutma
 
 ### V2.5 — SOS Hedefleme V2 (Hafta 9-10)
 

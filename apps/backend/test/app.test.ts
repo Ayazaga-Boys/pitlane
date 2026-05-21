@@ -51,12 +51,13 @@ describe('app routes', () => {
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse] = await Promise.all([
+    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse, publicCancelResponse] = await Promise.all([
       app.request('/v1/profiles/me'),
       app.request('/v1/profiles/me/vehicles'),
       app.request('/v1/profiles/me/export'),
       app.request('/v1/profiles/me', { method: 'DELETE' }),
       app.request('/v1/profiles/me/deletion/cancel', { method: 'POST' }),
+      app.request('/v1/profiles/deletion/cancel/test-token', { method: 'POST' }),
     ]);
 
     expect(profileResponse.status).toBe(401);
@@ -64,6 +65,7 @@ describe('app routes', () => {
     expect(exportResponse.status).toBe(401);
     expect(deleteResponse.status).toBe(401);
     expect(cancelDeletionResponse.status).toBe(401);
+    expect(publicCancelResponse.status).not.toBe(401);
   });
 
   it('keeps v2 social routes protected', async () => {
@@ -85,6 +87,25 @@ describe('app routes', () => {
       rolePresetsResponse,
       createRoleResponse,
       assignRoleResponse,
+      createInviteResponse,
+      acceptInviteResponse,
+      inviteUserResponse,
+      respondInviteResponse,
+      createEventResponse,
+      listEventsResponse,
+      rsvpEventResponse,
+      createPollResponse,
+      createBusinessApplicationResponse,
+      businessApplicationDocumentsResponse,
+      myBusinessApplicationsResponse,
+      adminBusinessApplicationsResponse,
+      approveBusinessApplicationResponse,
+      rejectBusinessApplicationResponse,
+      nearbyBusinessLocationsResponse,
+      v2HeatmapResponse,
+      v2HelpResponse,
+      createNeedResponse,
+      listNeedsResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -102,6 +123,25 @@ describe('app routes', () => {
       app.request('/v2/communities/role-presets'),
       app.request('/v2/communities/00000000-0000-4000-8000-000000000001/roles', { method: 'POST' }),
       app.request('/v2/communities/00000000-0000-4000-8000-000000000001/members/00000000-0000-4000-8000-000000000002/role', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/invites', { method: 'POST' }),
+      app.request('/v2/invites/ABCDEF12/accept', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/invite-user', { method: 'POST' }),
+      app.request('/v2/community-invites/00000000-0000-4000-8000-000000000001/respond', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/events', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/events'),
+      app.request('/v2/events/00000000-0000-4000-8000-000000000001/rsvp', { method: 'POST' }),
+      app.request('/v2/events/00000000-0000-4000-8000-000000000001/polls', { method: 'POST' }),
+      app.request('/v2/business/applications', { method: 'POST' }),
+      app.request('/v2/business/applications/00000000-0000-4000-8000-000000000001/documents', { method: 'POST' }),
+      app.request('/v2/business/applications/me'),
+      app.request('/v2/admin/business/applications'),
+      app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/approve', { method: 'POST' }),
+      app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/reject', { method: 'POST' }),
+      app.request('/v2/business/locations/nearby?h3cell=8928308280fffff'),
+      app.request('/v2/map/heatmap?vehicle_type=car'),
+      app.request('/v2/help', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs?status=open'),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -120,6 +160,25 @@ describe('app routes', () => {
     expect(rolePresetsResponse.status).toBe(401);
     expect(createRoleResponse.status).toBe(401);
     expect(assignRoleResponse.status).toBe(401);
+    expect(createInviteResponse.status).toBe(401);
+    expect(acceptInviteResponse.status).toBe(401);
+    expect(inviteUserResponse.status).toBe(401);
+    expect(respondInviteResponse.status).toBe(401);
+    expect(createEventResponse.status).toBe(401);
+    expect(listEventsResponse.status).toBe(401);
+    expect(rsvpEventResponse.status).toBe(401);
+    expect(createPollResponse.status).toBe(401);
+    expect(createBusinessApplicationResponse.status).toBe(401);
+    expect(businessApplicationDocumentsResponse.status).toBe(401);
+    expect(myBusinessApplicationsResponse.status).toBe(401);
+    expect(adminBusinessApplicationsResponse.status).toBe(401);
+    expect(approveBusinessApplicationResponse.status).toBe(401);
+    expect(rejectBusinessApplicationResponse.status).toBe(401);
+    expect(nearbyBusinessLocationsResponse.status).toBe(401);
+    expect(v2HeatmapResponse.status).toBe(401);
+    expect(v2HelpResponse.status).toBe(401);
+    expect(createNeedResponse.status).toBe(401);
+    expect(listNeedsResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {

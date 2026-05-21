@@ -5,7 +5,7 @@ import { requireAuth } from './middleware/auth.js';
 import { maintenanceMode } from './middleware/maintenance.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { rateLimit } from './middleware/rate-limit.js';
-import { mountProtectedRoutes, mountProtectedV2Routes, mountPublicRoutes } from './routes/index.js';
+import { mountProtectedRoutes, mountProtectedV2Routes, mountPublicRoutes, mountPublicV2Routes } from './routes/index.js';
 import { logger } from './lib/logger.js';
 import { checkDatabaseHealth } from './services/health.js';
 import { captureException } from './services/sentry.js';
@@ -39,6 +39,7 @@ export function createApp() {
   const v2 = new Hono();
   v2.use('*', maintenanceMode);
   v2.use('*', rateLimit);
+  mountPublicV2Routes(v2);
 
   const protectedV2 = new Hono<AppEnv>();
   protectedV2.use('*', requireAuth);

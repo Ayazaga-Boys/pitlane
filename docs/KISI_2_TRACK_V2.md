@@ -113,9 +113,9 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `community_roles` (`id`, `community_id`, `name`, `permissions` JSONB, `rank_order`)
   - Permissions: `can_invite`, `can_kick`, `can_create_event`, `can_pin`, `can_moderate`
 - [x] `community_members` tablosuna `role_id` kolonu ekle
-- [ ] `community_events` (`id`, `community_id`, `creator_id`, `title`, `description`, `starts_at`, `location_h3`, `status`)
-- [ ] `event_rsvps` (`event_id`, `user_id`, `response` 'yes'|'maybe'|'no')
-- [ ] `community_polls` (`id`, `event_id`, `question`, `options` JSONB)
+- [x] `community_events` (`id`, `community_id`, `creator_id`, `title`, `description`, `starts_at`, `location_h3`, `status`)
+- [x] `event_rsvps` (`event_id`, `user_id`, `response` 'yes'|'maybe'|'no')
+- [x] `community_polls` (`id`, `event_id`, `question`, `options` JSONB)
 
 **Endpoint — Roller:**
 - [x] `POST /v2/communities/:id/roles` — rol oluştur
@@ -124,59 +124,59 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] **Şablonlar**: Motor/Otomobil/Genel için preset rol kataloğu
 
 **Endpoint — Davet:**
-- [ ] `POST /v2/communities/:id/invites` — link veya kod oluştur (mode + expires_at)
-- [ ] `GET /v2/invites/:slug` — public preview (community foto + bilgi, "Anında katıl" mı "İstek gönder" mi)
-- [ ] `POST /v2/invites/:slug/accept`
-- [ ] `POST /v2/communities/:id/invite-user` — yönetici direkt davet eder → kullanıcıya bildirim
-- [ ] `POST /v2/community-invites/:id/respond` — accept/reject
+- [x] `POST /v2/communities/:id/invites` — link veya kod oluştur (mode + expires_at)
+- [x] `GET /v2/invites/:slug` — public preview (community foto + bilgi, "Anında katıl" mı "İstek gönder" mi)
+- [x] `POST /v2/invites/:slug/accept`
+- [x] `POST /v2/communities/:id/invite-user` — yönetici direkt davet eder → kullanıcıya bildirim
+- [x] `POST /v2/community-invites/:id/respond` — accept/reject
 
 **Endpoint — Etkinlik:**
-- [ ] `POST /v2/communities/:id/events` (rol kontrolü: `can_create_event`)
-- [ ] `GET /v2/communities/:id/events`
-- [ ] `POST /v2/events/:id/rsvp`
-- [ ] `POST /v2/events/:id/polls`
+- [x] `POST /v2/communities/:id/events` (rol kontrolü: `can_create_event`)
+- [x] `GET /v2/communities/:id/events`
+- [x] `POST /v2/events/:id/rsvp`
+- [x] `POST /v2/events/:id/polls`
 
 ### V2.5 — İşletme Self-Onboarding + Harita Lokasyonları (Hafta 9-10)
 
 **Migration:**
-- [ ] `business_applications` — başvuru state machine (`pending`, `approved`, `rejected`, `under_review`)
-- [ ] `business_locations` — onaylanmış işletmeler (lat/lng + h3_cell, foto, çalışma saatleri)
-- [ ] `business_documents` — vergi levhası, ruhsat (R2 private bucket)
+- [x] `business_applications` — başvuru state machine (`pending`, `approved`, `rejected`, `under_review`)
+- [x] `business_locations` — onaylanmış işletmeler (lat/lng + h3_cell, foto, çalışma saatleri)
+- [x] `business_documents` — vergi levhası, ruhsat (R2 private bucket)
 
 **Endpoint:**
-- [ ] `POST /v2/business/applications` — başvuru oluştur
-- [ ] `POST /v2/business/applications/:id/documents` — belge yükle (private R2)
-- [ ] `GET /v2/business/applications/me`
-- [ ] **Admin** (Tufan kullanacak): `GET /v2/admin/business/applications?status=pending`
-- [ ] **Admin**: `POST /v2/admin/business/applications/:id/approve` (+ location yarat)
-- [ ] **Admin**: `POST /v2/admin/business/applications/:id/reject` (+ neden)
-- [ ] `GET /v2/business/locations/nearby?h3cell=&k=` — Burak'ın harita çağırışı
+- [x] `POST /v2/business/applications` — başvuru oluştur
+- [x] `POST /v2/business/applications/:id/documents` — belge yükle (private R2)
+- [x] `GET /v2/business/applications/me`
+- [x] **Admin** (Tufan kullanacak): `GET /v2/admin/business/applications?status=pending`
+- [x] **Admin**: `POST /v2/admin/business/applications/:id/approve` (+ location yarat)
+- [x] **Admin**: `POST /v2/admin/business/applications/:id/reject` (+ neden)
+- [x] `GET /v2/business/locations/nearby?h3cell=&k=` — Burak'ın harita çağırışı
 
 **Harita Vehicle-Filtered Heatmap:**
-- [ ] `GET /v2/map/heatmap?vehicle_type=motorcycle|car|any` — Burak'ın V2.4 ihtiyacı
-- [ ] Heatmap aggregation `vehicle_type` başına ayrı tutulmalı (Valkey key prefix değiştir)
+- [x] `GET /v2/map/heatmap?vehicle_type=motorcycle|car|any` — Burak'ın V2.4 ihtiyacı
+- [x] Heatmap aggregation `vehicle_type` başına ayrı tutulmalı (Valkey key prefix değiştir)
 
 ### V2.6 — SOS Hedefleme + Tagged Needs + Yarışma (Hafta 11-12)
 
 **Migration:**
-- [ ] `help_requests` tablosuna kolon ekle: `target_type` ENUM('nearby','followers','group'), `target_id` UUID nullable, `urgency` ENUM
-- [ ] `community_needs` — yedek parça/yakıt ilanları (`community_id`, `type`, `urgency_color`, `body`)
+- [x] `help_requests` tablosuna kolon ekle: `target_type` ENUM('nearby','followers','group'), `target_id` UUID nullable, `urgency` ENUM
+- [x] `community_needs` — yedek parça/yakıt ilanları (`community_id`, `type`, `urgency_color`, `body`)
 - [ ] `competitions` — yarışmalar (`id`, `community_id`, `title`, `filters` JSONB, `voting_starts_at`, `voting_ends_at`)
 - [ ] `competition_entries`
 - [ ] `competition_votes`
 
 **Endpoint:**
-- [ ] `POST /v2/help` — `target_type` ve `target_id` ile (Burak realtime'a iletecek)
-- [ ] `POST /v2/communities/:id/needs` — tagged need (sarı/kırmızı)
-- [ ] `GET /v2/communities/:id/needs?status=open`
+- [x] `POST /v2/help` — `target_type` ve `target_id` ile (Burak realtime'a iletecek)
+- [x] `POST /v2/communities/:id/needs` — tagged need (sarı/kırmızı)
+- [x] `GET /v2/communities/:id/needs?status=open`
 - [ ] `POST /v2/competitions` (rol kontrolü)
 - [ ] `POST /v2/competitions/:id/entries` (filtre eşleşmesi kontrolü)
 - [ ] `POST /v2/competitions/:id/entries/:entryId/vote`
 
 **Realtime Integration (Burak'la):**
-- [ ] `help_targeted` payload Go realtime'a — `POST /internal/realtime/help-event` extend et
-- [ ] `target_type === 'followers'` ise → `helper_ids: [user1, user2, ...]` payload
-- [ ] `target_type === 'group'` ise → `community_id` payload, Burak grup üyelerini broadcast eder
+- [x] `help_targeted` payload Go realtime'a — `POST /internal/realtime/help-event` extend et
+- [x] `target_type === 'followers'` ise → `helper_ids: [user1, user2, ...]` payload
+- [x] `target_type === 'group'` ise → `community_id` payload, Burak grup üyelerini broadcast eder
 
 ---
 
