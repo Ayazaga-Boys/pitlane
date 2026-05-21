@@ -20,12 +20,24 @@ import (
 const helpEventKRing = 2
 
 type helpEventRequest struct {
-	Type          string `json:"type"`
-	HelpRequestID string `json:"help_request_id"`
-	H3Cell        string `json:"h3_cell"`
-	RequesterID   string `json:"requester_id"`
-	HelperID      string `json:"helper_id,omitempty"`
-	IssueType     string `json:"issue_type,omitempty"`
+	Type          string   `json:"type"`
+	HelpRequestID string   `json:"help_request_id"`
+	H3Cell        string   `json:"h3_cell"`
+	RequesterID   string   `json:"requester_id"`
+	HelperID      string   `json:"helper_id,omitempty"`
+	IssueType     string   `json:"issue_type,omitempty"`
+	TargetType    string   `json:"target_type,omitempty"` // "nearby" | "followers" | "group"
+	TargetIDs     []string `json:"target_ids,omitempty"`  // backend'in hesapladığı hedef kullanıcı listesi
+	Urgency       string   `json:"urgency,omitempty"`     // "critical" | "urgent" | "request"
+}
+
+type socialEventRequest struct {
+	Type        string `json:"type"`      // "story_posted" | "post_liked" | "post_commented"
+	AuthorID    string `json:"author_id"` // story: yazar; post: post sahibi
+	StoryID     string `json:"story_id,omitempty"`
+	PostID      string `json:"post_id,omitempty"`
+	LikerID     string `json:"liker_id,omitempty"`
+	CommenterID string `json:"commenter_id,omitempty"`
 }
 
 func newUpgrader(cfg *config.Config) websocket.Upgrader {
@@ -173,10 +185,27 @@ func (h *Hub) ServeHelpEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	urgency := event.Urgency
+	if urgency == "" {
+		urgency = UrgencyUrgent
+	}
+	targetType := event.TargetType
+	if targetType == "" {
+		targetType = HelpTargetNearby
+	}
+
+	outType := TypeHelpNearby
+	if targetType != HelpTargetNearby {
+		outType = TypeHelpTargeted
+	}
+
 	payload := OutboundMessage{
-		Type:   TypeHelpNearby,
-		HelpID: event.HelpRequestID,
-		H3Cell: event.H3Cell,
+		Type:       outType,
+		HelpID:     event.HelpRequestID,
+		H3Cell:     event.H3Cell,
+		Urgency:    urgency,
+		TargetType: targetType,
+		IssueType:  event.IssueType,
 	}
 	switch event.Type {
 	case TypeHelpCreated:
@@ -192,10 +221,93 @@ func (h *Hub) ServeHelpEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.SendToSubscribersWithK(event.H3Cell, helpEventKRing, msg)
+	switch targetType {
+	case HelpTargetNearby:
+		h.SendToSubscribersWithK(event.H3Cell, helpEventKRing, msg)
+	case HelpTargetFollowers, HelpTargetGroup:
+		// Backend hangi kullanıcıların bildirim alacağını hesaplar ve target_ids ile gönderir
+		for _, uid := range event.TargetIDs {
+			h.SendToUser(uid, msg)
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	_, _ = w.Write([]byte(`{"ok":true}`))
+}
+
+// ServeSocialEvent — backend'den gelen story/post event'lerini ilgili kullanıcılara iletir
+func (h *Hub) ServeSocialEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if h.cfg.InternalSecret == "" {
+		http.Error(w, "Internal secret not configured", http.StatusServiceUnavailable)
+		return
+	}
+	if r.Header.Get("Authorization") != "Bearer "+h.cfg.InternalSecret {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var event socialEventRequest
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	if !event.isValid() {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	switch event.Type {
+	case TypeStoryPosted:
+		// Yazarı takip eden çevrimiçi kullanıcılara yayınla
+		payload := OutboundMessage{
+			Type:    TypeStoryPosted,
+			UserID:  event.AuthorID,
+			StoryID: event.StoryID,
+		}
+		h.SendToUserSubscribers(event.AuthorID, payload)
+
+	case TypePostLiked:
+		// Sadece post sahibine gönder
+		payload := OutboundMessage{
+			Type:    TypePostLiked,
+			PostID:  event.PostID,
+			LikerID: event.LikerID,
+		}
+		msg, _ := json.Marshal(payload)
+		h.SendToUser(event.AuthorID, msg)
+
+	case TypePostCommented:
+		// Sadece post sahibine gönder
+		payload := OutboundMessage{
+			Type:        TypePostCommented,
+			PostID:      event.PostID,
+			CommenterID: event.CommenterID,
+		}
+		msg, _ := json.Marshal(payload)
+		h.SendToUser(event.AuthorID, msg)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_, _ = w.Write([]byte(`{"ok":true}`))
+}
+
+func (e socialEventRequest) isValid() bool {
+	switch e.Type {
+	case TypeStoryPosted:
+		return e.AuthorID != "" && e.StoryID != ""
+	case TypePostLiked:
+		return e.AuthorID != "" && e.PostID != "" && e.LikerID != ""
+	case TypePostCommented:
+		return e.AuthorID != "" && e.PostID != "" && e.CommenterID != ""
+	default:
+		return false
+	}
 }
 
 // SendToUser — belirli bir kullanıcıya mesaj gönder

@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../../core/constants/h3_constants.dart';
 import '../../../core/utils/location_utils.dart';
 import '../data/ws_service.dart';
+import 'location_sharing_provider.dart';
 
 const int kLocationDistanceFilterMeters = 30;
 
@@ -37,7 +38,9 @@ class LocationNotifier extends AsyncNotifier<String?> {
       );
       state = AsyncData(cell);
       final ws = ref.read(wsServiceProvider);
-      ws.sendLocation(cell);
+      if (ref.read(locationSharingProvider)) {
+        ws.sendLocation(cell);
+      }
       if (_subscribedCell != cell) {
         if (_subscribedCell != null) {
           ws.unsubscribeCell(_subscribedCell!);

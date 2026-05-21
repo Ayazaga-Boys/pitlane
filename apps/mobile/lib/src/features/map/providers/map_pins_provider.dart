@@ -216,10 +216,14 @@ final filteredPinsProvider =
     Provider.family<List<MapPin>, MapFilters>((ref, f) {
   final pins = ref.watch(allPinsProvider).valueOrNull ?? [];
   return pins.where((pin) {
+    if (f.hideBusinesses && pin.type == MapPinType.business) return false;
     if (f.pin == PinFilter.all) return true;
     if (f.pin == PinFilter.flare && pin.type == MapPinType.flare) return true;
     if (f.pin == PinFilter.help && pin.type == MapPinType.help) return true;
     if (f.pin == PinFilter.business && pin.type == MapPinType.business) {
+      return true;
+    }
+    if (f.pin == PinFilter.followed && pin.type == MapPinType.followedUser) {
       return true;
     }
     return false;

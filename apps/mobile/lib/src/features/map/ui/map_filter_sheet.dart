@@ -3,37 +3,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/rollpit_button.dart';
+import '../providers/location_sharing_provider.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
 
 enum VehicleFilter { all, car, motorcycle }
 
-enum PinFilter { all, flare, business, help }
+enum PinFilter { all, flare, business, help, followed }
 
 class MapFilters {
   const MapFilters({
     this.vehicle = VehicleFilter.all,
     this.pin = PinFilter.all,
+    this.hideBusinesses = false,
   });
 
   final VehicleFilter vehicle;
   final PinFilter pin;
+  final bool hideBusinesses;
 
-  MapFilters copyWith({VehicleFilter? vehicle, PinFilter? pin}) {
+  MapFilters copyWith({
+    VehicleFilter? vehicle,
+    PinFilter? pin,
+    bool? hideBusinesses,
+  }) {
     return MapFilters(
       vehicle: vehicle ?? this.vehicle,
       pin: pin ?? this.pin,
+      hideBusinesses: hideBusinesses ?? this.hideBusinesses,
     );
   }
 
-  bool get isDefault => vehicle == VehicleFilter.all && pin == PinFilter.all;
+  bool get isDefault =>
+      vehicle == VehicleFilter.all && pin == PinFilter.all && !hideBusinesses;
 
   @override
   bool operator ==(Object other) =>
-      other is MapFilters && other.vehicle == vehicle && other.pin == pin;
+      other is MapFilters &&
+      other.vehicle == vehicle &&
+      other.pin == pin &&
+      other.hideBusinesses == hideBusinesses;
 
   @override
-  int get hashCode => Object.hash(vehicle, pin);
+  int get hashCode => Object.hash(vehicle, pin, hideBusinesses);
 }
 
 // ─── Provider ───────────────────────────────────────────────────────────────
@@ -48,6 +60,8 @@ class MapFiltersNotifier extends Notifier<MapFilters> {
 
   void setVehicle(VehicleFilter v) => state = state.copyWith(vehicle: v);
   void setPin(PinFilter p) => state = state.copyWith(pin: p);
+  void setHideBusinesses(bool value) =>
+      state = state.copyWith(hideBusinesses: value);
   void reset() => state = const MapFilters();
 }
 
@@ -70,6 +84,7 @@ class _MapFilterSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filters = ref.watch(mapFiltersProvider);
+    final sharingEnabled = ref.watch(locationSharingProvider);
     final notifier = ref.read(mapFiltersProvider.notifier);
 
     return SafeArea(
@@ -167,7 +182,28 @@ class _MapFilterSheet extends ConsumerWidget {
                     current: filters.pin,
                     onTap: notifier.setPin,
                     icon: Icons.sos_outlined),
+                _PinChip(
+                    label: 'Takip',
+                    value: PinFilter.followed,
+                    current: filters.pin,
+                    onTap: notifier.setPin,
+                    icon: Icons.group_outlined),
               ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            SwitchListTile.adaptive(
+              value: filters.hideBusinesses,
+              onChanged: notifier.setHideBusinesses,
+              contentPadding: EdgeInsets.zero,
+              title: const Text('İşletmeleri gizle'),
+              secondary: const Icon(Icons.store_mall_directory_outlined),
+            ),
+            SwitchListTile.adaptive(
+              value: sharingEnabled,
+              onChanged: ref.read(locationSharingProvider.notifier).setEnabled,
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Konumumu takipçilerle paylaş'),
+              secondary: const Icon(Icons.share_location_outlined),
             ),
             const SizedBox(height: AppSpacing.xl),
 
