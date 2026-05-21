@@ -6,6 +6,7 @@ import type {
   MockCommunityInvite,
   MockBusinessApplication,
   MockBusinessLocation,
+  MockCommunityNeed,
   MockFeedOverride,
   MockHelpRequest,
   MockInviteCode,
@@ -27,6 +28,7 @@ import type {
   BusinessApplicationRow,
   BusinessDocumentRow,
   BusinessLocationRow,
+  CommunityNeedRow,
   CommunityEventRow,
   CommunityDirectInviteRow,
   CommunityInviteRow,
@@ -125,6 +127,22 @@ export interface AdminBusinessLocation {
   featuredRank: number;
   isActive: boolean;
   createdAt: string;
+}
+
+export interface AdminCommunityNeed {
+  id: string;
+  communityId: string;
+  communityName: string;
+  creatorId: string;
+  creatorName: string;
+  creatorUsername: string;
+  type: CommunityNeedRow["type"];
+  urgencyColor: CommunityNeedRow["urgency_color"];
+  body: string;
+  status: CommunityNeedRow["status"];
+  createdAt: string;
+  createdWithin24h: number;
+  flaggedAsSpam: boolean;
 }
 
 export interface AdminUserDetail {
@@ -534,6 +552,12 @@ interface BusinessLocationRecord
     | "created_at"
   > {
   owner_profile: Pick<ProfileRow, "username" | "display_name"> | null;
+}
+
+interface CommunityNeedRecord
+  extends Pick<CommunityNeedRow, "id" | "community_id" | "creator_id" | "type" | "urgency_color" | "body" | "status" | "created_at"> {
+  community: Pick<CommunityRow, "name"> | null;
+  creator_profile: Pick<ProfileRow, "username" | "display_name"> | null;
 }
 
 interface ProfileContentRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio"> {}
@@ -1089,6 +1113,27 @@ function mapBusinessLocation(location: BusinessLocationRecord): AdminBusinessLoc
     featuredRank: location.featured_rank,
     isActive: location.is_active,
     createdAt: formatDateTime(location.created_at),
+  };
+}
+
+function mapCommunityNeed(
+  need: CommunityNeedRecord,
+  createdWithin24h: number,
+): AdminCommunityNeed {
+  return {
+    id: need.id,
+    communityId: need.community_id,
+    communityName: need.community?.name ?? shortenId(need.community_id),
+    creatorId: need.creator_id,
+    creatorName: profileLabel(need.creator_profile, shortenId(need.creator_id)),
+    creatorUsername: need.creator_profile?.username ?? shortenId(need.creator_id),
+    type: need.type,
+    urgencyColor: need.urgency_color,
+    body: need.body,
+    status: need.status,
+    createdAt: formatDateTime(need.created_at),
+    createdWithin24h,
+    flaggedAsSpam: createdWithin24h >= 5,
   };
 }
 
@@ -2513,6 +2558,64 @@ export async function getAdminBusinessLocationsOrMock(
 
     return {
       data: (result.data as unknown as BusinessLocationRecord[]).map(mapBusinessLocation),
+      usingMockData: false,
+    };
+  } catch {
+    return toMockResult();
+  }
+}
+
+export async function getAdminCommunityNeedsOrMock(
+  mockNeeds: MockCommunityNeed[],
+): Promise<AdminDataResult<AdminCommunityNeed[]>> {
+  const toMockResult = () => ({
+    data: mockNeeds.map((need) => ({
+      id: need.id,
+      communityId: need.id,
+      communityName: need.communityName,
+      creatorId: need.id,
+      creatorName: need.creatorName,
+      creatorUsername: need.creatorUsername,
+      type: need.type,
+      urgencyColor: need.urgencyColor,
+      body: need.body,
+      status: need.status,
+      createdAt: need.createdAt,
+      createdWithin24h: need.createdWithin24h,
+      flaggedAsSpam: need.flaggedAsSpam,
+    })),
+    usingMockData: true,
+  });
+
+  try {
+    const supabase = createAdminSupabaseClient();
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const result = await supabase
+      .from("community_needs")
+      .select(
+        "id, community_id, creator_id, type, urgency_color, body, status, created_at, community:communities(name), creator_profile:profiles!community_needs_creator_id_fkey(username, display_name)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (result.error || !result.data) {
+      return toMockResult();
+    }
+
+    const recentResult = await supabase
+      .from("community_needs")
+      .select("creator_id, created_at")
+      .gte("created_at", since24h);
+
+    const recentCounts = new Map<string, number>();
+    if (!recentResult.error && recentResult.data) {
+      for (const row of recentResult.data as Array<Pick<CommunityNeedRow, "creator_id" | "created_at">>) {
+        recentCounts.set(row.creator_id, (recentCounts.get(row.creator_id) ?? 0) + 1);
+      }
+    }
+
+    return {
+      data: (result.data as unknown as CommunityNeedRecord[]).map((need) => mapCommunityNeed(need, recentCounts.get(need.creator_id) ?? 1)),
       usingMockData: false,
     };
   } catch {

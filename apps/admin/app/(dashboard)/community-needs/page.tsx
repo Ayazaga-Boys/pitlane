@@ -1,0 +1,109 @@
+import { DataStateBanner } from "@/components/dashboard/data-state-banner";
+import { PageShell } from "@/components/dashboard/page-shell";
+import { CommunityNeedsTable } from "@/components/community-needs/community-needs-table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getAdminCommunityNeedsOrMock } from "@/lib/admin-data";
+import { mockCommunityNeeds } from "@/lib/mock-data";
+
+export default async function CommunityNeedsPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string; status?: string; urgency?: string; flagged?: string };
+}) {
+  const { data: needs, usingMockData } = await getAdminCommunityNeedsOrMock(mockCommunityNeeds);
+  const query = searchParams?.q?.trim().toLocaleLowerCase("tr-TR") ?? "";
+  const status = searchParams?.status?.trim() ?? "";
+  const urgency = searchParams?.urgency?.trim() ?? "";
+  const flagged = searchParams?.flagged?.trim() ?? "";
+
+  const filteredNeeds = needs.filter((need) => {
+    const matchesQuery =
+      !query ||
+      [need.body, need.communityName, need.creatorName, need.creatorUsername]
+        .join(" ")
+        .toLocaleLowerCase("tr-TR")
+        .includes(query);
+    const matchesStatus = !status || need.status === status;
+    const matchesUrgency = !urgency || need.urgencyColor === urgency;
+    const matchesFlagged = !flagged || (flagged === "yes" ? need.flaggedAsSpam : flagged === "no" ? !need.flaggedAsSpam : true);
+    return matchesQuery && matchesStatus && matchesUrgency && matchesFlagged;
+  });
+
+  const flaggedCount = needs.filter((need) => need.flaggedAsSpam).length;
+
+  return (
+    <PageShell
+      eyebrow="V2.6 community operations"
+      title="Community Needs"
+      description="Yedek parça, yakıt ve yardım ilanlarını izler; 24 saatte 5+ paylaşım yapan kullanıcıları spam sinyaliyle öne çıkarır."
+    >
+      <DataStateBanner
+        usingMockData={usingMockData}
+        mockLabel="Community needs kontratı için örnek spam izleme ekranı gösteriliyor."
+        liveLabel="Gerçek community need verisi okunuyor ve 24 saatlik spam sinyali hesaplanıyor."
+      />
+
+      <div className="grid gap-lg xl:grid-cols-[0.8fr_0.2fr]">
+        <section className="surface-panel p-xl">
+          <form className="mb-lg grid gap-md md:grid-cols-2 xl:grid-cols-4" method="get">
+            <label className="space-y-sm xl:col-span-2">
+              <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Arama</span>
+              <Input defaultValue={searchParams?.q ?? ""} name="q" placeholder="İlan, topluluk veya kullanıcı ara" />
+            </label>
+            <label className="space-y-sm">
+              <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Durum</span>
+              <select className="focus-ring min-h-12 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary" defaultValue={status} name="status">
+                <option value="">Tümü</option>
+                <option value="open">Open</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+              </select>
+            </label>
+            <label className="space-y-sm">
+              <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Urgency</span>
+              <select className="focus-ring min-h-12 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary" defaultValue={urgency} name="urgency">
+                <option value="">Tümü</option>
+                <option value="red">Red</option>
+                <option value="yellow">Yellow</option>
+              </select>
+            </label>
+            <label className="space-y-sm">
+              <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Spam flag</span>
+              <select className="focus-ring min-h-12 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary" defaultValue={flagged} name="flagged">
+                <option value="">Tümü</option>
+                <option value="yes">Flagli</option>
+                <option value="no">Temiz</option>
+              </select>
+            </label>
+            <div className="flex gap-sm md:col-span-2 xl:col-span-4">
+              <Button type="submit">Filtrele</Button>
+              <a className="focus-ring inline-flex min-h-11 items-center justify-center rounded-sm bg-surface-3 px-lg py-md text-sm font-semibold text-text-primary" href="/community-needs">
+                Temizle
+              </a>
+            </div>
+          </form>
+
+          <CommunityNeedsTable needs={filteredNeeds} />
+        </section>
+
+        <section className="surface-panel p-xl">
+          <h2 className="text-lg font-semibold text-text-primary">Spam özeti</h2>
+          <div className="mt-lg space-y-md">
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Toplam açık ilan</p>
+              <p className="mt-xs text-3xl font-semibold text-text-primary">{needs.filter((need) => need.status === "open").length}</p>
+            </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Flagli kullanıcı</p>
+              <p className="mt-xs text-3xl font-semibold text-text-primary">{flaggedCount}</p>
+            </div>
+            <p className="text-sm leading-6 text-text-secondary">
+              Şu an otomatik blok yerine operatör görünürlüğü sağlanıyor. Backend koruma kuralı geldiğinde aynı eşiğe server-side aksiyon bağlanabilir.
+            </p>
+          </div>
+        </section>
+      </div>
+    </PageShell>
+  );
+}

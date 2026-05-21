@@ -270,6 +270,20 @@ export interface MockBusinessLocation {
   createdAt: string;
 }
 
+export interface MockCommunityNeed {
+  id: string;
+  communityName: string;
+  creatorName: string;
+  creatorUsername: string;
+  type: "parts" | "fuel" | "tools" | "ride_help" | "other";
+  urgencyColor: "yellow" | "red";
+  body: string;
+  status: "open" | "resolved" | "closed";
+  createdAt: string;
+  createdWithin24h: number;
+  flaggedAsSpam: boolean;
+}
+
 export interface MockWaitingListEntry {
   id: string;
   email: string;
@@ -1150,6 +1164,48 @@ export const mockBusinessLocations: MockBusinessLocation[] = [
     featuredRank: 12,
     isActive: true,
     createdAt: "2026-05-19 10:15",
+  },
+];
+
+export const mockCommunityNeeds: MockCommunityNeed[] = [
+  {
+    id: "need_01",
+    communityName: "Alfistiler",
+    creatorName: "Mert Caglar",
+    creatorUsername: "mertc",
+    type: "parts",
+    urgencyColor: "yellow",
+    body: "159 için temiz çıkma ön tampon arıyorum, İstanbul içi teslim öncelikli.",
+    status: "open",
+    createdAt: "2026-05-21 10:15",
+    createdWithin24h: 2,
+    flaggedAsSpam: false,
+  },
+  {
+    id: "need_02",
+    communityName: "Route 35 Garage",
+    creatorName: "Doga Tunc",
+    creatorUsername: "dogatunc",
+    type: "fuel",
+    urgencyColor: "red",
+    body: "Acil yakıt desteği lazım, Bornova çevresi ulaşabilecek var mı?",
+    status: "open",
+    createdAt: "2026-05-21 09:42",
+    createdWithin24h: 6,
+    flaggedAsSpam: true,
+  },
+  {
+    id: "need_03",
+    communityName: "Bogaz Night Riders",
+    creatorName: "Ayga Zengin",
+    creatorUsername: "aygaz",
+    type: "ride_help",
+    urgencyColor: "yellow",
+    body: "Bu akşam rota çıkışı için intercom eşleştirme desteği arıyoruz.",
+    status: "open",
+    createdAt: "2026-05-20 19:30",
+    createdWithin24h: 1,
+    flaggedAsSpam: false,
   },
 ];
 

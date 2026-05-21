@@ -392,6 +392,18 @@ export interface EventRsvpRow {
   updated_at: string;
 }
 
+export interface CommunityNeedRow {
+  id: string;
+  community_id: string;
+  creator_id: string;
+  type: "parts" | "fuel" | "tools" | "ride_help" | "other";
+  urgency_color: "yellow" | "red";
+  body: string;
+  status: "open" | "resolved" | "closed";
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AuditLogRow {
   id: string;
   actor_id: string;
@@ -522,6 +534,18 @@ export interface Database {
         Row: CommunityMemberRow;
         Insert: CommunityMemberRow;
         Update: Partial<CommunityMemberRow>;
+        Relationships: [];
+      };
+      community_needs: {
+        Row: CommunityNeedRow;
+        Insert: Partial<CommunityNeedRow> & {
+          community_id: string;
+          creator_id: string;
+          type: CommunityNeedRow["type"];
+          urgency_color: CommunityNeedRow["urgency_color"];
+          body: string;
+        };
+        Update: Partial<CommunityNeedRow>;
         Relationships: [];
       };
       reports: {
