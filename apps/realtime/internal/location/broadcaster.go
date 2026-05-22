@@ -57,6 +57,9 @@ func (b *Broadcaster) OnCellUpdate(ctx context.Context, userID, h3Cell string, s
 	b.mu.Unlock()
 
 	counts := b.store.GetCellCounts(context.Background())
+	if err := b.store.WriteHeatmapSnapshots(ctx); err != nil {
+		log.Warn().Err(err).Msg("heatmap_snapshot_write_failed")
+	}
 
 	payload := map[string]any{
 		"type":  "heatmap_update",

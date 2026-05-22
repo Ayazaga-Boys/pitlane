@@ -15,7 +15,7 @@ export function PageShell({ eyebrow, title, description, children }: PageShellPr
           <p className="font-mono text-xs uppercase tracking-[0.22em] text-pit-red-soft">{eyebrow}</p>
         ) : null}
         <div className="space-y-xs">
-          <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{title}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">{title}</h1>
           <p className="max-w-3xl text-sm leading-6 text-text-secondary">{description}</p>
         </div>
       </div>

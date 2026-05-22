@@ -86,11 +86,12 @@ func TestMessageMarshal(t *testing.T) {
 
 func newTestClient(h *Hub, userID string) *Client {
 	return &Client{
-		hub:           h,
-		conn:          nil, // connection gerekmeyen testler için
-		userID:        userID,
-		send:          make(chan []byte, sendBufferSize),
-		subscriptions: make(map[string]int),
+		hub:               h,
+		conn:              nil, // connection gerekmeyen testler için
+		userID:            userID,
+		send:              make(chan []byte, sendBufferSize),
+		subscriptions:     make(map[string]int),
+		userSubscriptions: make(map[string]struct{}),
 	}
 }
 
@@ -204,6 +205,115 @@ func TestSendToSubscribersDeliversOnlyInterestedClients(t *testing.T) {
 	}
 }
 
+func TestSendPresenceUpdateToUserSubscribers(t *testing.T) {
+	h := newTestHub()
+	follower := newTestClient(h, "follower-user")
+	other := newTestClient(h, "other-user")
+	target := newTestClient(h, "target-user")
+	follower.subscribeUser(target.userID)
+
+	h.mu.Lock()
+	h.clients[follower.userID] = follower
+	h.clients[other.userID] = other
+	h.clients[target.userID] = target
+	h.mu.Unlock()
+
+	h.SendPresenceUpdateToUserSubscribers(target.userID, "online")
+
+	select {
+	case raw := <-follower.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal presence message: %v", err)
+		}
+		if msg.Type != TypePresenceUpdate || msg.UserID != target.userID || msg.Status != "online" {
+			t.Fatalf("unexpected presence payload: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("follower did not receive presence update")
+	}
+
+	select {
+	case raw := <-other.send:
+		t.Fatalf("non-subscriber received %s", raw)
+	case <-time.After(50 * time.Millisecond):
+		// expected
+	}
+}
+
+func TestLocationShareRespectsCooldownAndGhostMode(t *testing.T) {
+	h := newTestHub()
+	c := newTestClient(h, "driver-user")
+
+	if !c.shouldShareLocation("89283082803ffff", time.Unix(100, 0)) {
+		t.Fatal("first location should be shared")
+	}
+	if c.shouldShareLocation("89283082803ffff", time.Unix(110, 0)) {
+		t.Fatal("same cell inside cooldown should be suppressed")
+	}
+	if !c.shouldShareLocation("8928308280fffff", time.Unix(111, 0)) {
+		t.Fatal("cell change should be shared immediately")
+	}
+	if !c.shouldShareLocation("8928308280fffff", time.Unix(142, 0)) {
+		t.Fatal("same cell after cooldown should be shared")
+	}
+
+	c.setGhostMode(true)
+	if c.shouldShareLocation("89283082803ffff", time.Unix(200, 0)) {
+		t.Fatal("ghost mode should suppress location_share")
+	}
+}
+
+func TestSubscribeUserRequiresFollowCache(t *testing.T) {
+	h := newTestHub()
+	c := newTestClient(h, "follower-user")
+
+	c.handleMessage(InboundMessage{Type: TypeSubscribeUser, UserID: "target-user"})
+
+	select {
+	case raw := <-c.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal error message: %v", err)
+		}
+		if msg.Type != TypeError || msg.Code != "FORBIDDEN" {
+			t.Fatalf("expected FORBIDDEN error, got %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("expected forbidden error")
+	}
+
+	if c.followsUser("target-user") {
+		t.Fatal("target should not be subscribed when follow cache denies it")
+	}
+}
+
+func TestSubscribeUserAllowedByFollowCache(t *testing.T) {
+	h := newTestHub()
+	c := newTestClient(h, "follower-user")
+	if err := h.store.SetFollowees(context.Background(), c.userID, []string{"target-user"}); err != nil {
+		t.Fatalf("SetFollowees failed: %v", err)
+	}
+
+	c.handleMessage(InboundMessage{Type: TypeSubscribeUser, UserID: "target-user"})
+
+	if !c.followsUser("target-user") {
+		t.Fatal("target should be subscribed when follow cache allows it")
+	}
+	select {
+	case raw := <-c.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal presence snapshot: %v", err)
+		}
+		if msg.Type != TypePresenceUpdate || msg.UserID != "target-user" || msg.Status != "offline" {
+			t.Fatalf("unexpected presence snapshot: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("expected presence snapshot")
+	}
+}
+
 func TestServeHelpEventRequiresBearerToken(t *testing.T) {
 	h := newTestHub()
 	body := []byte(`{"type":"help_created","help_request_id":"help-1","h3_cell":"8929a15b3a3ffff","requester_id":"user-help","issue_type":"flat_tire"}`)
@@ -288,6 +398,157 @@ func TestHubShutdownOnContextCancel(t *testing.T) {
 	}
 }
 
+func TestServeSocialEventStoryPosted(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	author := newTestClient(h, "author-user")
+	follower := newTestClient(h, "follower-user")
+	stranger := newTestClient(h, "stranger-user")
+	follower.subscribeUser(author.userID)
+
+	h.register <- author
+	h.register <- follower
+	h.register <- stranger
+	time.Sleep(20 * time.Millisecond)
+
+	// Drain register presence updates
+	for len(author.send) > 0 {
+		<-author.send
+	}
+	for len(follower.send) > 0 {
+		<-follower.send
+	}
+
+	body := []byte(`{"type":"story_posted","author_id":"author-user","story_id":"story-1"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/social-event", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer test-secret")
+	rec := httptest.NewRecorder()
+	h.ServeSocialEvent(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", rec.Code)
+	}
+
+	select {
+	case raw := <-follower.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if msg.Type != TypeStoryPosted || msg.UserID != "author-user" || msg.StoryID != "story-1" {
+			t.Fatalf("unexpected story event: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("follower did not receive story_posted")
+	}
+
+	select {
+	case raw := <-stranger.send:
+		t.Fatalf("stranger received story event: %s", raw)
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func TestServeSocialEventPostLiked(t *testing.T) {
+	h := newTestHub()
+
+	author := newTestClient(h, "post-author")
+	h.mu.Lock()
+	h.clients[author.userID] = author
+	h.mu.Unlock()
+
+	body := []byte(`{"type":"post_liked","author_id":"post-author","post_id":"post-1","liker_id":"liker-user"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/social-event", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer test-secret")
+	rec := httptest.NewRecorder()
+	h.ServeSocialEvent(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", rec.Code)
+	}
+
+	select {
+	case raw := <-author.send:
+		var msg OutboundMessage
+		if err := json.Unmarshal(raw, &msg); err != nil {
+			t.Fatalf("unmarshal: %v", err)
+		}
+		if msg.Type != TypePostLiked || msg.PostID != "post-1" || msg.LikerID != "liker-user" {
+			t.Fatalf("unexpected post_liked event: %+v", msg)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("author did not receive post_liked")
+	}
+}
+
+func TestServeSocialEventRejectsNoAuth(t *testing.T) {
+	h := newTestHub()
+	body := []byte(`{"type":"story_posted","author_id":"user-1","story_id":"s-1"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/social-event", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+	h.ServeSocialEvent(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", rec.Code)
+	}
+}
+
+func TestServeHelpEventTargetedFollowers(t *testing.T) {
+	h := newTestHub()
+	go h.Run(context.Background())
+
+	target1 := newTestClient(h, "follower-1")
+	target2 := newTestClient(h, "follower-2")
+	other := newTestClient(h, "other-user")
+
+	h.register <- target1
+	h.register <- target2
+	h.register <- other
+	time.Sleep(20 * time.Millisecond)
+
+	for len(target1.send) > 0 {
+		<-target1.send
+	}
+	for len(target2.send) > 0 {
+		<-target2.send
+	}
+
+	body := []byte(`{"type":"help_created","help_request_id":"help-2","h3_cell":"8929a15b3a3ffff","requester_id":"requester","target_type":"followers","target_ids":["follower-1","follower-2"],"urgency":"critical"}`)
+	req := httptest.NewRequest(http.MethodPost, "/internal/realtime/help-event", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer test-secret")
+	rec := httptest.NewRecorder()
+	h.ServeHelpEvent(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", rec.Code)
+	}
+
+	for _, c := range []*Client{target1, target2} {
+		select {
+		case raw := <-c.send:
+			var msg OutboundMessage
+			if err := json.Unmarshal(raw, &msg); err != nil {
+				t.Fatalf("unmarshal: %v", err)
+			}
+			if msg.Type != TypeHelpTargeted {
+				t.Fatalf("expected %s, got %s", TypeHelpTargeted, msg.Type)
+			}
+			if msg.Urgency != UrgencyCritical {
+				t.Fatalf("expected critical urgency, got %s", msg.Urgency)
+			}
+		case <-time.After(100 * time.Millisecond):
+			t.Fatalf("target %s did not receive help_targeted", c.userID)
+		}
+	}
+
+	select {
+	case raw := <-other.send:
+		t.Fatalf("non-target received %s", raw)
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
 func TestIsValidH3Cell(t *testing.T) {
 	tests := []struct {
 		input string
@@ -320,6 +581,8 @@ func TestInboundMessageTypes(t *testing.T) {
 		{`{"type":"ghost_off"}`, TypeGhostOff},
 		{`{"type":"subscribe_cell","h3_cell":"89283082803ffff","k":2}`, TypeSubscribeCell},
 		{`{"type":"unsubscribe_cell","h3_cell":"89283082803ffff"}`, TypeUnsubscribeCell},
+		{`{"type":"subscribe_user","user_id":"target-user"}`, TypeSubscribeUser},
+		{`{"type":"unsubscribe_user","user_id":"target-user"}`, TypeUnsubscribeUser},
 	}
 
 	for _, tt := range tests {

@@ -20,12 +20,24 @@ import (
 const helpEventKRing = 2
 
 type helpEventRequest struct {
-	Type          string `json:"type"`
-	HelpRequestID string `json:"help_request_id"`
-	H3Cell        string `json:"h3_cell"`
-	RequesterID   string `json:"requester_id"`
-	HelperID      string `json:"helper_id,omitempty"`
-	IssueType     string `json:"issue_type,omitempty"`
+	Type          string   `json:"type"`
+	HelpRequestID string   `json:"help_request_id"`
+	H3Cell        string   `json:"h3_cell"`
+	RequesterID   string   `json:"requester_id"`
+	HelperID      string   `json:"helper_id,omitempty"`
+	IssueType     string   `json:"issue_type,omitempty"`
+	TargetType    string   `json:"target_type,omitempty"` // "nearby" | "followers" | "group"
+	TargetIDs     []string `json:"target_ids,omitempty"`  // backend'in hesapladığı hedef kullanıcı listesi
+	Urgency       string   `json:"urgency,omitempty"`     // "critical" | "urgent" | "request"
+}
+
+type socialEventRequest struct {
+	Type        string `json:"type"`      // "story_posted" | "post_liked" | "post_commented"
+	AuthorID    string `json:"author_id"` // story: yazar; post: post sahibi
+	StoryID     string `json:"story_id,omitempty"`
+	PostID      string `json:"post_id,omitempty"`
+	LikerID     string `json:"liker_id,omitempty"`
+	CommenterID string `json:"commenter_id,omitempty"`
 }
 
 func newUpgrader(cfg *config.Config) websocket.Upgrader {
@@ -98,17 +110,23 @@ func (h *Hub) Run(ctx context.Context) {
 			h.mu.Unlock()
 			metrics.WsConnectionsTotal.Inc()
 			metrics.WsActiveConnections.Inc()
+			h.SendPresenceUpdateToUserSubscribers(c.userID, "online")
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_connected")
 
 		case c := <-h.unregister:
+			removed := false
 			h.mu.Lock()
 			if _, ok := h.clients[c.userID]; ok {
 				delete(h.clients, c.userID)
 				close(c.send)
 				_ = h.store.DeleteUserCell(context.Background(), c.userID)
 				metrics.WsActiveConnections.Dec()
+				removed = true
 			}
 			h.mu.Unlock()
+			if removed {
+				h.SendPresenceUpdateToUserSubscribers(c.userID, "offline")
+			}
 			log.Info().Str("userID", c.userID).Int("total", len(h.clients)).Msg("client_disconnected")
 		}
 	}
@@ -131,11 +149,12 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := &Client{
-		hub:           h,
-		conn:          conn,
-		userID:        userID,
-		send:          make(chan []byte, sendBufferSize),
-		subscriptions: make(map[string]int),
+		hub:               h,
+		conn:              conn,
+		userID:            userID,
+		send:              make(chan []byte, sendBufferSize),
+		subscriptions:     make(map[string]int),
+		userSubscriptions: make(map[string]struct{}),
 	}
 	h.register <- c
 	go c.writePump()
@@ -166,10 +185,27 @@ func (h *Hub) ServeHelpEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	urgency := event.Urgency
+	if urgency == "" {
+		urgency = UrgencyUrgent
+	}
+	targetType := event.TargetType
+	if targetType == "" {
+		targetType = HelpTargetNearby
+	}
+
+	outType := TypeHelpNearby
+	if targetType != HelpTargetNearby {
+		outType = TypeHelpTargeted
+	}
+
 	payload := OutboundMessage{
-		Type:   TypeHelpNearby,
-		HelpID: event.HelpRequestID,
-		H3Cell: event.H3Cell,
+		Type:       outType,
+		HelpID:     event.HelpRequestID,
+		H3Cell:     event.H3Cell,
+		Urgency:    urgency,
+		TargetType: targetType,
+		IssueType:  event.IssueType,
 	}
 	switch event.Type {
 	case TypeHelpCreated:
@@ -185,10 +221,93 @@ func (h *Hub) ServeHelpEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.SendToSubscribersWithK(event.H3Cell, helpEventKRing, msg)
+	switch targetType {
+	case HelpTargetNearby:
+		h.SendToSubscribersWithK(event.H3Cell, helpEventKRing, msg)
+	case HelpTargetFollowers, HelpTargetGroup:
+		// Backend hangi kullanıcıların bildirim alacağını hesaplar ve target_ids ile gönderir
+		for _, uid := range event.TargetIDs {
+			h.SendToUser(uid, msg)
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	_, _ = w.Write([]byte(`{"ok":true}`))
+}
+
+// ServeSocialEvent — backend'den gelen story/post event'lerini ilgili kullanıcılara iletir
+func (h *Hub) ServeSocialEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if h.cfg.InternalSecret == "" {
+		http.Error(w, "Internal secret not configured", http.StatusServiceUnavailable)
+		return
+	}
+	if r.Header.Get("Authorization") != "Bearer "+h.cfg.InternalSecret {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var event socialEventRequest
+	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	if !event.isValid() {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	switch event.Type {
+	case TypeStoryPosted:
+		// Yazarı takip eden çevrimiçi kullanıcılara yayınla
+		payload := OutboundMessage{
+			Type:    TypeStoryPosted,
+			UserID:  event.AuthorID,
+			StoryID: event.StoryID,
+		}
+		h.SendToUserSubscribers(event.AuthorID, payload)
+
+	case TypePostLiked:
+		// Sadece post sahibine gönder
+		payload := OutboundMessage{
+			Type:    TypePostLiked,
+			PostID:  event.PostID,
+			LikerID: event.LikerID,
+		}
+		msg, _ := json.Marshal(payload)
+		h.SendToUser(event.AuthorID, msg)
+
+	case TypePostCommented:
+		// Sadece post sahibine gönder
+		payload := OutboundMessage{
+			Type:        TypePostCommented,
+			PostID:      event.PostID,
+			CommenterID: event.CommenterID,
+		}
+		msg, _ := json.Marshal(payload)
+		h.SendToUser(event.AuthorID, msg)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_, _ = w.Write([]byte(`{"ok":true}`))
+}
+
+func (e socialEventRequest) isValid() bool {
+	switch e.Type {
+	case TypeStoryPosted:
+		return e.AuthorID != "" && e.StoryID != ""
+	case TypePostLiked:
+		return e.AuthorID != "" && e.PostID != "" && e.LikerID != ""
+	case TypePostCommented:
+		return e.AuthorID != "" && e.PostID != "" && e.CommenterID != ""
+	default:
+		return false
+	}
 }
 
 // SendToUser — belirli bir kullanıcıya mesaj gönder
@@ -236,6 +355,74 @@ func (h *Hub) SendToSubscribersWithK(h3Cell string, minK int, msg []byte) {
 		default:
 			log.Warn().Str("userID", userID).Msg("send_buffer_full_subscribers")
 		}
+	}
+}
+
+func (h *Hub) SendPresenceSnapshot(c *Client, targetUserID string) {
+	status := "offline"
+	h.mu.RLock()
+	if _, ok := h.clients[targetUserID]; ok {
+		status = "online"
+	}
+	h.mu.RUnlock()
+
+	payload := OutboundMessage{
+		Type:   TypePresenceUpdate,
+		UserID: targetUserID,
+		Status: status,
+	}
+	h.sendOutboundToClient(c, payload)
+}
+
+func (h *Hub) SendPresenceUpdateToUserSubscribers(targetUserID, status string) {
+	payload := OutboundMessage{
+		Type:   TypePresenceUpdate,
+		UserID: targetUserID,
+		Status: status,
+	}
+	h.SendToUserSubscribers(targetUserID, payload)
+}
+
+func (h *Hub) SendLocationShareToUserSubscribers(targetUserID, h3Cell string) {
+	payload := OutboundMessage{
+		Type:   TypeLocationShare,
+		UserID: targetUserID,
+		H3Cell: h3Cell,
+	}
+	h.SendToUserSubscribers(targetUserID, payload)
+}
+
+func (h *Hub) SendToUserSubscribers(targetUserID string, payload OutboundMessage) {
+	msg, err := json.Marshal(payload)
+	if err != nil {
+		log.Error().Err(err).Str("targetUserID", targetUserID).Msg("user_subscriber_marshal_failed")
+		return
+	}
+
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for userID, c := range h.clients {
+		if userID == targetUserID || !c.followsUser(targetUserID) {
+			continue
+		}
+		select {
+		case c.send <- msg:
+		default:
+			log.Warn().Str("userID", userID).Str("targetUserID", targetUserID).Msg("send_buffer_full_user_subscriber")
+		}
+	}
+}
+
+func (h *Hub) sendOutboundToClient(c *Client, payload OutboundMessage) {
+	msg, err := json.Marshal(payload)
+	if err != nil {
+		log.Error().Err(err).Str("userID", c.userID).Msg("outbound_marshal_failed")
+		return
+	}
+	select {
+	case c.send <- msg:
+	default:
+		log.Warn().Str("userID", c.userID).Msg("send_buffer_full")
 	}
 }
 

@@ -1,18 +1,34 @@
 import { CommunitiesTable } from "@/components/communities/communities-table";
-import { MockDataBanner } from "@/components/dashboard/mock-data-banner";
+import { DataStateBanner } from "@/components/dashboard/data-state-banner";
 import { PageShell } from "@/components/dashboard/page-shell";
+import { getAdminCommunitiesOrMock } from "@/lib/admin-data";
 import { mockCommunities } from "@/lib/mock-data";
 
-export default function CommunitiesPage() {
+export default async function CommunitiesPage({
+  searchParams,
+}: {
+  searchParams?: { result?: string };
+}) {
+  const { data: communities, usingMockData } = await getAdminCommunitiesOrMock(mockCommunities);
+
   return (
     <PageShell
       eyebrow="Sprint 2 hazırlık"
       title="Topluluklar"
-      description="Topluluk listesi ve moderasyon ekranının temel masaüstü tablosu hazır."
+      description="Topluluk listesi gerçek `communities` verisi varsa canlı, aksi durumda mock akışla çalışır."
     >
-      <MockDataBanner label="Topluluk backend bağımlılığı gelene kadar mock akışta" />
+      {searchParams?.result === "deleted" ? (
+        <div className="rounded-md border border-success/30 bg-success/10 p-md text-sm leading-6 text-text-primary">
+          Topluluk silindi ve liste yeniden yüklendi.
+        </div>
+      ) : null}
+      <DataStateBanner
+        usingMockData={usingMockData}
+        mockLabel="Gerçek communities verisi okunamadı; şimdilik örnek topluluk listesi aktif."
+        liveLabel="Topluluk listesi, üye sayıları ve aktif flare bağlantıları gerçek veriden geliyor."
+      />
       <div className="surface-panel p-xl">
-        <CommunitiesTable communities={mockCommunities} />
+        <CommunitiesTable communities={communities} />
       </div>
     </PageShell>
   );

@@ -1,15 +1,24 @@
+import 'dart:async';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_cluster_manager_2/google_maps_cluster_manager_2.dart'
+    as gmc;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
+import '../data/ws_service.dart';
+import '../providers/followed_user_locations_provider.dart';
 import '../providers/ghost_mode_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/map_cluster_provider.dart';
+import '../providers/map_heatmap_provider.dart';
 import '../providers/map_pins_provider.dart';
 import 'location_permission_screen.dart';
 import 'map_filter_sheet.dart';
@@ -27,7 +36,11 @@ class MapScreen extends ConsumerStatefulWidget {
 class _MapScreenState extends ConsumerState<MapScreen>
     with WidgetsBindingObserver {
   GoogleMapController? _mapController;
+  StreamSubscription<WsHelpEvent>? _helpEventSub;
+  StreamSubscription<WsSocialEvent>? _socialEventSub;
   bool _showPermissionRationale = false;
+  Set<Marker> _clusteredMarkers = {};
+  gmc.ClusterManager<MapPinClusterItem>? _clusterManager;
 
   static const _istanbul = CameraPosition(
     target: LatLng(41.0082, 28.9784),
@@ -50,11 +63,22 @@ class _MapScreenState extends ConsumerState<MapScreen>
         _goToMyLocation();
       }
     });
+    _helpEventSub = ref.read(wsServiceProvider).helpEventStream.listen((event) {
+      if (!mounted) return;
+      _showHelpEventSnackBar(event);
+    });
+    _socialEventSub =
+        ref.read(wsServiceProvider).socialEventStream.listen((event) {
+      if (!mounted) return;
+      _showSocialEventSnackBar(event);
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _helpEventSub?.cancel();
+    _socialEventSub?.cancel();
     super.dispose();
   }
 
@@ -134,18 +158,142 @@ class _MapScreenState extends ConsumerState<MapScreen>
     }
   }
 
+  void _updateClusterManager(List<MapPin> pins) {
+    final items = pins.map(MapPinClusterItem.new).toList();
+    if (_clusterManager == null) {
+      _clusterManager = gmc.ClusterManager<MapPinClusterItem>(
+        items,
+        (markers) {
+          if (mounted) setState(() => _clusteredMarkers = markers);
+        },
+        markerBuilder: _buildClusterMarkerWithNav,
+      );
+      if (_mapController != null) {
+        _clusterManager!.setMapId(_mapController!.mapId);
+      }
+    } else {
+      _clusterManager!.setItems(items);
+    }
+  }
+
+  Future<Marker> _buildClusterMarkerWithNav(
+      gmc.Cluster<MapPinClusterItem> cluster) async {
+    if (cluster.count == 1) {
+      final pin = cluster.items.first.pin;
+      return _toMarker(context, pin);
+    }
+    return _buildClusterBadge(cluster);
+  }
+
+  Future<Marker> _buildClusterBadge(
+      gmc.Cluster<MapPinClusterItem> cluster) async {
+    const size = 56.0;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final paint = Paint()
+      ..color = AppColors.pitRed
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(const Offset(size / 2, size / 2), size / 2, paint);
+
+    final border = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    canvas.drawCircle(const Offset(size / 2, size / 2), size / 2 - 1.5, border);
+
+    final tp = TextPainter(
+      text: TextSpan(
+        text: '${cluster.count}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
+
+    final image =
+        await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final icon = BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
+
+    return Marker(
+      markerId: MarkerId('cluster_${cluster.getId()}'),
+      position: cluster.location,
+      icon: icon,
+      infoWindow: InfoWindow(title: '${cluster.count} pin'),
+      onTap: () {
+        _mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(cluster.location, 15),
+        );
+      },
+    );
+  }
+
+  void _showSocialEventSnackBar(WsSocialEvent event) {
+    if (event.type != WsSocialEventType.storyPosted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text('Takip ettiğin biri yeni bir story paylaştı.'),
+        action: SnackBarAction(
+          label: 'Gör',
+          onPressed: () => context.go('/discover'),
+        ),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  void _showHelpEventSnackBar(WsHelpEvent event) {
+    if (event.type != WsHelpEventType.nearby) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(_helpEventMessage(event.issueType)),
+        action: SnackBarAction(
+          label: 'Aç',
+          onPressed: () => context.go('/help/${event.helpId}'),
+        ),
+      ),
+    );
+  }
+
+  String _helpEventMessage(String? issueType) => switch (issueType) {
+        'breakdown' => 'Yakında arıza yardımı istendi.',
+        'flat_tire' => 'Yakında lastik yardımı istendi.',
+        'fuel' => 'Yakında yakıt yardımı istendi.',
+        'accident' => 'Yakında kaza yardımı istendi.',
+        _ => 'Yakında yeni yardım talebi var.',
+      };
+
   @override
   Widget build(BuildContext context) {
-    final heatmap = ref.watch(heatmapProvider);
     final isGhost = ref.watch(ghostModeProvider);
     final currentCell = ref.watch(locationProvider).valueOrNull;
     final filters = ref.watch(mapFiltersProvider);
+    final liveHeatmap = ref.watch(heatmapProvider);
+    final vehicleHeatmap = filters.vehicle == VehicleFilter.all
+        ? null
+        : ref.watch(vehicleHeatmapProvider(filters.vehicle));
+    final heatmapCells =
+        vehicleHeatmap?.valueOrNull ?? liveHeatmap.valueOrNull ?? {};
     final hasFilter = !filters.isDefault;
     // allPinsProvider'ı direkt izle — async tamamlanınca harita yeniden çizilir
     final pinsAsync = ref.watch(allPinsProvider);
     final allPins = pinsAsync.valueOrNull ?? [];
+    final followedPins = ref.watch(followedUserPinsProvider);
     final pinsLoading = pinsAsync.isLoading;
-    final pinData = allPins.where((pin) {
+    final pinData = [...allPins, ...followedPins].where((pin) {
+      if (filters.hideBusinesses && pin.type == MapPinType.business) {
+        return false;
+      }
       if (filters.pin == PinFilter.all) {
         return true;
       }
@@ -159,9 +307,14 @@ class _MapScreenState extends ConsumerState<MapScreen>
           pin.type == MapPinType.business) {
         return true;
       }
+      if (filters.pin == PinFilter.followed &&
+          pin.type == MapPinType.followedUser) {
+        return true;
+      }
       return false;
     }).toList();
-    final pins = pinData.map((p) => _toMarker(context, p)).toSet();
+    // Clustering — pin listesi değişince manager'ı güncelle
+    _updateClusterManager(pinData);
 
     return Scaffold(
       backgroundColor: AppColors.surface0,
@@ -170,16 +323,20 @@ class _MapScreenState extends ConsumerState<MapScreen>
           // ── Google Maps ──────────────────────────────────────────────────
           GoogleMap(
             initialCameraPosition: _istanbul,
-            onMapCreated: (c) => _mapController = c,
+            onMapCreated: (c) {
+              _mapController = c;
+              _clusterManager?.setMapId(c.mapId);
+            },
+            onCameraMove: (pos) => _clusterManager?.onCameraMove(pos),
+            onCameraIdle: () => _clusterManager?.updateMap(),
             myLocationEnabled: !isGhost,
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
             mapToolbarEnabled: false,
             style: _darkMapStyle,
-            polygons: heatmap.valueOrNull != null
-                ? _buildHeatmap(heatmap.valueOrNull!)
-                : {},
-            markers: pins,
+            polygons:
+                heatmapCells.isNotEmpty ? _buildHeatmap(heatmapCells) : {},
+            markers: _clusteredMarkers,
           ),
 
           // ── Pin yükleniyor göstergesi ────────────────────────────────────
@@ -321,6 +478,10 @@ void _navigateToPin(BuildContext context, MapPin pin) {
       showHelpDetailSheet(context, pin);
     case MapPinType.business:
       context.push('/pins/${pin.id}');
+    case MapPinType.followedUser:
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(pin.subtitle ?? pin.title)),
+      );
   }
 }
 

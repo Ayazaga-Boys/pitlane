@@ -7,13 +7,22 @@ describe('app routes', () => {
   });
 
   it('serves health without auth', async () => {
+    const previousUrl = process.env.SUPABASE_URL;
+    const previousServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     const app = createApp();
     const response = await app.request('/health');
+
+    process.env.SUPABASE_URL = previousUrl;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = previousServiceRoleKey;
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       ok: true,
       service: 'rollpit-api',
+      database: { status: 'not_configured' },
     });
   });
 
@@ -33,17 +42,143 @@ describe('app routes', () => {
     expect(response.status).toBe(200);
     expect(body.data.app_name).toBe('Rollpit');
     expect(body.data.feature_flags.invite_only).toBe(true);
+    expect(body.data.media.image_variants).toContainEqual(expect.objectContaining({
+      name: 'feed',
+      width: 640,
+      height: 480,
+    }));
   });
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const [profileResponse, vehiclesResponse] = await Promise.all([
+    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse, publicCancelResponse] = await Promise.all([
       app.request('/v1/profiles/me'),
       app.request('/v1/profiles/me/vehicles'),
+      app.request('/v1/profiles/me/export'),
+      app.request('/v1/profiles/me', { method: 'DELETE' }),
+      app.request('/v1/profiles/me/deletion/cancel', { method: 'POST' }),
+      app.request('/v1/profiles/deletion/cancel/test-token', { method: 'POST' }),
     ]);
 
     expect(profileResponse.status).toBe(401);
     expect(vehiclesResponse.status).toBe(401);
+    expect(exportResponse.status).toBe(401);
+    expect(deleteResponse.status).toBe(401);
+    expect(cancelDeletionResponse.status).toBe(401);
+    expect(publicCancelResponse.status).not.toBe(401);
+  });
+
+  it('keeps v2 social routes protected', async () => {
+    const app = createApp();
+    const [
+      avatarResponse,
+      privacyResponse,
+      followResponse,
+      followersResponse,
+      requestResponse,
+      createPostResponse,
+      postResponse,
+      userPostsResponse,
+      commentLikeResponse,
+      createStoryResponse,
+      storyFeedResponse,
+      storyViewResponse,
+      discoverFeedResponse,
+      rolePresetsResponse,
+      createRoleResponse,
+      assignRoleResponse,
+      createInviteResponse,
+      acceptInviteResponse,
+      inviteUserResponse,
+      respondInviteResponse,
+      createEventResponse,
+      listEventsResponse,
+      rsvpEventResponse,
+      createPollResponse,
+      createBusinessApplicationResponse,
+      businessApplicationDocumentsResponse,
+      myBusinessApplicationsResponse,
+      adminBusinessApplicationsResponse,
+      approveBusinessApplicationResponse,
+      rejectBusinessApplicationResponse,
+      nearbyBusinessLocationsResponse,
+      v2HeatmapResponse,
+      v2HelpResponse,
+      createNeedResponse,
+      listNeedsResponse,
+    ] = await Promise.all([
+      app.request('/v2/profiles/me/avatar', { method: 'POST' }),
+      app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
+      app.request('/v2/follows/00000000-0000-4000-8000-000000000001', { method: 'POST' }),
+      app.request('/v2/follows/followers?user_id=00000000-0000-4000-8000-000000000001'),
+      app.request('/v2/follow-requests/incoming'),
+      app.request('/v2/posts', { method: 'POST' }),
+      app.request('/v2/posts/00000000-0000-4000-8000-000000000001'),
+      app.request('/v2/users/erol/posts'),
+      app.request('/v2/comments/00000000-0000-4000-8000-000000000001/like', { method: 'POST' }),
+      app.request('/v2/stories', { method: 'POST' }),
+      app.request('/v2/stories/feed'),
+      app.request('/v2/stories/00000000-0000-4000-8000-000000000001/view', { method: 'POST' }),
+      app.request('/v2/discover/feed'),
+      app.request('/v2/communities/role-presets'),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/roles', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/members/00000000-0000-4000-8000-000000000002/role', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/invites', { method: 'POST' }),
+      app.request('/v2/invites/ABCDEF12/accept', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/invite-user', { method: 'POST' }),
+      app.request('/v2/community-invites/00000000-0000-4000-8000-000000000001/respond', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/events', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/events'),
+      app.request('/v2/events/00000000-0000-4000-8000-000000000001/rsvp', { method: 'POST' }),
+      app.request('/v2/events/00000000-0000-4000-8000-000000000001/polls', { method: 'POST' }),
+      app.request('/v2/business/applications', { method: 'POST' }),
+      app.request('/v2/business/applications/00000000-0000-4000-8000-000000000001/documents', { method: 'POST' }),
+      app.request('/v2/business/applications/me'),
+      app.request('/v2/admin/business/applications'),
+      app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/approve', { method: 'POST' }),
+      app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/reject', { method: 'POST' }),
+      app.request('/v2/business/locations/nearby?h3cell=8928308280fffff'),
+      app.request('/v2/map/heatmap?vehicle_type=car'),
+      app.request('/v2/help', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs?status=open'),
+    ]);
+
+    expect(avatarResponse.status).toBe(401);
+    expect(privacyResponse.status).toBe(401);
+    expect(followResponse.status).toBe(401);
+    expect(followersResponse.status).toBe(401);
+    expect(requestResponse.status).toBe(401);
+    expect(createPostResponse.status).toBe(401);
+    expect(postResponse.status).toBe(401);
+    expect(userPostsResponse.status).toBe(401);
+    expect(commentLikeResponse.status).toBe(401);
+    expect(createStoryResponse.status).toBe(401);
+    expect(storyFeedResponse.status).toBe(401);
+    expect(storyViewResponse.status).toBe(401);
+    expect(discoverFeedResponse.status).toBe(401);
+    expect(rolePresetsResponse.status).toBe(401);
+    expect(createRoleResponse.status).toBe(401);
+    expect(assignRoleResponse.status).toBe(401);
+    expect(createInviteResponse.status).toBe(401);
+    expect(acceptInviteResponse.status).toBe(401);
+    expect(inviteUserResponse.status).toBe(401);
+    expect(respondInviteResponse.status).toBe(401);
+    expect(createEventResponse.status).toBe(401);
+    expect(listEventsResponse.status).toBe(401);
+    expect(rsvpEventResponse.status).toBe(401);
+    expect(createPollResponse.status).toBe(401);
+    expect(createBusinessApplicationResponse.status).toBe(401);
+    expect(businessApplicationDocumentsResponse.status).toBe(401);
+    expect(myBusinessApplicationsResponse.status).toBe(401);
+    expect(adminBusinessApplicationsResponse.status).toBe(401);
+    expect(approveBusinessApplicationResponse.status).toBe(401);
+    expect(rejectBusinessApplicationResponse.status).toBe(401);
+    expect(nearbyBusinessLocationsResponse.status).toBe(401);
+    expect(v2HeatmapResponse.status).toBe(401);
+    expect(v2HelpResponse.status).toBe(401);
+    expect(createNeedResponse.status).toBe(401);
+    expect(listNeedsResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
@@ -62,9 +197,15 @@ describe('app routes', () => {
 
   it('keeps pin routes protected', async () => {
     const app = createApp();
-    const response = await app.request('/v1/pins');
+    const [response, taxUploadResponse, taxFinalizeResponse] = await Promise.all([
+      app.request('/v1/pins'),
+      app.request('/v1/pins/00000000-0000-4000-8000-000000000001/tax-document/upload-url', { method: 'POST' }),
+      app.request('/v1/pins/00000000-0000-4000-8000-000000000001/tax-document/finalize', { method: 'POST' }),
+    ]);
 
     expect(response.status).toBe(401);
+    expect(taxUploadResponse.status).toBe(401);
+    expect(taxFinalizeResponse.status).toBe(401);
   });
 
   it('keeps help routes protected', async () => {
@@ -105,13 +246,62 @@ describe('app routes', () => {
 
   it('keeps media routes protected', async () => {
     const app = createApp();
-    const [uploadResponse, finalizeResponse] = await Promise.all([
+    const [uploadResponse, finalizeResponse, deleteResponse] = await Promise.all([
       app.request('/v1/media/upload-url', { method: 'POST' }),
       app.request('/v1/media/finalize', { method: 'POST' }),
+      app.request('/v1/media/00000000-0000-4000-8000-000000000001', { method: 'DELETE' }),
     ]);
 
     expect(uploadResponse.status).toBe(401);
     expect(finalizeResponse.status).toBe(401);
+    expect(deleteResponse.status).toBe(401);
+  });
+
+  it('exposes Cloudflare Stream webhook without user auth', async () => {
+    const previousSecret = process.env.CF_STREAM_WEBHOOK_SECRET;
+    delete process.env.CF_STREAM_WEBHOOK_SECRET;
+
+    const app = createApp();
+    const response = await app.request('/v1/media/webhook/stream', { method: 'POST', body: '{}' });
+
+    if (previousSecret === undefined) {
+      delete process.env.CF_STREAM_WEBHOOK_SECRET;
+    } else {
+      process.env.CF_STREAM_WEBHOOK_SECRET = previousSecret;
+    }
+
+    expect(response.status).toBe(503);
+  });
+
+  it('keeps internal job routes protected', async () => {
+    const previousSecret = process.env.INTERNAL_JOB_SECRET;
+    const previousTriggerSecret = process.env.TRIGGER_SECRET_KEY;
+    process.env.INTERNAL_JOB_SECRET = 'job-secret';
+    delete process.env.TRIGGER_SECRET_KEY;
+
+    const app = createApp();
+    const [
+      retentionResponse,
+      profileDeletionResponse,
+      discoverRefreshResponse,
+      helpExpirationResponse,
+      userExportResponse,
+    ] = await Promise.all([
+      app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/profile-deletion/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/discover-refresh/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/help-expiration/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/user-export/run', { method: 'POST', body: '{}' }),
+    ]);
+
+    restoreEnv('INTERNAL_JOB_SECRET', previousSecret);
+    restoreEnv('TRIGGER_SECRET_KEY', previousTriggerSecret);
+
+    expect(retentionResponse.status).toBe(401);
+    expect(profileDeletionResponse.status).toBe(401);
+    expect(discoverRefreshResponse.status).toBe(401);
+    expect(helpExpirationResponse.status).toBe(401);
+    expect(userExportResponse.status).toBe(401);
   });
 
   it('keeps message routes protected', async () => {
@@ -129,3 +319,11 @@ describe('app routes', () => {
     expect(response.status).toBe(503);
   });
 });
+
+function restoreEnv(key: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
+  }
+}

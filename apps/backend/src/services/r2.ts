@@ -11,8 +11,13 @@ interface R2Config {
 
 interface GenerateUploadUrlInput {
   storageKey: string;
-  method?: 'PUT';
+  method?: 'GET' | 'PUT' | 'DELETE' | 'HEAD';
   expiresInSeconds?: number;
+}
+
+export interface R2ObjectMetadata {
+  contentType?: string;
+  sizeBytes?: number;
 }
 
 export function isR2Configured(): boolean {
@@ -31,6 +36,23 @@ export function createMediaStorageKey(input: {
 }): string {
   const folder = input.assetType === 'photo' ? 'photos' : 'videos';
   return `${folder}/${input.userId}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
+}
+
+export function createBusinessTaxDocumentStorageKey(input: {
+  userId: string;
+  pinId: string;
+  contentType: string;
+}): string {
+  return `business-tax-documents/${input.pinId}/${input.userId}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
+}
+
+export function createBusinessApplicationDocumentStorageKey(input: {
+  userId: string;
+  applicationId: string;
+  documentType: string;
+  contentType: string;
+}): string {
+  return `business-applications/${input.applicationId}/${input.userId}/${input.documentType}/${randomUUID()}.${extensionForContentType(input.contentType)}`;
 }
 
 export function generateR2UploadUrl(input: GenerateUploadUrlInput): string {
@@ -77,6 +99,58 @@ export function generateR2UploadUrl(input: GenerateUploadUrlInput): string {
   return `${endpoint.origin}${canonicalUri}?${toCanonicalQuery(query)}`;
 }
 
+export async function deleteR2Object(storageKey: string): Promise<void> {
+  const url = generateR2UploadUrl({ storageKey, method: 'DELETE' });
+  const response = await fetch(url, { method: 'DELETE' });
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`R2 delete failed with status ${response.status}`);
+  }
+}
+
+export async function putR2Object(input: {
+  storageKey: string;
+  body: string;
+  contentType: string;
+}): Promise<void> {
+  const url = generateR2UploadUrl({ storageKey: input.storageKey, method: 'PUT' });
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': input.contentType },
+    body: input.body,
+  });
+
+  if (!response.ok) {
+    throw new Error(`R2 put failed with status ${response.status}`);
+  }
+}
+
+export function generateR2ReadUrl(storageKey: string, expiresInSeconds = PRESIGNED_TTL_SECONDS): string {
+  return generateR2UploadUrl({ storageKey, method: 'GET', expiresInSeconds });
+}
+
+export async function headR2Object(storageKey: string): Promise<R2ObjectMetadata | null> {
+  const url = generateR2UploadUrl({ storageKey, method: 'HEAD' });
+  const response = await fetch(url, { method: 'HEAD' });
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`R2 head failed with status ${response.status}`);
+  }
+
+  const sizeHeader = response.headers.get('content-length');
+  const contentType = response.headers.get('content-type') ?? undefined;
+  const metadata: R2ObjectMetadata = {};
+
+  if (contentType) metadata.contentType = contentType;
+  if (sizeHeader) {
+    const sizeBytes = Number(sizeHeader);
+    if (Number.isSafeInteger(sizeBytes) && sizeBytes > 0) metadata.sizeBytes = sizeBytes;
+  }
+
+  return metadata;
+}
+
 function getR2Config(): R2Config {
   const endpoint = process.env.R2_ENDPOINT;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
@@ -100,6 +174,8 @@ function extensionForContentType(contentType: string): string {
       return 'webp';
     case 'video/mp4':
       return 'mp4';
+    case 'application/pdf':
+      return 'pdf';
     default:
       return 'bin';
   }

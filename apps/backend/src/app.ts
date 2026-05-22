@@ -5,8 +5,10 @@ import { requireAuth } from './middleware/auth.js';
 import { maintenanceMode } from './middleware/maintenance.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { rateLimit } from './middleware/rate-limit.js';
-import { mountProtectedRoutes, mountPublicRoutes } from './routes/index.js';
+import { mountProtectedRoutes, mountProtectedV2Routes, mountPublicRoutes, mountPublicV2Routes } from './routes/index.js';
 import { logger } from './lib/logger.js';
+import { checkDatabaseHealth } from './services/health.js';
+import { captureException } from './services/sentry.js';
 import type { AppEnv } from './types/hono.js';
 
 export function createApp() {
@@ -16,7 +18,11 @@ export function createApp() {
   app.use('*', cors({ origin: ['http://localhost:3001', 'https://admin.rollpit.com'] }));
   app.use('*', requestLogger);
 
-  app.get('/health', (c) => c.json({ ok: true, service: 'rollpit-api' }));
+  app.get('/health', async (c) => {
+    const database = await checkDatabaseHealth();
+    const ok = database.status !== 'error';
+    return c.json({ ok, service: 'rollpit-api', database }, ok ? 200 : 503);
+  });
 
   const v1 = new Hono();
   v1.use('*', maintenanceMode);
@@ -30,8 +36,25 @@ export function createApp() {
 
   app.route('/v1', v1);
 
+  const v2 = new Hono();
+  v2.use('*', maintenanceMode);
+  v2.use('*', rateLimit);
+  mountPublicV2Routes(v2);
+
+  const protectedV2 = new Hono<AppEnv>();
+  protectedV2.use('*', requireAuth);
+  mountProtectedV2Routes(protectedV2);
+  v2.route('/', protectedV2);
+
+  app.route('/v2', v2);
+
   app.onError((error, c) => {
     logger.error({ err: error, path: c.req.path, method: c.req.method }, 'Unhandled request error');
+    void captureException({
+      error,
+      path: c.req.path,
+      method: c.req.method,
+    });
     return c.json({ code: 'INTERNAL_ERROR', error: 'Internal server error' }, 500);
   });
 

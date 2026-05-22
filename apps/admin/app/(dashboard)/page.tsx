@@ -10,10 +10,10 @@ export default async function DashboardPage() {
     <PageShell
       eyebrow="Canlı genel bakış"
       title="Dashboard"
-      description="Sprint 1 için admin panelin temel operasyon kartları burada. Profiles tablosu henüz hazır değilse sayaçlar mock veri ile dolarak iskeleti çalışır durumda tutar."
+      description="Admin panelin temel operasyon kartları burada. Ulaşılabilen veriler canlı gösterilir, erişilemeyen sayaçlar ise güvenli mock fallback ile görünür kalır."
     >
       {usingMockData ? (
-        <MockDataBanner label="Gerçek sayaçlar için `profiles`, `help_requests`, `business_pins` ve `flares` migrationları bekleniyor" />
+        <MockDataBanner label="Bazı sayaçlar erişim veya tablo bağımlılığı nedeniyle örnek veriyle gösteriliyor" />
       ) : null}
 
       <div className="grid gap-lg md:grid-cols-2 xl:grid-cols-4">
@@ -24,11 +24,11 @@ export default async function DashboardPage() {
 
       <div className="grid gap-lg xl:grid-cols-[1.4fr_0.6fr]">
         <section className="surface-panel p-xl">
-          <h2 className="text-lg font-semibold text-text-primary">Sprint 1 kapsam durumu</h2>
+          <h2 className="text-lg font-semibold text-text-primary">Tamamlanan temel yapı</h2>
           <div className="mt-lg grid gap-md md:grid-cols-2">
             {[
               "Next.js 14 App Router iskeleti",
-              "Supabase browser ve server client ayrimi",
+              "Supabase browser ve server client ayrımı",
               "Middleware auth ve admin role kontrolü",
               "Sidebar, header ve temel route seti",
             ].map((item) => (
@@ -42,9 +42,9 @@ export default async function DashboardPage() {
         <section className="surface-panel p-xl">
           <h2 className="text-lg font-semibold text-text-primary">Sonraki bağımlılıklar</h2>
           <ul className="mt-lg space-y-md text-sm leading-6 text-text-secondary">
-            <li>`profiles` migration tamamlaninca role fallback ihtiyaci kalkacak.</li>
+            <li>`profiles` rol kaydı tamamen oturunca metadata fallback ihtiyacı azalacak.</li>
             <li>`business_pins` doğrulama sayfaları Sprint 3 detaylarıyla genişleyecek.</li>
-            <li>Analitik grafikler gercek aggregate sorgularla dolacak.</li>
+            <li>Analitik grafikler gerçek aggregate sorgularla dolacak.</li>
           </ul>
         </section>
       </div>

@@ -18,3 +18,7 @@ export const MapHeatmapQuerySchema = z.object({
     .transform((value) => value?.split(',').map((cell) => cell.trim()).filter(Boolean) ?? [])
     .pipe(z.array(h3CellSchema).max(200)),
 });
+
+export const V2MapHeatmapQuerySchema = MapHeatmapQuerySchema.extend({
+  vehicle_type: z.enum(['any', 'car', 'motorcycle']).default('any'),
+});
