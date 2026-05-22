@@ -8,20 +8,24 @@ class VehicleIconOption {
     required this.label,
     required this.type,
     required this.icon,
+    this.previewAsset,
   });
 
   final String slug;
   final String label;
   final VehicleType type;
   final IconData icon;
+  final String? previewAsset;
 }
 
 abstract final class VehicleIconCatalog {
-  static const compactCrossoverGreen = VehicleIconOption(
+  static const xceedTestCrossover = VehicleIconOption(
     slug: 'compact_crossover_green_01',
-    label: 'Kompakt crossover',
+    label: 'XCeed test crossover',
     type: VehicleType.car,
     icon: Icons.directions_car_filled_outlined,
+    previewAsset:
+        'assets/vehicle_icons/compact_crossover_green_01/angle_000.png',
   );
 
   static const sportHatch = VehicleIconOption(
@@ -60,7 +64,7 @@ abstract final class VehicleIconCatalog {
   );
 
   static const options = [
-    compactCrossoverGreen,
+    xceedTestCrossover,
     sportHatch,
     sedan,
     nakedBike,

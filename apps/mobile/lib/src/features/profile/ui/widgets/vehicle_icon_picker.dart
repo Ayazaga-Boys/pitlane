@@ -96,9 +96,9 @@ class VehicleMapPreviewCard extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  child: Icon(
-                    option.icon,
-                    color: AppColors.pitRed,
+                  child: _VehicleIconVisual(
+                    option: option,
+                    selected: true,
                     size: AppSpacing.xl2,
                   ),
                 ),
@@ -152,7 +152,11 @@ class VehicleIconBadge extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.sm),
-        child: Icon(option.icon, color: AppColors.pitRed),
+        child: _VehicleIconVisual(
+          option: option,
+          selected: true,
+          size: AppSpacing.xl,
+        ),
       ),
     );
   }
@@ -191,9 +195,9 @@ class _VehicleIconChoice extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  option.icon,
-                  color: selected ? AppColors.pitRed : AppColors.textSecondary,
+                _VehicleIconVisual(
+                  option: option,
+                  selected: selected,
                   size: AppSpacing.xl2,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -213,6 +217,42 @@ class _VehicleIconChoice extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _VehicleIconVisual extends StatelessWidget {
+  const _VehicleIconVisual({
+    required this.option,
+    required this.selected,
+    required this.size,
+  });
+
+  final VehicleIconOption option;
+  final bool selected;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final previewAsset = option.previewAsset;
+    if (previewAsset != null) {
+      return Image.asset(
+        previewAsset,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Icon(
+          option.icon,
+          color: selected ? AppColors.pitRed : AppColors.textSecondary,
+          size: size,
+        ),
+      );
+    }
+
+    return Icon(
+      option.icon,
+      color: selected ? AppColors.pitRed : AppColors.textSecondary,
+      size: size,
     );
   }
 }
