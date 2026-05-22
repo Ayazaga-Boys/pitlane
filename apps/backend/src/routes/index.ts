@@ -15,7 +15,8 @@ import { pinRoutes } from './pins.js';
 import { profileRoutes, publicProfileRoutes } from './profiles.js';
 import { reportRoutes } from './reports.js';
 import { v2AdminBusinessRoutes, v2BusinessRoutes } from './v2-business.js';
-import { v2CommunityRoutes, v2EventRoutes } from './v2-communities.js';
+import { v2AdminCommunityNeedRoutes, v2CommunityRoutes, v2EventRoutes } from './v2-communities.js';
+import { v2AdminCompetitionRoutes, v2CompetitionRoutes } from './v2-competitions.js';
 import { v2DiscoverRoutes } from './v2-discover.js';
 import { v2FollowRequestRoutes, v2FollowRoutes } from './v2-follows.js';
 import { v2HelpRoutes } from './v2-help.js';
@@ -26,9 +27,12 @@ import {
   v2PublicInviteRoutes,
 } from './v2-invites.js';
 import { v2MapRoutes } from './v2-map.js';
+import { v2AdminModerationRoutes } from './v2-moderation.js';
+import { v2PresenceRoutes } from './v2-presence.js';
 import { v2CommentRoutes, v2PostRoutes, v2UserRoutes } from './v2-posts.js';
 import { v2ProfileRoutes } from './v2-profiles.js';
 import { v2StoryRoutes } from './v2-stories.js';
+import { v2VehicleRoutes } from './v2-vehicles.js';
 import type { AppEnv } from '../types/hono.js';
 
 export function mountPublicRoutes(app: Hono) {
@@ -60,10 +64,14 @@ export function mountProtectedRoutes(app: Hono<AppEnv>) {
 
 export function mountProtectedV2Routes(app: Hono<AppEnv>) {
   app.route('/admin/business', v2AdminBusinessRoutes);
+  app.route('/admin/community-needs', v2AdminCommunityNeedRoutes);
+  app.route('/admin/competitions', v2AdminCompetitionRoutes);
+  app.route('/admin/moderation', v2AdminModerationRoutes);
   app.route('/business', v2BusinessRoutes);
   app.route('/communities', v2CommunityInviteRoutes);
   app.route('/comments', v2CommentRoutes);
   app.route('/communities', v2CommunityRoutes);
+  app.route('/competitions', v2CompetitionRoutes);
   app.route('/community-invites', v2CommunityInviteResponseRoutes);
   app.route('/discover', v2DiscoverRoutes);
   app.route('/events', v2EventRoutes);
@@ -73,7 +81,9 @@ export function mountProtectedV2Routes(app: Hono<AppEnv>) {
   app.route('/invites', v2InviteRoutes);
   app.route('/map', v2MapRoutes);
   app.route('/posts', v2PostRoutes);
+  app.route('/presence', v2PresenceRoutes);
   app.route('/profiles', v2ProfileRoutes);
   app.route('/stories', v2StoryRoutes);
   app.route('/users', v2UserRoutes);
+  app.route('/vehicles', v2VehicleRoutes);
 }

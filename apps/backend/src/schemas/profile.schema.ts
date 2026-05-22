@@ -43,6 +43,7 @@ export const CreateVehicleSchema = z.object({
   color: z.string().trim().max(40).optional(),
   photo_url: z.string().url().optional(),
   is_primary: z.boolean().default(false),
+  icon_slug: z.string().regex(/^(motorcycle_(standard|chopper|sport|enduro|scooter)|car_(sedan|suv|hatchback|pickup|classic|sport))$/).optional(),
 });
 
 export const UpdateVehicleSchema = CreateVehicleSchema.partial().refine(

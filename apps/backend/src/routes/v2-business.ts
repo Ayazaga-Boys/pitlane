@@ -5,12 +5,14 @@ import {
   V2AdminBusinessApplicationsQuerySchema,
   V2BusinessApplicationDocumentSchema,
   V2BusinessApplicationIdParamSchema,
+  V2BusinessDocumentIdParamSchema,
   V2BusinessLocationsNearbyQuerySchema,
   V2CreateBusinessApplicationSchema,
   V2RejectBusinessApplicationSchema,
 } from '../schemas/v2-business.schema.js';
 import {
   createBusinessApplicationDocumentStorageKey,
+  generateR2ReadUrl,
   generateR2UploadUrl,
   isR2Configured,
 } from '../services/r2.js';
@@ -175,6 +177,40 @@ v2AdminBusinessRoutes.get('/applications', async (c) => {
   const { data, error } = await query;
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
   return c.json({ data, next_cursor: data.at(-1)?.created_at ?? null });
+});
+
+v2AdminBusinessRoutes.get('/documents/:id/preview-url', async (c) => {
+  const params = V2BusinessDocumentIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+
+  if (!isR2Configured()) {
+    return c.json({ code: 'SERVICE_UNAVAILABLE', error: 'Cloudflare R2 is not configured' }, 503);
+  }
+
+  const userId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const admin = await requireAdmin(supabase, userId);
+  if (admin.error) return c.json({ code: 'INTERNAL_ERROR', error: admin.error.message }, 500);
+  if (!admin.allowed) return c.json({ code: 'FORBIDDEN', error: 'Admin role required' }, 403);
+
+  const { data, error } = await supabase
+    .from('business_documents')
+    .select(`${DOCUMENT_SELECT},business_applications(${APPLICATION_SELECT})`)
+    .eq('id', params.data.id)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Business document not found' }, 404);
+
+  return c.json({
+    data: {
+      document: data,
+      preview_url: generateR2ReadUrl(data.storage_key, 300),
+      expires_in_seconds: 300,
+    },
+  });
 });
 
 v2AdminBusinessRoutes.post('/applications/:id/approve', async (c) => {

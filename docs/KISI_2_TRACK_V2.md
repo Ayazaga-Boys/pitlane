@@ -23,22 +23,22 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.0b — Presence Status + Araç İkonu Altyapısı (Hafta 1-2 paralel)
 
 **Presence (çevrimiçi durumu):**
-- [ ] `profiles` tablosuna kolon: `presence_status` ENUM('online','dnd','offline'), `presence_visible` BOOLEAN
-- [ ] `POST /v2/presence` — kullanıcı kendi durumunu günceller (online/dnd/offline)
-- [ ] `GET /v2/users/:userId/presence` — takip ettiğin birinin durumu
-- [ ] Otomatik offline: son aktiflikten 5 dk sonra Trigger.dev job ile `offline`'a çeker
-- [ ] DND modunda bildirimler susturulur (push service entegrasyonu)
-- [ ] `presence_visible: false` ise herkese `offline` görünür (gizlilik)
+- [x] `profiles` tablosuna kolon: `presence_status` ENUM('online','dnd','offline'), `presence_visible` BOOLEAN
+- [x] `POST /v2/presence` — kullanıcı kendi durumunu günceller (online/dnd/offline)
+- [x] `GET /v2/users/:userId/presence` — takip ettiğin birinin durumu
+- [x] Otomatik offline: son aktiflikten 5 dk sonra Trigger.dev job ile `offline`'a çeker — `POST /v1/internal/jobs/presence-offline/run`
+- [x] DND modunda bildirimler susturulur (push service entegrasyonu)
+- [x] `presence_visible: false` ise herkese `offline` görünür (gizlilik)
 
 **Araç İkonu Kataloğu:**
-- [ ] `vehicles` tablosuna kolon: `icon_slug` TEXT (örn: `motorcycle_chopper`, `car_golf`, `car_suv`)
-- [ ] `GET /v2/vehicles/icons` — ikon kataloğunu döner (slug + display_name + category)
-- [ ] `PATCH /v2/profiles/me/vehicles/:id` — aktif araç seçimi (`is_active: true`)
-- [ ] İkon kataloğu başlangıç listesi (JSON seed):
+- [x] `vehicles` tablosuna kolon: `icon_slug` TEXT (örn: `motorcycle_chopper`, `car_golf`, `car_suv`)
+- [x] `GET /v2/vehicles/icons` — ikon kataloğunu döner (slug + display_name + category)
+- [x] `PATCH /v2/profiles/me/vehicles/:id` — aktif araç seçimi (`is_active: true`)
+- [x] İkon kataloğu başlangıç listesi (JSON seed):
   - Motosiklet: `motorcycle_standard`, `motorcycle_chopper`, `motorcycle_sport`, `motorcycle_enduro`, `motorcycle_scooter`
   - Otomobil: `car_sedan`, `car_suv`, `car_hatchback`, `car_pickup`, `car_classic`, `car_sport`
   - Marka ikonları (ilerleyen aşama): `car_golf`, `car_mustang`, `motorcycle_harley`
-- [ ] Harita için: `GET /v2/users/:userId/active-vehicle-icon` — Burak'ın marker ihtiyacı
+- [x] Harita için: `GET /v2/users/:userId/active-vehicle-icon` — Burak'ın marker ihtiyacı
 
 ### V2.1 — Profil & Follow Temeli (Hafta 1-2)
 
@@ -161,17 +161,17 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 **Migration:**
 - [x] `help_requests` tablosuna kolon ekle: `target_type` ENUM('nearby','followers','group'), `target_id` UUID nullable, `urgency` ENUM
 - [x] `community_needs` — yedek parça/yakıt ilanları (`community_id`, `type`, `urgency_color`, `body`)
-- [ ] `competitions` — yarışmalar (`id`, `community_id`, `title`, `filters` JSONB, `voting_starts_at`, `voting_ends_at`)
-- [ ] `competition_entries`
-- [ ] `competition_votes`
+- [x] `competitions` — yarışmalar (`id`, `community_id`, `title`, `filters` JSONB, `voting_starts_at`, `voting_ends_at`)
+- [x] `competition_entries`
+- [x] `competition_votes`
 
 **Endpoint:**
 - [x] `POST /v2/help` — `target_type` ve `target_id` ile (Burak realtime'a iletecek)
 - [x] `POST /v2/communities/:id/needs` — tagged need (sarı/kırmızı)
 - [x] `GET /v2/communities/:id/needs?status=open`
-- [ ] `POST /v2/competitions` (rol kontrolü)
-- [ ] `POST /v2/competitions/:id/entries` (filtre eşleşmesi kontrolü)
-- [ ] `POST /v2/competitions/:id/entries/:entryId/vote`
+- [x] `POST /v2/competitions` (rol kontrolü)
+- [x] `POST /v2/competitions/:id/entries` (filtre eşleşmesi kontrolü)
+- [x] `POST /v2/competitions/:id/entries/:entryId/vote`
 
 **Realtime Integration (Burak'la):**
 - [x] `help_targeted` payload Go realtime'a — `POST /internal/realtime/help-event` extend et

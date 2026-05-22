@@ -23,7 +23,7 @@ describe('cloudflare media api', () => {
     process.env.CF_IMAGES_API_TOKEN = 'images_token';
     const fetchMock = vi.fn().mockResolvedValue(responseJson({
       success: true,
-      result: { id: 'image_123' },
+      result: { id: 'image_123', moderation: { score: 0.92, labels: { nudity: 0.92 } } },
     }));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -34,6 +34,7 @@ describe('cloudflare media api', () => {
     });
 
     expect(result.id).toBe('image_123');
+    expect(result.moderation?.score).toBe(0.92);
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.cloudflare.com/client/v4/accounts/account_123/images/v1',
       expect.objectContaining({

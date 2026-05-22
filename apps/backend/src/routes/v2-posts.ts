@@ -6,8 +6,10 @@ import {
   V2CreatePostSchema,
   V2CursorQuerySchema,
   V2PostIdParamSchema,
+  V2UserIdParamSchema,
   V2UsernameParamSchema,
 } from '../schemas/v2-social.schema.js';
+import { toPresenceResponse } from './v2-presence.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
@@ -313,6 +315,60 @@ v2UserRoutes.get('/:username/posts', async (c) => {
   return c.json({ data });
 });
 
+v2UserRoutes.get('/:userId/presence', async (c) => {
+  const params = V2UserIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+
+  const viewerId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id,presence_status,presence_visible,presence_updated_at')
+    .eq('id', params.data.userId)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!profile) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+
+  const visible = viewerId === params.data.userId || await isFollowing(supabase, viewerId, params.data.userId);
+  return c.json({ data: toPresenceResponse(profile, visible) });
+});
+
+v2UserRoutes.get('/:userId/active-vehicle-icon', async (c) => {
+  const params = V2UserIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+
+  const viewerId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id,is_private')
+    .eq('id', params.data.userId)
+    .maybeSingle();
+
+  if (profileError) return c.json({ code: 'INTERNAL_ERROR', error: profileError.message }, 500);
+  if (!profile) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+
+  const access = await canViewAuthor(supabase, viewerId, profile.id, Boolean(profile.is_private));
+  if (access.error) return c.json({ code: 'INTERNAL_ERROR', error: access.error.message }, 500);
+  if (!access.allowed) return c.json({ code: 'FORBIDDEN', error: 'Profile is private' }, 403);
+
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select('id,type,make,model,icon_slug,is_primary')
+    .eq('user_id', params.data.userId)
+    .eq('is_primary', true)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ data: null });
+  return c.json({ data });
+});
+
 async function setPostLike(c: Context<AppEnv>, shouldLike: boolean) {
   const params = V2PostIdParamSchema.safeParse(c.req.param());
   if (!params.success) return validationError(c, params.error);
@@ -394,6 +450,18 @@ async function canViewAuthor(
 
   if (authorIsPrivate && !follower.data) return { allowed: false, isFollower: false };
   return { allowed: true, isFollower: Boolean(follower.data) };
+}
+
+async function isFollowing(supabase: Supabase, viewerId: string, targetId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('follows')
+    .select('follower_id')
+    .eq('follower_id', viewerId)
+    .eq('followee_id', targetId)
+    .maybeSingle();
+
+  if (error) return false;
+  return Boolean(data);
 }
 
 async function assertOwnedReadyMedia(supabase: Supabase, userId: string, mediaId: string) {

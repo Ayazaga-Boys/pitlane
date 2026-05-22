@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 import {
   V2AssignCommunityRoleSchema,
+  V2AdminCommunityNeedsQuerySchema,
   V2CommunityEventsQuerySchema,
   V2CommunityIdParamSchema,
   V2CommunityMemberRoleParamSchema,
@@ -20,6 +21,7 @@ import type { AppEnv } from '../types/hono.js';
 
 export const v2CommunityRoutes = new Hono<AppEnv>();
 export const v2EventRoutes = new Hono<AppEnv>();
+export const v2AdminCommunityNeedRoutes = new Hono<AppEnv>();
 
 const ROLE_SELECT = 'id,community_id,name,permissions,rank_order,created_at,updated_at';
 const MEMBER_ROLE_SELECT =
@@ -29,7 +31,9 @@ const EVENT_SELECT =
 const RSVP_SELECT = 'event_id,user_id,response,created_at,updated_at';
 const POLL_SELECT = 'id,event_id,creator_id,question,options,created_at,updated_at';
 const NEED_SELECT =
-  'id,community_id,creator_id,type,urgency_color,body,status,created_at,updated_at,profiles!community_needs_creator_id_fkey(username,display_name,avatar_url)';
+  'id,community_id,creator_id,type,urgency_color,body,status,spam_score,spam_reason,created_at,updated_at,profiles!community_needs_creator_id_fkey(username,display_name,avatar_url)';
+const NEED_SPAM_WINDOW_MS = 24 * 60 * 60 * 1000;
+const NEED_SPAM_THRESHOLD = 5;
 
 const ROLE_PRESETS = {
   motorcycle: [
@@ -205,6 +209,16 @@ v2CommunityRoutes.post('/:id/needs', async (c) => {
     return c.json({ code: 'FORBIDDEN', error: 'Community membership required' }, 403);
   }
 
+  const spamSince = new Date(Date.now() - NEED_SPAM_WINDOW_MS).toISOString();
+  const { count: recentNeedCount, error: countError } = await supabase
+    .from('community_needs')
+    .select('id', { count: 'exact', head: true })
+    .eq('creator_id', actorId)
+    .gte('created_at', spamSince);
+
+  if (countError) return c.json({ code: 'INTERNAL_ERROR', error: countError.message }, 500);
+  const isSpamFlagged = (recentNeedCount ?? 0) >= NEED_SPAM_THRESHOLD;
+
   const { data, error } = await supabase
     .from('community_needs')
     .insert({
@@ -213,7 +227,9 @@ v2CommunityRoutes.post('/:id/needs', async (c) => {
       type: parsed.data.type,
       urgency_color: parsed.data.urgency_color,
       body: parsed.data.body,
-      status: 'open',
+      status: isSpamFlagged ? 'flagged' : 'open',
+      spam_score: isSpamFlagged ? recentNeedCount ?? NEED_SPAM_THRESHOLD : 0,
+      spam_reason: isSpamFlagged ? 'creator exceeded 5 community needs in 24 hours' : null,
     })
     .select(NEED_SELECT)
     .single();
@@ -382,6 +398,34 @@ v2EventRoutes.post('/:id/polls', async (c) => {
   return c.json({ data }, 201);
 });
 
+v2AdminCommunityNeedRoutes.get('/', async (c) => {
+  const query = V2AdminCommunityNeedsQuerySchema.safeParse(c.req.query());
+  if (!query.success) return validationError(c, query.error);
+
+  const actorId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const admin = await requireAdmin(supabase, actorId);
+  if (admin.error) return c.json({ code: 'INTERNAL_ERROR', error: admin.error.message }, 500);
+  if (!admin.allowed) return c.json({ code: 'FORBIDDEN', error: 'Admin role required' }, 403);
+
+  let needsQuery = supabase
+    .from('community_needs')
+    .select(NEED_SELECT)
+    .eq('status', query.data.status)
+    .order('created_at', { ascending: false })
+    .limit(query.data.limit);
+
+  if (query.data.community_id) needsQuery = needsQuery.eq('community_id', query.data.community_id);
+  if (query.data.creator_id) needsQuery = needsQuery.eq('creator_id', query.data.creator_id);
+  if (query.data.cursor) needsQuery = needsQuery.lt('created_at', query.data.cursor);
+
+  const { data, error } = await needsQuery;
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  return c.json({ data, next_cursor: data.at(-1)?.created_at ?? null });
+});
+
 function createPreset(name: string, permissions: RolePermissions, rankOrder: number) {
   return {
     name,
@@ -392,6 +436,20 @@ function createPreset(name: string, permissions: RolePermissions, rankOrder: num
 
 function canCreateEvent(access: ActorAccess): boolean {
   return access.isOwner || access.legacyRole === 'captain' || access.permissions.can_create_event || access.permissions.can_moderate;
+}
+
+async function requireAdmin(
+  supabase: NonNullable<ReturnType<typeof getServiceSupabaseClient>>,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id,role')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) return { allowed: false, error };
+  return { allowed: data?.role === 'admin' };
 }
 
 async function canViewCommunity(

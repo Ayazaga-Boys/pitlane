@@ -9,6 +9,10 @@ export const V2BusinessApplicationIdParamSchema = z.object({
   id: z.string().uuid(),
 });
 
+export const V2BusinessDocumentIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
 export const V2CreateBusinessApplicationSchema = z.object({
   business_name: z.string().trim().min(2).max(120),
   category: businessCategorySchema,
