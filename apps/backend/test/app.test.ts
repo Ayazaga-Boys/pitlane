@@ -331,6 +331,7 @@ describe('app routes', () => {
       discoverRefreshResponse,
       helpExpirationResponse,
       presenceOfflineResponse,
+      storyExpirationResponse,
       userExportResponse,
     ] = await Promise.all([
       app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
@@ -338,6 +339,7 @@ describe('app routes', () => {
       app.request('/v1/internal/jobs/discover-refresh/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/help-expiration/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/presence-offline/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/story-expiration/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/user-export/run', { method: 'POST', body: '{}' }),
     ]);
 
@@ -349,6 +351,7 @@ describe('app routes', () => {
     expect(discoverRefreshResponse.status).toBe(401);
     expect(helpExpirationResponse.status).toBe(401);
     expect(presenceOfflineResponse.status).toBe(401);
+    expect(storyExpirationResponse.status).toBe(401);
     expect(userExportResponse.status).toBe(401);
   });
 

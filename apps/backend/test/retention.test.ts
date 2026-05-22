@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { runHelpRequestExpiration } from '../src/jobs/help-expiration.js';
 import { buildDeletedProfileUsername } from '../src/jobs/profile-deletion.js';
 import { getRetentionCutoffs } from '../src/jobs/retention.js';
+import { runStoryExpiration } from '../src/jobs/story-expiration.js';
 import { runUserExportJob } from '../src/jobs/user-export.js';
 import { parseSentryDsn } from '../src/services/sentry.js';
 import { createUserExportStorageKey } from '../src/services/user-export.js';
@@ -39,6 +40,11 @@ describe('retention jobs', () => {
 
   it('requires a service client for help expiration jobs', async () => {
     await expect(runHelpRequestExpiration({ supabase: null }))
+      .rejects.toThrow('Supabase service client is not configured');
+  });
+
+  it('requires a service client for story expiration jobs', async () => {
+    await expect(runStoryExpiration({ supabase: null }))
       .rejects.toThrow('Supabase service client is not configured');
   });
 

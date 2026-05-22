@@ -100,7 +100,7 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `DELETE /v2/stories/:id`
 
 **Trigger.dev:**
-- [ ] Story expiry job — saatlik cron, `expires_at < now()` olanları sil + Cloudflare Stream/Images temizliği
+- [x] Story expiry job — saatlik cron endpoint'i `POST /v1/internal/jobs/story-expiration/run`, `expires_at < now()` story'leri sil + Cloudflare Stream/Images/R2 cleanup
 
 **Keşfet (Feed):**
 - [x] `GET /v2/discover/feed?cursor=` — algoritma tabanlı
