@@ -6,9 +6,11 @@ import {
   V2BusinessApplicationDocumentSchema,
   V2BusinessApplicationIdParamSchema,
   V2BusinessDocumentIdParamSchema,
+  V2BusinessLocationIdParamSchema,
   V2BusinessLocationsNearbyQuerySchema,
   V2CreateBusinessApplicationSchema,
   V2RejectBusinessApplicationSchema,
+  V2SuspendBusinessLocationSchema,
 } from '../schemas/v2-business.schema.js';
 import {
   createBusinessApplicationDocumentStorageKey,
@@ -274,6 +276,18 @@ v2AdminBusinessRoutes.post('/applications/:id/approve', async (c) => {
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  const auditError = await writeBusinessAuditLog(supabase, {
+    actorId: reviewerId,
+    action: 'business_approved',
+    targetId: application.id,
+    metadata: {
+      business_name: application.business_name,
+      applicant_id: application.applicant_id,
+      location_id: location.id,
+    },
+  });
+  if (auditError) return c.json({ code: 'INTERNAL_ERROR', error: auditError.message }, 500);
+
   return c.json({ data: { application: data, location } });
 });
 
@@ -307,6 +321,61 @@ v2AdminBusinessRoutes.post('/applications/:id/reject', async (c) => {
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
   if (!data) return c.json({ code: 'NOT_FOUND', error: 'Pending business application not found' }, 404);
+  const auditError = await writeBusinessAuditLog(supabase, {
+    actorId: reviewerId,
+    action: 'business_rejected',
+    targetId: data.id,
+    metadata: {
+      business_name: data.business_name,
+      applicant_id: data.applicant_id,
+      reason: parsed.data.reason,
+    },
+  });
+  if (auditError) return c.json({ code: 'INTERNAL_ERROR', error: auditError.message }, 500);
+
+  return c.json({ data });
+});
+
+v2AdminBusinessRoutes.post('/locations/:id/suspend', async (c) => {
+  const params = V2BusinessLocationIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+  const body = await c.req.json().catch(() => ({}));
+  const parsed = V2SuspendBusinessLocationSchema.safeParse(body);
+  if (!parsed.success) return validationError(c, parsed.error);
+
+  const actorId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const admin = await requireAdmin(supabase, actorId);
+  if (admin.error) return c.json({ code: 'INTERNAL_ERROR', error: admin.error.message }, 500);
+  if (!admin.allowed) return c.json({ code: 'FORBIDDEN', error: 'Admin role required' }, 403);
+
+  const { data, error } = await supabase
+    .from('business_locations')
+    .update({ is_active: false })
+    .eq('id', params.data.id)
+    .eq('is_active', true)
+    .select(LOCATION_SELECT)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Active business location not found' }, 404);
+
+  const auditError = await writeBusinessAuditLog(supabase, {
+    actorId,
+    action: 'business_suspended',
+    targetId: data.id,
+    targetType: 'business_location',
+    metadata: {
+      business_name: data.business_name,
+      owner_id: data.owner_id,
+      source_application_id: data.source_application_id,
+      reason: parsed.data.reason,
+    },
+  });
+  if (auditError) return c.json({ code: 'INTERNAL_ERROR', error: auditError.message }, 500);
+
   return c.json({ data });
 });
 
@@ -322,4 +391,30 @@ async function requireAdmin(
 
   if (error) return { allowed: false, error };
   return { allowed: data?.role === 'admin' };
+}
+
+async function writeBusinessAuditLog(
+  supabase: NonNullable<ReturnType<typeof getServiceSupabaseClient>>,
+  input: {
+    actorId: string;
+    action: 'business_approved' | 'business_rejected' | 'business_suspended';
+    targetId: string;
+    targetType?: 'business_application' | 'business_location';
+    metadata: Record<string, unknown>;
+  },
+) {
+  const { error } = await supabase
+    .from('audit_logs')
+    .insert({
+      actor_id: input.actorId,
+      action: input.action,
+      target_type: input.targetType ?? 'business_application',
+      target_id: input.targetId,
+      metadata: {
+        ...input.metadata,
+        source: 'backend_v2_admin',
+      },
+    });
+
+  return error;
 }

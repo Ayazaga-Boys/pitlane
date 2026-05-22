@@ -13,6 +13,10 @@ export const V2BusinessDocumentIdParamSchema = z.object({
   id: z.string().uuid(),
 });
 
+export const V2BusinessLocationIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
 export const V2CreateBusinessApplicationSchema = z.object({
   business_name: z.string().trim().min(2).max(120),
   category: businessCategorySchema,
@@ -43,6 +47,10 @@ export const V2AdminBusinessApplicationsQuerySchema = z.object({
 export const V2RejectBusinessApplicationSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
+
+export const V2SuspendBusinessLocationSchema = z.object({
+  reason: z.string().trim().min(3).max(500).default('Admin suspended business location'),
+}).default({});
 
 export const V2BusinessLocationsNearbyQuerySchema = z.object({
   h3cell: h3CellSchema,

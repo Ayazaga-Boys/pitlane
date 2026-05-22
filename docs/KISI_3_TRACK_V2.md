@@ -82,7 +82,7 @@ V2'de admin paneline 4 büyük yeni alan geliyor:
   - Reddet → neden (template) + kullanıcıya email
 - [ ] **Featured işletmeler** — manuel sıralama (homepage öne çıkarma)
 - [ ] **Lokasyon harita görünümü** (`/admin/business/locations/map`) — tüm onaylanmış işletmelerin haritası
-- [ ] Audit: `business_approved`, `business_rejected`, `business_suspended`
+- [x] Audit: `business_approved`, `business_rejected`, `business_suspended` backend action tipleri ve V2 admin akışı hazır
 
 ### V2.6 — Yarışma & Tagged Need Yönetimi (Hafta 11-12)
 

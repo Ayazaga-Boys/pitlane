@@ -107,6 +107,7 @@ describe('app routes', () => {
       adminBusinessDocumentPreviewResponse,
       approveBusinessApplicationResponse,
       rejectBusinessApplicationResponse,
+      suspendBusinessLocationResponse,
       adminCommunityNeedsResponse,
       adminCompetitionsResponse,
       adminCompetitionDetailResponse,
@@ -158,6 +159,7 @@ describe('app routes', () => {
       app.request('/v2/admin/business/documents/00000000-0000-4000-8000-000000000001/preview-url'),
       app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/approve', { method: 'POST' }),
       app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/reject', { method: 'POST' }),
+      app.request('/v2/admin/business/locations/00000000-0000-4000-8000-000000000001/suspend', { method: 'POST' }),
       app.request('/v2/admin/community-needs'),
       app.request('/v2/admin/competitions'),
       app.request('/v2/admin/competitions/00000000-0000-4000-8000-000000000001'),
@@ -210,6 +212,7 @@ describe('app routes', () => {
     expect(adminBusinessDocumentPreviewResponse.status).toBe(401);
     expect(approveBusinessApplicationResponse.status).toBe(401);
     expect(rejectBusinessApplicationResponse.status).toBe(401);
+    expect(suspendBusinessLocationResponse.status).toBe(401);
     expect(adminCommunityNeedsResponse.status).toBe(401);
     expect(adminCompetitionsResponse.status).toBe(401);
     expect(adminCompetitionDetailResponse.status).toBe(401);
