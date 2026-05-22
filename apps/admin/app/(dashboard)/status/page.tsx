@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataStateBanner } from "@/components/dashboard/data-state-banner";
@@ -45,12 +46,79 @@ function phaseLabel(phase: "investigating" | "identified" | "monitoring" | "reso
   }
 }
 
+function readinessTone(status: "ready" | "partial" | "blocked") {
+  switch (status) {
+    case "ready":
+      return "success" as const;
+    case "partial":
+      return "warning" as const;
+    case "blocked":
+      return "error" as const;
+  }
+}
+
+function readinessLabel(status: "ready" | "partial" | "blocked") {
+  switch (status) {
+    case "ready":
+      return "Hazır";
+    case "partial":
+      return "Kısmi hazır";
+    case "blocked":
+      return "Backend bekliyor";
+  }
+}
+
+type ReadinessState = "ready" | "partial" | "blocked";
+
+interface ReadinessItem {
+  key: string;
+  title: string;
+  status: ReadinessState;
+  route: string;
+  summary: string;
+  nextStep: string;
+}
+
 export default async function StatusPage({
   searchParams,
 }: {
   searchParams?: { result?: string; message?: string };
 }) {
   const { data: statusPage, usingMockData } = await getAdminStatusPageOrMock(mockStatusPage);
+  const readinessItems: ReadinessItem[] = [
+    {
+      key: "business_documents",
+      title: "Business belge preview",
+      status: "blocked" as const,
+      route: "/business/applications",
+      summary: "Signed URL preview kontrati henuz acik degil. Admin tarafta metadata ve storage key ile kontrol devam ediyor.",
+      nextStep: "Backend signed preview geldiginde belge kartlarina dogrudan onizleme butonu baglanacak.",
+    },
+    {
+      key: "post_auto_flag",
+      title: "Cloudflare media auto-flag",
+      status: "blocked" as const,
+      route: "/posts",
+      summary: "NSFW / violence skorlari henuz admin moderasyon kuyruğuna baglanmadi. Su an manuel rapor ve moderator aksiyonlari calisiyor.",
+      nextStep: "Backend moderation sinyali geldiginde raporlu post ozetine otomatik risk rozeti eklenecek.",
+    },
+    {
+      key: "competitions",
+      title: "Competitions backend kontrati",
+      status: "partial" as const,
+      route: "/competitions",
+      summary: "Liste, risk sirasi ve admin override audit tabanli calisiyor; gercek entry ve vote verisi halen eksik.",
+      nextStep: "Community bazli yarışma endpoint'leri geldiginde mock katman cikarilip detay gerçek veriye tasinacak.",
+    },
+    {
+      key: "community_needs",
+      title: "Community needs spam enforcement",
+      status: "partial" as const,
+      route: "/community-needs",
+      summary: "24 saatlik spam sinyali ve panelden suspend aksiyonu hazir. Tam otomatik server-side enforcement henuz yok.",
+      nextStep: "Backend koruma kurali geldiginde bu sinyal otomatik blok veya cooldown akisina baglanacak.",
+    },
+  ];
 
   return (
     <PageShell
@@ -77,6 +145,42 @@ export default async function StatusPage({
       />
 
       <div className="grid gap-lg xl:grid-cols-[0.92fr_1.08fr]">
+        <section className="surface-panel p-xl xl:col-span-2">
+          <div className="flex flex-wrap items-start justify-between gap-md">
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">Admin readiness panosu</h2>
+              <p className="mt-sm text-sm leading-6 text-text-secondary">
+                Backend bagimli kalan V2 alanlari burada tek bakista izlenir. Bu pano panel tarafinda neyin hazir, neyin kismi,
+                neyin tamamen backend kontrati bekledigini netlestirir.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-sm">
+              <Badge tone="success">{readinessItems.filter((item) => item.status === "ready").length} hazir</Badge>
+              <Badge tone="warning">{readinessItems.filter((item) => item.status === "partial").length} kismi</Badge>
+              <Badge tone="error">{readinessItems.filter((item) => item.status === "blocked").length} beklemede</Badge>
+            </div>
+          </div>
+
+          <div className="mt-lg grid gap-md lg:grid-cols-2">
+            {readinessItems.map((item) => (
+              <article key={item.key} className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+                <div className="flex flex-wrap items-center justify-between gap-sm">
+                  <h3 className="font-medium text-text-primary">{item.title}</h3>
+                  <Badge tone={readinessTone(item.status)}>{readinessLabel(item.status)}</Badge>
+                </div>
+                <p className="mt-md text-sm leading-6 text-text-secondary">{item.summary}</p>
+                <p className="mt-md text-sm leading-6 text-text-primary">{item.nextStep}</p>
+                <Link
+                  className="focus-ring mt-md inline-flex min-h-11 items-center justify-center rounded-sm bg-surface-3 px-md py-sm text-sm font-semibold text-text-primary"
+                  href={item.route}
+                >
+                  İlgili ekrana git
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="surface-panel p-xl">
           <div className="flex flex-wrap items-center justify-between gap-md">
             <div>
