@@ -29,7 +29,7 @@ export function CommunityNeedsTable({ needs, usingMockData }: { needs: AdminComm
             <TH>İlan</TH>
             <TH>Topluluk</TH>
             <TH>Tür</TH>
-            <TH>Urgency</TH>
+            <TH>Aciliyet</TH>
             <TH>Spam sinyali</TH>
             <TH>Durum</TH>
             <TH>Aksiyon</TH>
@@ -56,7 +56,7 @@ export function CommunityNeedsTable({ needs, usingMockData }: { needs: AdminComm
                   <div className="flex flex-wrap gap-xs">
                     <Badge tone={need.flaggedAsSpam ? "error" : "default"}>{need.createdWithin24h}/24s</Badge>
                     {need.flaggedAsSpam ? <Badge tone="warning">flag</Badge> : null}
-                    {need.creatorStatus === "suspended" ? <Badge tone="default">creator askıda</Badge> : null}
+                    {need.creatorStatus === "suspended" ? <Badge tone="default">oluşturan askıda</Badge> : null}
                   </div>
                 </TD>
                 <TD>

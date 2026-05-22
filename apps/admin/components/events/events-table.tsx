@@ -47,7 +47,7 @@ export function EventsTable({ events, usingMockData }: { events: AdminCommunityE
                   <TD>{event.communityName}</TD>
                   <TD>{event.startsAt}</TD>
                   <TD>
-                    {event.attendeesYes} evet / {event.attendeesMaybe} maybe
+                    {event.attendeesYes} evet / {event.attendeesMaybe} belki
                   </TD>
                   <TD>
                     <div className="flex flex-wrap gap-xs">
@@ -82,7 +82,7 @@ export function EventsTable({ events, usingMockData }: { events: AdminCommunityE
                           type="submit"
                           variant="destructive"
                         >
-                          {usingMockData ? "Mock mod" : event.suspicious ? "Event iptal et" : "Temiz"}
+                          {usingMockData ? "Mock mod" : event.suspicious ? "Etkinliği iptal et" : "Temiz"}
                         </Button>
                       </form>
                     ) : (

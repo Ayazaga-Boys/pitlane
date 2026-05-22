@@ -51,7 +51,7 @@ export default async function EventsPage({
     >
       {searchParams?.result === "canceled" ? (
         <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
-          Şüpheli etkinlik iptal edildi, creator kullanıcıya bildirim gönderildi ve audit log kaydı yazıldı.
+          Şüpheli etkinlik iptal edildi, oluşturan kullanıcıya bildirim gönderildi ve audit log kaydı yazıldı.
         </div>
       ) : null}
 
@@ -120,7 +120,7 @@ export default async function EventsPage({
               <p className="mt-xs text-3xl font-semibold text-text-primary">{highAttendanceCount}</p>
             </div>
             <p className="text-sm leading-6 text-text-secondary">
-              Büyük katılım ve rapor sinyali birlikte yükseldiğinde event otomatik olarak üst sıraya taşınır; operatör creator profiline tek tıkla geçebilir.
+              Büyük katılım ve rapor sinyali birlikte yükseldiğinde etkinlik otomatik olarak üst sıraya taşınır; operatör oluşturan profiline tek tıkla geçebilir.
             </p>
           </div>
         </section>

@@ -61,17 +61,17 @@ export default async function CommunityNeedsPage({
               <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Durum</span>
               <select className="focus-ring min-h-12 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary" defaultValue={status} name="status">
                 <option value="">Tümü</option>
-                <option value="open">Open</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
+                <option value="open">Açık</option>
+                <option value="resolved">Çözüldü</option>
+                <option value="closed">Kapalı</option>
               </select>
             </label>
             <label className="space-y-sm">
-              <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Urgency</span>
+              <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Aciliyet</span>
               <select className="focus-ring min-h-12 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary" defaultValue={urgency} name="urgency">
                 <option value="">Tümü</option>
-                <option value="red">Red</option>
-                <option value="yellow">Yellow</option>
+                <option value="red">Kırmızı</option>
+                <option value="yellow">Sarı</option>
               </select>
             </label>
             <label className="space-y-sm">
