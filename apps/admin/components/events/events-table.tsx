@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { cancelCommunityEvent } from "@/app/(dashboard)/events/actions";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableWrapper, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import type { AdminCommunityEvent } from "@/lib/admin-data";
 
@@ -9,7 +11,7 @@ function mapStatus(status: AdminCommunityEvent["status"]) {
   return { label: "planlandı", tone: "success" as const };
 }
 
-export function EventsTable({ events }: { events: AdminCommunityEvent[] }) {
+export function EventsTable({ events, usingMockData }: { events: AdminCommunityEvent[]; usingMockData: boolean }) {
   return (
     <TableWrapper>
       <Table>
@@ -21,6 +23,7 @@ export function EventsTable({ events }: { events: AdminCommunityEvent[] }) {
             <TH>Katılım</TH>
             <TH>Risk</TH>
             <TH>Durum</TH>
+            <TH>Aksiyon</TH>
           </TR>
         </THead>
         <TBody>
@@ -61,12 +64,37 @@ export function EventsTable({ events }: { events: AdminCommunityEvent[] }) {
                   <TD>
                     <Badge tone={status.tone}>{status.label}</Badge>
                   </TD>
+                  <TD>
+                    {event.status === "scheduled" ? (
+                      <form action={cancelCommunityEvent} className="space-y-sm">
+                        <input name="eventId" type="hidden" value={event.id} />
+                        <input
+                          name="reason"
+                          type="hidden"
+                          value={
+                            event.suspicious
+                              ? "Yuksek RSVP hacmi ve risk sinyali nedeniyle etkinlik admin tarafindan iptal edildi."
+                              : "Etkinlik moderasyon karariyla iptal edildi."
+                          }
+                        />
+                        <Button
+                          disabled={usingMockData || !event.suspicious}
+                          type="submit"
+                          variant="destructive"
+                        >
+                          {usingMockData ? "Mock mod" : event.suspicious ? "Event iptal et" : "Temiz"}
+                        </Button>
+                      </form>
+                    ) : (
+                      <span className="text-xs text-text-tertiary">Aksiyon yok</span>
+                    )}
+                  </TD>
                 </TR>
               );
             })
           ) : (
             <TR>
-              <TD className="py-xl text-sm text-text-secondary" colSpan={6}>
+              <TD className="py-xl text-sm text-text-secondary" colSpan={7}>
                 Yaklaşan etkinlik bulunmuyor.
               </TD>
             </TR>

@@ -9,7 +9,7 @@ import { mockCommunityEvents } from "@/lib/mock-data";
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; state?: string; risk?: string };
+  searchParams?: { q?: string; state?: string; risk?: string; result?: string };
 }) {
   const { data: events, usingMockData } = await getAdminEventsOrMock(mockCommunityEvents);
   const query = searchParams?.q?.trim().toLocaleLowerCase("tr-TR") ?? "";
@@ -49,6 +49,12 @@ export default async function EventsPage({
       title="Etkinlikler"
       description="Yaklaşan community event'leri tek ekranda toplar, yüksek katılım sinyallerini öne çıkarır."
     >
+      {searchParams?.result === "canceled" ? (
+        <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
+          Şüpheli etkinlik iptal edildi, creator kullanıcıya bildirim gönderildi ve audit log kaydı yazıldı.
+        </div>
+      ) : null}
+
       <DataStateBanner
         usingMockData={usingMockData}
         mockLabel="Etkinlik listesi için örnek V2.4 event kuyruğu gösteriliyor."
@@ -95,7 +101,7 @@ export default async function EventsPage({
             </div>
           </form>
 
-          <EventsTable events={filteredEvents} />
+          <EventsTable events={filteredEvents} usingMockData={usingMockData} />
         </section>
 
         <section className="surface-panel p-xl">
