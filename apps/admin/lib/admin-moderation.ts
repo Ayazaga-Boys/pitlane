@@ -7,6 +7,7 @@ type AuditAction = Database["public"]["Tables"]["audit_logs"]["Row"]["action"];
 type AuditInsert = Database["public"]["Tables"]["audit_logs"]["Insert"];
 type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 type ReportUpdate = Database["public"]["Tables"]["reports"]["Update"];
+type NotificationInsert = Database["public"]["Tables"]["notifications"]["Insert"];
 
 interface AdminActor {
   actorId: string;
@@ -179,6 +180,22 @@ export async function addSupportNote(userId: string, note: string) {
   });
 }
 
+export async function sendSystemNotification(userId: string, title: string, body: string, data: Record<string, unknown>) {
+  const { adminClient } = await requirePanelActor(["admin", "moderator"]);
+  const payload: NotificationInsert = {
+    user_id: userId,
+    type: "system",
+    title,
+    body,
+    data,
+  };
+
+  const result = await adminClient.from("notifications").insert([payload] as unknown as never[]);
+  if (result.error) {
+    throw new Error("Sistem bildirimi gönderilemedi.");
+  }
+}
+
 export async function deleteCommunity(communityId: string) {
   const { actorId, adminClient } = await requireAdminActor();
   const communityResult = await adminClient.from("communities").select("id, name").eq("id", communityId).maybeSingle();
@@ -222,7 +239,7 @@ export async function resolveReport(
 }
 
 export function revalidateAdminModerationPaths(...paths: string[]) {
-  const defaults = ["/users", "/communities", "/reports", "/pins", "/"];
+  const defaults = ["/users", "/communities", "/reports", "/posts", "/comments", "/pins", "/"];
   for (const path of [...defaults, ...paths]) {
     revalidatePath(path);
   }

@@ -50,7 +50,7 @@ export default async function AuditPage({
           <div className="grid flex-1 gap-md md:grid-cols-2 xl:grid-cols-3">
             <label className="space-y-sm">
               <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Arama</span>
-              <Input defaultValue={query} name="q" placeholder="actor, hedef ya da özet ara" />
+              <Input defaultValue={query} name="q" placeholder="yönetici, hedef ya da özet ara" />
             </label>
             <label className="space-y-sm">
               <span className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Aksiyon</span>
@@ -63,6 +63,7 @@ export default async function AuditPage({
                 <option value="user_banned">Kullanıcı banlandı</option>
                 <option value="user_unbanned">Ban kaldırıldı</option>
                 <option value="content_deleted">İçerik silindi</option>
+                <option value="content_restored">İçerik geri yüklendi</option>
                 <option value="pin_verified">Pin doğrulandı</option>
                 <option value="pin_rejected">Pin reddedildi</option>
                 <option value="config_changed">Yapılandırma</option>
@@ -77,12 +78,17 @@ export default async function AuditPage({
                 name="target"
               >
                 <option value="">Tüm hedefler</option>
-                <option value="profile">Profile</option>
+                <option value="profile">Profil</option>
                 <option value="business_pin">Business pin</option>
-                <option value="community">Community</option>
-                <option value="support_note">Support note</option>
-                <option value="report">Report</option>
-                <option value="message">Message</option>
+                <option value="business_application">İşletme başvurusu</option>
+                <option value="community">Topluluk</option>
+                <option value="community_event">Topluluk etkinliği</option>
+                <option value="competition">Yarışma</option>
+                <option value="competition_entry">Yarışma katılımı</option>
+                <option value="feed_override">Feed override</option>
+                <option value="support_note">Destek notu</option>
+                <option value="report">Şikayet</option>
+                <option value="message">Mesaj</option>
               </select>
             </label>
           </div>
