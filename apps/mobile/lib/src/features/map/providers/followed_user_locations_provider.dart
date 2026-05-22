@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../shared/providers/supabase_provider.dart';
 import '../data/ws_service.dart';
 import 'map_pins_provider.dart';
+import 'vehicle_marker_icon_provider.dart';
 
 class FollowedUserLocation {
   const FollowedUserLocation({
@@ -61,6 +62,18 @@ class FollowedUsersRepository {
         .toList(growable: false);
   }
 
+  Future<String?> getActiveVehicleIconSlug(String userId) async {
+    if (userId.isEmpty) return null;
+
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/v2/users/$userId/active-vehicle-icon',
+      options: Options(headers: _headers()),
+    );
+    final data = response.data?['data'];
+    if (data is! Map<String, dynamic>) return null;
+    return data['icon_slug'] as String?;
+  }
+
   Map<String, String> _headers() {
     final token = _readToken();
     return {
@@ -96,6 +109,23 @@ final followedUsersRepositoryProvider =
     () => supabase.auth.currentSession?.accessToken,
     () => supabase.auth.currentUser?.id,
   );
+});
+
+final activeVehicleIconSlugProvider =
+    FutureProvider.family<String?, String>((ref, userId) {
+  return ref
+      .watch(followedUsersRepositoryProvider)
+      .getActiveVehicleIconSlug(userId);
+});
+
+final currentVehicleIconSlugProvider = FutureProvider<String?>((ref) async {
+  final userId = ref.watch(followedUsersRepositoryProvider).currentUserId;
+  if (userId == null || userId.isEmpty) {
+    return VehicleIconSlug.other.value;
+  }
+  return ref
+      .watch(followedUsersRepositoryProvider)
+      .getActiveVehicleIconSlug(userId);
 });
 
 class FollowedUserLocationsNotifier
@@ -202,6 +232,9 @@ final followedUserPinsProvider = Provider<List<MapPin>>((ref) {
               : 'Çevrimiçi',
           position: h3ToLatLng(location.h3Cell),
           peerId: location.userId,
+          iconSlug: ref
+              .watch(activeVehicleIconSlugProvider(location.userId))
+              .valueOrNull,
         ),
       )
       .toList(growable: false);

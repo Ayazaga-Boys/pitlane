@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/h3_constants.dart';
 import '../../../core/utils/location_utils.dart';
+import '../../../shared/providers/supabase_provider.dart';
 import '../providers/location_provider.dart';
 import '../ui/map_filter_sheet.dart';
 
@@ -19,33 +20,54 @@ class MapPin {
     required this.type,
     required this.title,
     required this.position,
+    this.h3Cell,
     this.subtitle,
     this.peerId,
+    this.iconSlug,
+    this.photoUrl,
+    this.category,
+    this.address,
+    this.phone,
+    this.website,
   });
 
   final String id;
   final MapPinType type;
   final String title;
   final LatLng position;
+  final String? h3Cell;
   final String? subtitle;
   final String? peerId;
+  final String? iconSlug;
+  final String? photoUrl;
+  final String? category;
+  final String? address;
+  final String? phone;
+  final String? website;
 }
 
 // ─── HTTP client ─────────────────────────────────────────────────────────────
 
 final _dioProvider = Provider<Dio>((ref) {
   return Dio(BaseOptions(
-    baseUrl: '${AppConstants.apiBaseUrl}/v1',
+    baseUrl: AppConstants.apiBaseUrl,
     connectTimeout: const Duration(seconds: AppConstants.apiTimeoutSeconds),
     receiveTimeout: const Duration(seconds: AppConstants.apiTimeoutSeconds),
     headers: {
       'Content-Type': 'application/json',
-      // Dev bypass — Resend + domain hazır olunca Supabase token ile değişir
-      if (AppConstants.isDev) 'x-dev-user-id': 'dev-user-map',
-      if (AppConstants.isDev) 'x-dev-user-email': 'dev@rollpit.test',
     },
   ));
 });
+
+Map<String, String> _authHeaders(Ref ref) {
+  final supabase = ref.read(supabaseClientProvider);
+  final token = supabase.auth.currentSession?.accessToken;
+  return {
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    if (AppConstants.isDev) 'x-dev-user-id': 'dev-user-map',
+    if (AppConstants.isDev) 'x-dev-user-email': 'dev@rollpit.test',
+  };
+}
 
 // ─── Pins repository ─────────────────────────────────────────────────────────
 
@@ -89,21 +111,33 @@ Map<String, Object> _mapQuery(String h3Cell, int k) => {
       'k': k,
     };
 
-Future<List<MapPin>> _fetchBusinessPins(Dio dio, String h3Cell) async {
+Future<List<MapPin>> _fetchBusinessPins(
+  Dio dio,
+  String h3Cell,
+  Map<String, String> headers,
+) async {
   final res = await dio.get<Map<String, dynamic>>(
-    '/map/pins',
+    '/v2/business/locations/nearby',
     queryParameters: _mapQuery(h3Cell, H3Constants.businessPinKRing),
+    options: Options(headers: headers),
   );
   final items = (res.data?['data'] as List<dynamic>?) ?? [];
   return items.map((dynamic raw) {
     final item = raw as Map<String, dynamic>;
     final h3Cell = item['h3_cell'] as String? ?? '';
+    final category = item['category'] as String?;
     return MapPin(
       id: item['id'] as String,
       type: MapPinType.business,
-      title: item['name'] as String? ?? '',
-      subtitle: item['category'] as String?,
+      title: item['business_name'] as String? ?? item['name'] as String? ?? '',
+      h3Cell: h3Cell,
+      subtitle: category,
       position: h3ToLatLng(h3Cell),
+      photoUrl: item['photo_url'] as String?,
+      category: category,
+      address: item['address'] as String?,
+      phone: item['phone'] as String?,
+      website: item['website'] as String?,
     );
   }).toList();
 }
@@ -134,7 +168,7 @@ String? _formatDate(String? iso) {
 
 Future<List<MapPin>> _fetchHelpPins(Dio dio, String h3Cell) async {
   final res = await dio.get<Map<String, dynamic>>(
-    '/map/help',
+    '/v1/map/help',
     queryParameters: _mapQuery(h3Cell, H3Constants.helpKRing),
   );
   final items = (res.data?['data'] as List<dynamic>?) ?? [];
@@ -146,6 +180,7 @@ Future<List<MapPin>> _fetchHelpPins(Dio dio, String h3Cell) async {
       id: item['id'] as String,
       type: MapPinType.help,
       title: _issueTypeLabel(issueType),
+      h3Cell: h3Cell,
       subtitle: item['description'] as String?,
       position: h3ToLatLng(h3Cell),
       peerId: item['requester_id'] as String?,
@@ -163,7 +198,7 @@ String _issueTypeLabel(String type) => switch (type) {
 
 Future<List<MapPin>> _fetchFlarePins(Dio dio, String h3Cell) async {
   final res = await dio.get<Map<String, dynamic>>(
-    '/map/flares',
+    '/v1/map/flares',
     queryParameters: _mapQuery(h3Cell, H3Constants.flareKRing),
   );
   final items = (res.data?['data'] as List<dynamic>?) ?? [];
@@ -174,6 +209,7 @@ Future<List<MapPin>> _fetchFlarePins(Dio dio, String h3Cell) async {
       id: item['id'] as String,
       type: MapPinType.flare,
       title: item['title'] as String? ?? '',
+      h3Cell: h3Cell,
       subtitle: _formatDate(item['starts_at'] as String?),
       position: h3ToLatLng(h3Cell),
     );
@@ -185,11 +221,12 @@ Future<List<MapPin>> _fetchFlarePins(Dio dio, String h3Cell) async {
 final allPinsProvider = FutureProvider<List<MapPin>>((ref) async {
   debugPrint('[MapPins] fetching from API: ${AppConstants.apiBaseUrl}');
   final dio = ref.read(_dioProvider);
+  final headers = _authHeaders(ref);
   // Kullanıcının anlık h3 hücresi — map endpoint'leri buna göre filtrelenir.
   final userH3Cell = ref.watch(locationProvider).valueOrNull;
   final mapH3Cell = userH3Cell ?? _fallbackMapH3Cell;
   try {
-    final pins = await _fetchBusinessPins(dio, mapH3Cell);
+    final pins = await _fetchBusinessPins(dio, mapH3Cell, headers);
     debugPrint('[MapPins] pins loaded: ${pins.length}');
     List<MapPin> flares = [];
     try {
