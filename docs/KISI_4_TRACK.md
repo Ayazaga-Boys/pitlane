@@ -78,8 +78,8 @@ src/features/
 ### Faz 0 — Hazırlık (1 Hafta)
 - [x] Repoyu klonla, `kisi4/flutter-ui` branch'ini güncelle
 - [x] `flutter pub get` çalıştır
-- [ ] iOS Simulator kur, `flutter run` ile app'i aç
-- [ ] Mevcut ekranları gez — invite code → login → OTP → harita akışını test et
+- [x] iOS Simulator kur, `flutter run` ile app'i aç
+- [x] Mevcut ekranları gez — invite code → login → OTP → harita akışını test et
 - [x] `docs/15_TASARIM_SISTEMI.md` oku — hangi renk/spacing kullanılacağını anla
 
 ```bash

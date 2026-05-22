@@ -6,6 +6,8 @@ class SettingsPreferences {
   const SettingsPreferences({
     this.ghostModeShortcut = true,
     this.readReceipts = true,
+    this.showOnlineStatus = true,
+    this.dndMode = false,
     this.generalNotifications = true,
     this.drivingSafetyLock = true,
     this.language = SettingsLanguage.tr,
@@ -13,6 +15,8 @@ class SettingsPreferences {
 
   final bool ghostModeShortcut;
   final bool readReceipts;
+  final bool showOnlineStatus;
+  final bool dndMode;
   final bool generalNotifications;
   final bool drivingSafetyLock;
   final SettingsLanguage language;
@@ -20,6 +24,8 @@ class SettingsPreferences {
   SettingsPreferences copyWith({
     bool? ghostModeShortcut,
     bool? readReceipts,
+    bool? showOnlineStatus,
+    bool? dndMode,
     bool? generalNotifications,
     bool? drivingSafetyLock,
     SettingsLanguage? language,
@@ -27,6 +33,8 @@ class SettingsPreferences {
     return SettingsPreferences(
       ghostModeShortcut: ghostModeShortcut ?? this.ghostModeShortcut,
       readReceipts: readReceipts ?? this.readReceipts,
+      showOnlineStatus: showOnlineStatus ?? this.showOnlineStatus,
+      dndMode: dndMode ?? this.dndMode,
       generalNotifications: generalNotifications ?? this.generalNotifications,
       drivingSafetyLock: drivingSafetyLock ?? this.drivingSafetyLock,
       language: language ?? this.language,

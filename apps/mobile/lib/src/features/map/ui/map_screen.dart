@@ -10,6 +10,7 @@ import 'package:google_maps_cluster_manager_2/google_maps_cluster_manager_2.dart
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/location_utils.dart';
@@ -38,7 +39,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
   GoogleMapController? _mapController;
   StreamSubscription<WsHelpEvent>? _helpEventSub;
   StreamSubscription<WsSocialEvent>? _socialEventSub;
+  final Map<int, BitmapDescriptor> _vehicleIcons = {};
   bool _showPermissionRationale = false;
+  bool _vehicleIconsStartedLoading = false;
+  int _vehicleIconAngle = 0;
   Set<Marker> _clusteredMarkers = {};
   gmc.ClusterManager<MapPinClusterItem>? _clusterManager;
 
@@ -72,6 +76,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
       if (!mounted) return;
       _showSocialEventSnackBar(event);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_vehicleIconsStartedLoading) {
+      _vehicleIconsStartedLoading = true;
+      unawaited(_loadVehicleIcons());
+    }
   }
 
   @override
@@ -273,6 +286,78 @@ class _MapScreenState extends ConsumerState<MapScreen>
         _ => 'Yakında yeni yardım talebi var.',
       };
 
+  Future<void> _loadVehicleIcons() async {
+    if (!AppConstants.isDev) return;
+
+    final configuration = createLocalImageConfiguration(
+      context,
+      size: const Size(64, 64),
+    );
+    const basePath = 'assets/vehicle_icons/compact_crossover_green_01';
+    const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+    final icons = <int, BitmapDescriptor>{};
+
+    for (final angle in angles) {
+      final angleName = angle.toString().padLeft(3, '0');
+      icons[angle] = await BitmapDescriptor.asset(
+        configuration,
+        '$basePath/angle_$angleName.png',
+        width: 64,
+        height: 64,
+      );
+    }
+
+    if (!mounted) return;
+    setState(() => _vehicleIcons.addAll(icons));
+  }
+
+  void _handleCameraMove(CameraPosition position) {
+    if (!AppConstants.isDev) return;
+    final nextAngle = _nearestVehicleAngle(position.bearing);
+    if (nextAngle == _vehicleIconAngle) return;
+    setState(() => _vehicleIconAngle = nextAngle);
+  }
+
+  int _nearestVehicleAngle(double bearing) {
+    final normalized =
+        bearing.isNegative ? (bearing % 360) + 360 : bearing % 360;
+    return ((normalized / 30).round() * 30) % 360;
+  }
+
+  Set<Marker> _buildDevVehicleMarkers(String? currentCell) {
+    if (!AppConstants.isDev) return {};
+
+    final position = _vehiclePosition(currentCell);
+    final icon = _vehicleIcons[_vehicleIconAngle] ??
+        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+
+    return {
+      Marker(
+        markerId: const MarkerId('dev_vehicle_compact_crossover_green_01'),
+        position: position,
+        icon: icon,
+        anchor: const Offset(0.5, 0.56),
+        zIndexInt: 1000,
+        infoWindow: const InfoWindow(
+          title: 'Compact crossover demo',
+          snippet: 'Sprite marker angle test',
+        ),
+      ),
+    };
+  }
+
+  LatLng _vehiclePosition(String? currentCell) {
+    if (currentCell != null && currentCell.isNotEmpty) {
+      try {
+        final center = h3CellCenter(currentCell);
+        return LatLng(center.lat, center.lon);
+      } catch (_) {
+        // Fallback below.
+      }
+    }
+    return const LatLng(41.0102, 28.9808);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isGhost = ref.watch(ghostModeProvider);
@@ -327,7 +412,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
               _mapController = c;
               _clusterManager?.setMapId(c.mapId);
             },
-            onCameraMove: (pos) => _clusterManager?.onCameraMove(pos),
+            onCameraMove: (pos) {
+              _clusterManager?.onCameraMove(pos);
+              _handleCameraMove(pos);
+            },
             onCameraIdle: () => _clusterManager?.updateMap(),
             myLocationEnabled: !isGhost,
             myLocationButtonEnabled: false,
@@ -336,7 +424,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
             style: _darkMapStyle,
             polygons:
                 heatmapCells.isNotEmpty ? _buildHeatmap(heatmapCells) : {},
-            markers: _clusteredMarkers,
+            markers: {
+              ..._clusteredMarkers,
+              ..._buildDevVehicleMarkers(currentCell),
+            },
           ),
 
           // ── Pin yükleniyor göstergesi ────────────────────────────────────

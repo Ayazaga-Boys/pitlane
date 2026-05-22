@@ -8,10 +8,20 @@ import '../../../shared/widgets/rollpit_button.dart';
 import '../../../shared/widgets/rollpit_text_field.dart';
 import '../constants/profile_constants.dart';
 import '../models/vehicle.dart';
+import '../models/vehicle_icon_option.dart';
 import '../providers/profile_completion_provider.dart';
+import 'widgets/vehicle_icon_picker.dart';
 
 class ProfileCompletionScreen extends ConsumerWidget {
   const ProfileCompletionScreen({super.key});
+
+  void _leaveCompletion(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/profile');
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,24 +43,37 @@ class ProfileCompletionScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profilini tamamla')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Geri',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => _leaveCompletion(context),
+        ),
+        title: const Text('Profilini tamamla'),
+      ),
       body: SafeArea(
-        child: completion.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _OnboardingFrame(
-            progress: ProfileConstants.progressNotStarted,
-            child: _ErrorState(message: error.toString()),
-          ),
-          data: (state) => _OnboardingFrame(
-            progress: state.progress,
-            child: switch (state.step) {
-              ProfileCompletionStep.identity => _IdentityStep(state: state),
-              ProfileCompletionStep.vehicle => const _VehicleStep(),
-              ProfileCompletionStep.permissions => const _PermissionsStep(),
-              ProfileCompletionStep.rules => const _RulesStep(),
-              ProfileCompletionStep.done =>
-                const Center(child: CircularProgressIndicator()),
-            },
+        child: PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) _leaveCompletion(context);
+          },
+          child: completion.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => _OnboardingFrame(
+              progress: ProfileConstants.progressNotStarted,
+              child: _ErrorState(message: error.toString()),
+            ),
+            data: (state) => _OnboardingFrame(
+              progress: state.progress,
+              child: switch (state.step) {
+                ProfileCompletionStep.identity => _IdentityStep(state: state),
+                ProfileCompletionStep.vehicle => const _VehicleStep(),
+                ProfileCompletionStep.permissions => const _PermissionsStep(),
+                ProfileCompletionStep.rules => const _RulesStep(),
+                ProfileCompletionStep.done =>
+                  const Center(child: CircularProgressIndicator()),
+              },
+            ),
           ),
         ),
       ),
@@ -237,9 +260,16 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
   final _yearController = TextEditingController();
   final _colorController = TextEditingController();
   VehicleType _type = VehicleType.car;
+  late String _iconSlug;
   String? _makeError;
   String? _modelError;
   String? _yearError;
+
+  @override
+  void initState() {
+    super.initState();
+    _iconSlug = VehicleIconCatalog.optionsFor(_type).first.slug;
+  }
 
   @override
   void dispose() {
@@ -262,6 +292,7 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           color: _colorController.text.trim().isEmpty
               ? null
               : _colorController.text.trim(),
+          iconSlug: _iconSlug,
         );
   }
 
@@ -324,7 +355,10 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
               .toList(),
           onChanged: isLoading
               ? null
-              : (value) => setState(() => _type = value ?? _type),
+              : (value) => setState(() {
+                    _type = value ?? _type;
+                    _iconSlug = VehicleIconCatalog.optionsFor(_type).first.slug;
+                  }),
         ),
         const SizedBox(height: AppSpacing.lg),
         RollpitTextField(
@@ -361,6 +395,20 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           textInputAction: TextInputAction.done,
           maxLength: ProfileConstants.vehicleColorMaxLength,
           onSubmitted: (_) => _save(),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        VehicleIconPicker(
+          type: _type,
+          selectedSlug: _iconSlug,
+          onChanged: (slug) => setState(() => _iconSlug = slug),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        VehicleMapPreviewCard(
+          type: _type,
+          iconSlug: _iconSlug,
+          label:
+              '${_makeController.text.trim()} ${_modelController.text.trim()}'
+                  .trim(),
         ),
         const SizedBox(height: AppSpacing.xl),
         RollpitButton(

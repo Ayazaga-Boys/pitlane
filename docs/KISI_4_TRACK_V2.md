@@ -24,13 +24,13 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
 
 > Bağımlılık: Erol'un `presence_status` endpoint'i + Burak'ın WS `presence_update` event'i
 
-- [ ] **`PresenceDot` widget** — 10–12px, profil fotoğrafının sağ alt köşesinde
+- [x] **`PresenceDot` widget** — 10–12px, profil fotoğrafının sağ alt köşesinde
   - 🟢 `online` → yeşil
   - 🟡 `dnd` → sarı (rahatsız etmeyin)
   - ⚫ `offline` → gri
   - `presence_visible: false` → dot hiç gösterilmez
 - [ ] Presence dot tüm ekranlarda tutarlı: DM listesi, yorum, topluluk üye listesi, arama
-- [ ] Ayarlar ekranında: **"Çevrimiçi durumumu göster"** toggle + DND modu
+- [x] Ayarlar ekranında: **"Çevrimiçi durumumu göster"** toggle + DND modu
 - [ ] WS `presence_update` event'i ile gerçek zamanlı güncelleme (Burak deliver eder)
 
 ### V2.0b — Araç İkonu Harita Kişiselleştirme (Sprint Öncesi — Furkan isteği)
@@ -41,15 +41,15 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
   - Grid görünümde ikon kataloğu (SVG siluetler)
   - Kategori filtreleri: Motosiklet / Otomobil
   - Seçili ikon vurgulu
-- [ ] **Aktif araç seçimi** — birden fazla araç varsa hangisinin haritada görüneceği
-- [ ] **Önizleme** — "Haritada böyle görünürsün" mini harita kartı
+- [x] **Aktif araç seçimi** — birden fazla araç varsa hangisinin haritada görüneceği
+- [x] **Önizleme** — "Haritada böyle görünürsün" mini harita kartı
 - [ ] İkon dosyaları: basit tek renk SVG siluetler (`assets/vehicle_icons/`)
 
 ### V2.0 — V1 Buglar (Sprint Öncesi) ⭐ İlk iş
 
 > Burak'ın list'inde madde 1 — profil tamamlama back button bug fix
 
-- [ ] **Profil tamamlama back button** — Burak şikayetçi
+- [x] **Profil tamamlama back button** — Burak şikayetçi
   - `ProfileCompletionScreen`'de AppBar'a back butonu ekle veya WillPopScope ile profile'a yönlendir
   - Akış: kullanıcı profilden "Eksikleri tamamla" der → girer → istediği zaman geri çıkabilir
 - [ ] Hot reload sonrası state korunma sorunu kontrol

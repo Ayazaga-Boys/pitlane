@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/presence_dot.dart';
 import '../models/dm_thread.dart';
 import '../providers/dm_threads_provider.dart';
 
@@ -121,22 +122,14 @@ class _ThreadAvatar extends StatelessWidget {
               ? Text(thread.displayName.characters.first.toUpperCase())
               : null,
         ),
-        if (thread.isOnline)
-          Positioned(
-            right: -1,
-            bottom: -1,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppColors.success,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.surface2, width: 2),
-              ),
-              child: const SizedBox(
-                width: AppSpacing.md,
-                height: AppSpacing.md,
-              ),
-            ),
+        Positioned(
+          right: -1,
+          bottom: -1,
+          child: PresenceDot(
+            status: thread.presenceStatus,
+            visible: thread.presenceVisible,
           ),
+        ),
       ],
     );
   }

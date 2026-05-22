@@ -96,6 +96,7 @@ class ProfileRepository {
     required String model,
     int? year,
     String? color,
+    String? iconSlug,
   }) async {
     final response = await _request(
       () => _dio.post<Map<String, dynamic>>(
@@ -106,8 +107,25 @@ class ProfileRepository {
           'model': model,
           if (year != null) 'year': year,
           if (color != null && color.isNotEmpty) 'color': color,
+          if (iconSlug != null && iconSlug.isNotEmpty) 'icon_slug': iconSlug,
           'is_primary': true,
         },
+        options: Options(headers: _authHeaders()),
+      ),
+    );
+
+    final data = response.data?['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const ServerException('Araç kaydı okunamadı.');
+    }
+    return Vehicle.fromJson(data);
+  }
+
+  Future<Vehicle> setPrimaryVehicle(String vehicleId) async {
+    final response = await _request(
+      () => _dio.patch<Map<String, dynamic>>(
+        '/v1/profiles/me/vehicles/$vehicleId',
+        data: const {'is_primary': true},
         options: Options(headers: _authHeaders()),
       ),
     );

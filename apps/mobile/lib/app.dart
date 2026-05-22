@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'src/core/constants/app_constants.dart';
 import 'src/core/theme/app_theme.dart';
 import 'src/features/auth/providers/auth_provider.dart';
 import 'src/features/auth/ui/invite_code_screen.dart';
@@ -35,18 +36,22 @@ import 'src/shared/widgets/main_shell.dart';
 
 final _routerProvider = Provider<GoRouter>((ref) {
   // authStateProvider'ı izle ki oturum değişince router yeniden build edilsin
-  ref.watch(authStateProvider);
+  final authState = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: '/auth/invite-code',
     redirect: (context, state) {
-      final container = ProviderScope.containerOf(context);
-      final user = container.read(currentUserProvider);
-      final loc = state.matchedLocation;
-      final isAuth = loc.startsWith('/auth');
+      final location = state.matchedLocation;
+      final isAuthRoute = location.startsWith('/auth');
 
-      if (user == null && !isAuth) return '/auth/invite-code';
-      if (user != null && isAuth) return '/map';
+      // AUTH BYPASS — domain + Resend kurulunca kaldır.
+      // Dev'de sadece auth ekranlarından çık; uygulama içi/deep-link route'larını
+      // ezme ki mesaj, yardım, flare ve topluluk akışları test edilebilsin.
+      if (AppConstants.isDev) return isAuthRoute ? '/map' : null;
+
+      final isLoggedIn = authState.valueOrNull?.session != null;
+      if (!isLoggedIn && !isAuthRoute) return '/auth/invite-code';
+      if (isLoggedIn && isAuthRoute) return '/map';
       return null;
     },
     routes: [
