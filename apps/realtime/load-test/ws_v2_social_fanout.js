@@ -47,7 +47,9 @@ function authorForVu(vu) {
 }
 
 export default function () {
-  const followerToken = `follower${String(__VU).padStart(4, '0')}`;
+  // Dev auth uses the first 8 token chars as the user id suffix, so this keeps
+  // VU ids deterministic: f0000001 -> dev-user-f0000001.
+  const followerToken = `f${String(__VU).padStart(7, '0')}`;
   const subscribedAuthor = authorForVu(__VU);
   const url = `${WS_URL}?token=${followerToken}`;
   let triggerAt = 0;

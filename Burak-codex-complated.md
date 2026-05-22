@@ -496,3 +496,28 @@ Not:
 
 - `apps/mobile/run_dev.sh` beklenen untracked local dosya olarak bırakıldı, commit'e alınmadı.
 - Gerçek cihaz FPS doğrulaması ve k6 p95 sonucu ortam/seed gerektirdiği için senaryo hazırlandı; koşum prod/dev Valkey follow cache seed'iyle yapılmalı.
+
+### İş 8 — Kişi 1 V2 Kalan Güvenli İşler: Marker Cache, Res-7 Aggregation Helper, Load Test Dokümantasyonu
+
+Yapıldı:
+
+- Business foto-bubble marker çizimine `BitmapDescriptor` cache eklendi.
+- Cache anahtarı business id, foto URL, başlık, kategori ve zoom scale bucket'a göre ayrıldı.
+- Go realtime tarafında endpoint açmadan kullanılabilir H3 res-7 aggregation helper eklendi:
+  - `AggregateCellCountsToResolution`
+  - `AggregateCellCountsToClusterResolution`
+- Res-7 aggregation için unit test eklendi.
+- V2 social fanout k6 senaryosunda dev auth tokenları 1k kullanıcı için deterministik/benzersiz olacak şekilde düzeltildi.
+- `apps/realtime/load-test/README.md` eklendi; k6 çalıştırma ve Valkey follow cache seed talimatları yazıldı.
+
+Doğrulama:
+
+- `dart format` çalıştırıldı.
+- `gofmt` çalıştırıldı.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./... -race` geçti.
+
+Not:
+
+- Backend route açılmadı; H3 res-7 helper Go realtime içinde hazır bırakıldı. Bunu public/internal API'ye çevirmek gerekirse Erol'la kontrat netleştirilecek.
