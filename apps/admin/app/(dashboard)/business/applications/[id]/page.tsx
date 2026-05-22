@@ -137,8 +137,8 @@ export default async function BusinessApplicationDetailPage({
             <h3 className="text-lg font-semibold text-text-primary">Belgeler</h3>
             <div className="mt-md rounded-md border border-warning/25 bg-warning/10 p-md text-sm leading-6 text-text-primary">
               {usingMockData
-                ? "Signed URL kontrati hazir olmadigi icin belgeler simdilik metadata ve storage key uzerinden kontrol ediliyor."
-                : "Belge signed URL preview kontrati henuz acik degil. Bu ekranda storage key ve yukleme metadata'si gosteriliyor; signed preview geldiginde belge onizlemesi dogrudan acilacak."}
+                ? "Signed URL kontratı hazır olmadığı için belgeler şimdilik metadata ve storage key üzerinden kontrol ediliyor."
+                : "Belge preview endpoint'i aktifse aşağıdaki kartlardan 5 dakikalık signed URL ile doküman açılabilir. URL üretilemezse metadata fallback'i korunur."}
             </div>
             <div className="mt-md grid gap-md md:grid-cols-3">
               <div className="rounded-md border border-surface-3 bg-surface-2 p-md">
@@ -170,14 +170,30 @@ export default async function BusinessApplicationDetailPage({
                       </Badge>
                     </div>
                     <div className="mt-md flex flex-wrap gap-xs">
-                      <Badge tone="warning">signed URL bekleniyor</Badge>
+                      <Badge tone={document.previewUrl ? "success" : "warning"}>
+                        {document.previewUrl ? "preview hazır" : "signed URL bekleniyor"}
+                      </Badge>
                       <Badge tone="default">metadata ile kontrol</Badge>
                     </div>
                     <div className="mt-md space-y-xs">
                       <p className="font-mono text-xs text-text-tertiary">{document.storageKey}</p>
-                      <p className="text-xs text-text-tertiary">Preview durumu: signed URL bekleniyor</p>
-                      <p className="text-xs text-text-tertiary">Sonraki adım: backend signed preview kontratı açıldığında bu karta önizleme butonu bağlanacak.</p>
+                      <p className="text-xs text-text-tertiary">Preview durumu: {document.previewUrl ? "signed URL üretildi" : "signed URL bekleniyor"}</p>
+                      <p className="text-xs text-text-tertiary">
+                        Sonraki adım: {document.previewUrl ? "doküman linki 300 saniye boyunca açılabilir." : "backend signed preview yanıtı gelince bu karta direkt önizleme açılır."}
+                      </p>
                     </div>
+                    {document.previewUrl ? (
+                      <div className="mt-md">
+                        <a
+                          className="focus-ring inline-flex min-h-11 items-center justify-center rounded-sm bg-surface-3 px-md py-sm text-sm font-semibold text-text-primary"
+                          href={document.previewUrl}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          Dokümanı önizle
+                        </a>
+                      </div>
+                    ) : null}
                   </div>
                 ))
               ) : (

@@ -37,12 +37,12 @@ export default async function CompetitionsPage({
     <PageShell
       eyebrow="V2.6 yarışma operasyonu"
       title="Yarışmalar"
-      description="Backend yarışma kontratı tamamlanana kadar admin risk görünümü ve operasyon hazırlığını mock data ile sürdürür."
+      description="Yarışma risk görünümünü ve admin aksiyonlarını gerçek backend kontratı varsa canlı, yoksa audit fallback ile sürdürür."
     >
       <DataStateBanner
         usingMockData={usingMockData}
         mockLabel="Competitions backend’i beklenirken liste mock veriyle akıyor; admin override kararları audit log üzerinden geri yansıtılıyor."
-        liveLabel=""
+        liveLabel="Gerçek yarışma listesi açık. Admin fallback override yalnız eksik write kontratlarında devreye girer."
       />
 
       <div className="grid gap-lg xl:grid-cols-[0.78fr_0.22fr]">

@@ -11,7 +11,11 @@ interface BackendCallResult<T = unknown> {
 
 function getBackendBaseUrl() {
   const value = process.env.API_BASE_URL?.trim() ?? process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ?? "";
-  return value ? value.replace(/\/$/, "") : null;
+  if (value) {
+    return value.replace(/\/$/, "");
+  }
+
+  return "http://127.0.0.1:3000";
 }
 
 export async function callAdminBackend<T = unknown>(

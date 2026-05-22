@@ -56,11 +56,15 @@ export function CommunityNeedsTable({ needs, usingMockData }: { needs: AdminComm
                   <div className="flex flex-wrap gap-xs">
                     <Badge tone={need.flaggedAsSpam ? "error" : "default"}>{need.createdWithin24h}/24s</Badge>
                     {need.flaggedAsSpam ? <Badge tone="warning">flag</Badge> : null}
+                    {typeof need.spamScore === "number" ? <Badge tone="warning">score {need.spamScore}</Badge> : null}
                     {need.creatorStatus === "suspended" ? <Badge tone="default">oluşturan askıda</Badge> : null}
                   </div>
+                  {need.spamReason ? <p className="mt-2 text-xs text-text-tertiary">{need.spamReason}</p> : null}
                 </TD>
                 <TD>
-                  <Badge tone={need.status === "open" ? "success" : need.status === "resolved" ? "info" : "default"}>{need.status}</Badge>
+                  <Badge tone={need.status === "open" ? "success" : need.status === "resolved" ? "info" : need.status === "flagged" ? "warning" : "default"}>
+                    {need.status}
+                  </Badge>
                 </TD>
                 <TD>
                   <div className="flex flex-wrap gap-sm">

@@ -1,4 +1,5 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { callAdminBackend } from "@/lib/admin-backend";
 import type {
   AnalyticsPoint,
   MockCommunity,
@@ -112,6 +113,7 @@ export interface AdminBusinessApplicationDetail {
     status: BusinessDocumentRow["status"];
     storageKey: string;
     createdAt: string;
+    previewUrl: string | null;
   }>;
 }
 
@@ -145,6 +147,8 @@ export interface AdminCommunityNeed {
   createdAt: string;
   createdWithin24h: number;
   flaggedAsSpam: boolean;
+  spamScore: number | null;
+  spamReason: string | null;
 }
 
 export interface AdminCompetitionEntry {
@@ -602,6 +606,38 @@ interface CommunityNeedRecord
   extends Pick<CommunityNeedRow, "id" | "community_id" | "creator_id" | "type" | "urgency_color" | "body" | "status" | "created_at"> {
   community: Pick<CommunityRow, "name"> | null;
   creator_profile: Pick<ProfileRow, "username" | "display_name" | "role"> | null;
+  spam_score?: number | null;
+  spam_reason?: string | null;
+}
+
+interface BackendCompetitionListItem {
+  id?: string;
+  title?: string | null;
+  status?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  created_at?: string | null;
+  community_id?: string | null;
+  community?: { name?: string | null } | null;
+  entries_count?: number | null;
+  votes_count?: number | null;
+  reports_count?: number | null;
+  suspicious?: boolean | null;
+  filters_summary?: string | null;
+  moderation_note?: string | null;
+}
+
+interface BackendCompetitionEntryItem {
+  id?: string;
+  title?: string | null;
+  caption?: string | null;
+  votes_count?: number | null;
+  votes?: number | null;
+  report_count?: number | null;
+  suspicious?: boolean | null;
+  status?: string | null;
+  rejected_reason?: string | null;
+  created_at?: string | null;
 }
 
 interface ProfileContentRecord extends Pick<ProfileRow, "id" | "username" | "display_name" | "bio"> {}
@@ -861,6 +897,14 @@ function shortenId(id: string): string {
   return id.slice(0, 8);
 }
 
+function unwrapBackendData<T>(payload: unknown): T | null {
+  if (payload && typeof payload === "object" && "data" in (payload as Record<string, unknown>)) {
+    return ((payload as Record<string, unknown>).data as T) ?? null;
+  }
+
+  return (payload as T) ?? null;
+}
+
 function mapReason(reason: ReportRow["reason"]): string {
   switch (reason) {
     case "spam":
@@ -903,65 +947,87 @@ function buildAdminCompetitionFromMock(
   competition: MockCompetition,
   overrides: CompetitionAuditOverrideState,
 ): AdminCompetition {
+  return applyCompetitionOverrides(
+    {
+      id: competition.id,
+      communityName: competition.communityName,
+      title: competition.title,
+      status: competition.status,
+      startsAt: competition.startsAt,
+      endsAt: competition.endsAt,
+      entriesCount: competition.entriesCount,
+      votesCount: competition.votesCount,
+      reportsCount: competition.reportsCount,
+      suspicious: competition.suspicious,
+      filtersSummary: competition.filtersSummary,
+      moderationNote: competition.moderationNote,
+      topEntries: competition.topEntries.map((entry) => ({
+        ...entry,
+        rejectedByAdmin: false,
+        rejectionReason: null,
+        rejectedAt: null,
+      })),
+      blockedEntriesCount: 0,
+      adminActionLabel: null,
+      adminActionAt: null,
+      votingPaused: false,
+      canceledByAdmin: false,
+    },
+    overrides,
+  );
+}
+
+function applyCompetitionOverrides(
+  competition: AdminCompetition,
+  overrides: CompetitionAuditOverrideState,
+): AdminCompetition {
   const latestAction = overrides.competitionActions.get(competition.id);
   const rejectedEntries = overrides.rejectedEntries.get(competition.id) ?? new Map();
   const topEntries: AdminCompetitionEntry[] = competition.topEntries.map((entry) => {
     const rejectedState = rejectedEntries.get(entry.id);
+    if (!rejectedState) {
+      return entry;
+    }
+
     return {
       ...entry,
-      rejectedByAdmin: Boolean(rejectedState),
-      rejectionReason: rejectedState?.reason ?? null,
-      rejectedAt: rejectedState ? formatDateTime(rejectedState.createdAt) : null,
+      rejectedByAdmin: true,
+      rejectionReason: rejectedState.reason ?? entry.rejectionReason ?? null,
+      rejectedAt: formatDateTime(rejectedState.createdAt),
     };
   });
 
   const moderationNotes = [competition.moderationNote];
   if (latestAction?.action === "competition_canceled") {
-    moderationNotes.push(
-      latestAction.reason
-        ? `Admin iptal notu: ${latestAction.reason}`
-        : "Admin bu yarışmayı operasyon kararıyla iptal etti.",
-    );
+    moderationNotes.push(latestAction.reason ? `Admin iptal notu: ${latestAction.reason}` : "Admin bu yarışmayı operasyon kararıyla iptal etti.");
   }
   if (latestAction?.action === "competition_voting_paused") {
-    moderationNotes.push(
-      latestAction.reason
-        ? `Oylama durdurma notu: ${latestAction.reason}`
-        : "Admin şüpheli oy akışı nedeniyle oylamayı geçici olarak durdurdu.",
-    );
+    moderationNotes.push(latestAction.reason ? `Oylama durdurma notu: ${latestAction.reason}` : "Admin şüpheli oy akışı nedeniyle oylamayı geçici olarak durdurdu.");
   }
   if (rejectedEntries.size > 0) {
     moderationNotes.push(`${rejectedEntries.size} entry admin override ile reddedildi.`);
   }
 
-  let adminActionLabel: string | null = null;
+  let adminActionLabel = competition.adminActionLabel;
   if (latestAction?.action === "competition_canceled") {
     adminActionLabel = "admin iptal etti";
   } else if (latestAction?.action === "competition_voting_paused") {
     adminActionLabel = "oylama durduruldu";
-  } else if (rejectedEntries.size > 0) {
+  } else if (!adminActionLabel && rejectedEntries.size > 0) {
     adminActionLabel = `${rejectedEntries.size} entry reddedildi`;
   }
 
   return {
-    id: competition.id,
-    communityName: competition.communityName,
-    title: competition.title,
+    ...competition,
     status: latestAction?.action === "competition_canceled" ? "canceled" : competition.status,
-    startsAt: competition.startsAt,
-    endsAt: competition.endsAt,
-    entriesCount: competition.entriesCount,
-    votesCount: competition.votesCount,
-    reportsCount: competition.reportsCount,
     suspicious: competition.suspicious || latestAction?.action === "competition_voting_paused" || rejectedEntries.size > 0,
-    filtersSummary: competition.filtersSummary,
-    moderationNote: moderationNotes.join(" "),
+    moderationNote: moderationNotes.filter(Boolean).join(" "),
     topEntries,
-    blockedEntriesCount: rejectedEntries.size,
+    blockedEntriesCount: Math.max(competition.blockedEntriesCount, rejectedEntries.size),
     adminActionLabel,
-    adminActionAt: latestAction ? formatDateTime(latestAction.createdAt) : null,
-    votingPaused: latestAction?.action === "competition_voting_paused",
-    canceledByAdmin: latestAction?.action === "competition_canceled",
+    adminActionAt: latestAction ? formatDateTime(latestAction.createdAt) : competition.adminActionAt,
+    votingPaused: competition.votingPaused || latestAction?.action === "competition_voting_paused",
+    canceledByAdmin: competition.canceledByAdmin || latestAction?.action === "competition_canceled",
   };
 }
 
@@ -1086,6 +1152,66 @@ function mapBusinessCategory(category: BusinessApplicationRow["category"]): stri
     default:
       return "Diğer";
   }
+}
+
+function normalizeCompetitionStatus(value: string | null | undefined): AdminCompetition["status"] {
+  if (value === "voting" || value === "completed" || value === "canceled") {
+    return value;
+  }
+
+  return "draft";
+}
+
+function mapCompetitionEntryFromBackend(entry: BackendCompetitionEntryItem): AdminCompetitionEntry | null {
+  if (!entry.id) {
+    return null;
+  }
+
+  const rejected = entry.status === "rejected";
+  return {
+    id: entry.id,
+    title: entry.title ?? entry.caption ?? "İsimsiz entry",
+    votes: entry.votes_count ?? entry.votes ?? 0,
+    flagged: Boolean(entry.suspicious) || (entry.report_count ?? 0) > 0,
+    rejectedByAdmin: rejected,
+    rejectionReason: rejected ? entry.rejected_reason ?? "Entry admin tarafından reddedildi." : null,
+    rejectedAt: rejected && entry.created_at ? formatDateTime(entry.created_at) : null,
+  };
+}
+
+function mapCompetitionFromBackend(
+  competition: BackendCompetitionListItem,
+  entries: BackendCompetitionEntryItem[] = [],
+): AdminCompetition | null {
+  if (!competition.id) {
+    return null;
+  }
+
+  const topEntries = entries.map(mapCompetitionEntryFromBackend).filter((entry): entry is AdminCompetitionEntry => Boolean(entry));
+  const blockedEntriesCount = topEntries.filter((entry) => entry.rejectedByAdmin).length;
+  const reportsCount = competition.reports_count ?? topEntries.filter((entry) => entry.flagged).length;
+  const suspicious = Boolean(competition.suspicious) || reportsCount > 0;
+
+  return {
+    id: competition.id,
+    communityName: competition.community?.name ?? (competition.community_id ? shortenId(competition.community_id) : "Topluluk yok"),
+    title: competition.title ?? "Yarışma",
+    status: normalizeCompetitionStatus(competition.status),
+    startsAt: formatDateTime(competition.starts_at ?? competition.created_at ?? new Date().toISOString()),
+    endsAt: competition.ends_at ? formatDateTime(competition.ends_at) : "Belirtilmedi",
+    entriesCount: competition.entries_count ?? topEntries.length,
+    votesCount: competition.votes_count ?? topEntries.reduce((total, entry) => total + entry.votes, 0),
+    reportsCount,
+    suspicious,
+    filtersSummary: competition.filters_summary ?? "Backend yarışma kontratı aktif.",
+    moderationNote: competition.moderation_note ?? (suspicious ? "Şüpheli yarışma sinyali var. Entry ve oy akışı incelenmeli." : "Yarışma akışı normal görünüyor."),
+    topEntries,
+    blockedEntriesCount,
+    adminActionLabel: blockedEntriesCount > 0 ? `${blockedEntriesCount} entry reddedildi` : null,
+    adminActionAt: null,
+    votingPaused: false,
+    canceledByAdmin: competition.status === "canceled",
+  };
 }
 
 function summarizeWorkingHours(workingHours: Record<string, unknown> | null | undefined): string {
@@ -1330,6 +1456,7 @@ function mapBusinessApplicationDetail(application: BusinessApplicationRecord): A
       status: document.status,
       storageKey: document.storage_key,
       createdAt: formatDateTime(document.created_at),
+      previewUrl: null,
     })),
   };
 }
@@ -1355,6 +1482,10 @@ function mapCommunityNeed(
   need: CommunityNeedRecord,
   createdWithin24h: number,
 ): AdminCommunityNeed {
+  const flaggedByStatus = need.status === "flagged";
+  const spamScore = typeof need.spam_score === "number" ? need.spam_score : null;
+  const spamReason = typeof need.spam_reason === "string" && need.spam_reason.trim().length > 0 ? need.spam_reason : null;
+
   return {
     id: need.id,
     communityId: need.community_id,
@@ -1369,7 +1500,9 @@ function mapCommunityNeed(
     status: need.status,
     createdAt: formatDateTime(need.created_at),
     createdWithin24h,
-    flaggedAsSpam: createdWithin24h >= 5,
+    flaggedAsSpam: flaggedByStatus || createdWithin24h >= 5,
+    spamScore,
+    spamReason,
   };
 }
 
@@ -2879,6 +3012,7 @@ export async function getAdminBusinessApplicationByIdOrMock(
           status: document.status,
           storageKey: document.storageKey,
           createdAt: document.createdAt,
+          previewUrl: null,
         })),
       },
       usingMockData: true,
@@ -2899,8 +3033,25 @@ export async function getAdminBusinessApplicationByIdOrMock(
       return { data: null, usingMockData: false };
     }
 
+    const detail = mapBusinessApplicationDetail(result.data as unknown as BusinessApplicationRecord);
+    const previewResults = await Promise.all(
+      detail.documents.map(async (document) => {
+        const previewResult = await callAdminBackend<{ data?: { preview_url?: string | null } } | { preview_url?: string | null }>(
+          `/v2/admin/business/documents/${document.id}/preview-url`,
+        );
+        const previewPayload = unwrapBackendData<{ preview_url?: string | null }>(previewResult.data);
+        return {
+          ...document,
+          previewUrl: previewResult.ok ? previewPayload?.preview_url ?? null : null,
+        };
+      }),
+    );
+
     return {
-      data: mapBusinessApplicationDetail(result.data as unknown as BusinessApplicationRecord),
+      data: {
+        ...detail,
+        documents: previewResults,
+      },
       usingMockData: false,
     };
   } catch {
@@ -2970,11 +3121,73 @@ export async function getAdminCommunityNeedsOrMock(
       createdAt: need.createdAt,
       createdWithin24h: need.createdWithin24h,
       flaggedAsSpam: need.flaggedAsSpam,
+      spamScore: null,
+      spamReason: null,
     })),
     usingMockData: true,
   });
 
   try {
+    const backendResult = await callAdminBackend<{ data?: Array<Record<string, unknown>> } | Array<Record<string, unknown>>>("/v2/admin/community-needs");
+    const backendPayload = unwrapBackendData<Array<Record<string, unknown>>>(backendResult.data);
+    if (backendResult.ok && backendPayload) {
+      const backendNeeds = backendPayload
+        .map((entry) => {
+          const row = entry as Record<string, unknown>;
+          const id = typeof row.id === "string" ? row.id : null;
+          const creatorId = typeof row.creator_id === "string" ? row.creator_id : null;
+          const communityId = typeof row.community_id === "string" ? row.community_id : null;
+          if (!id || !creatorId || !communityId) {
+            return null;
+          }
+
+          const createdWithin24h = typeof row.created_within_24h === "number" ? row.created_within_24h : 0;
+          return {
+            id,
+            communityId,
+            communityName:
+              typeof row.community_name === "string"
+                ? row.community_name
+                : typeof (row.community as { name?: unknown } | null)?.name === "string"
+                  ? ((row.community as { name?: string }).name ?? shortenId(communityId))
+                  : shortenId(communityId),
+            creatorId,
+            creatorName:
+              typeof row.creator_name === "string"
+                ? row.creator_name
+                : typeof (row.creator_profile as { display_name?: unknown; username?: unknown } | null)?.display_name === "string"
+                  ? ((row.creator_profile as { display_name?: string }).display_name ?? shortenId(creatorId))
+                  : typeof (row.creator_profile as { username?: unknown } | null)?.username === "string"
+                    ? ((row.creator_profile as { username?: string }).username ?? shortenId(creatorId))
+                    : shortenId(creatorId),
+            creatorUsername:
+              typeof row.creator_username === "string"
+                ? row.creator_username
+                : typeof (row.creator_profile as { username?: unknown } | null)?.username === "string"
+                  ? ((row.creator_profile as { username?: string }).username ?? shortenId(creatorId))
+                  : shortenId(creatorId),
+            creatorStatus: row.creator_status === "suspended" || row.creator_role === "banned" ? "suspended" : "active",
+            type:
+              row.type === "parts" || row.type === "fuel" || row.type === "tools" || row.type === "ride_help"
+                ? row.type
+                : "other",
+            urgencyColor: row.urgency_color === "red" ? "red" : "yellow",
+            body: typeof row.body === "string" ? row.body : "İlan metni yok",
+            status: row.status === "resolved" || row.status === "closed" || row.status === "flagged" ? row.status : "open",
+            createdAt: formatDateTime(typeof row.created_at === "string" ? row.created_at : new Date().toISOString()),
+            createdWithin24h,
+            flaggedAsSpam: row.status === "flagged" || (typeof row.spam_score === "number" && row.spam_score > 0) || createdWithin24h >= 5,
+            spamScore: typeof row.spam_score === "number" ? row.spam_score : null,
+            spamReason: typeof row.spam_reason === "string" ? row.spam_reason : null,
+          } satisfies AdminCommunityNeed;
+        })
+        .filter((entry): entry is AdminCommunityNeed => Boolean(entry));
+
+      if (backendNeeds.length > 0) {
+        return { data: backendNeeds, usingMockData: false };
+      }
+    }
+
     const supabase = createAdminSupabaseClient();
     const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const result = await supabase
@@ -3013,9 +3226,30 @@ export async function getAdminCommunityNeedsOrMock(
 export async function getAdminCompetitionsOrMock(
   mockEntries: MockCompetition[],
 ): Promise<AdminDataResult<AdminCompetition[]>> {
-  const overrides = await getCompetitionAuditOverrides(mockEntries.map((entry) => entry.id));
+  const mockOverrides = await getCompetitionAuditOverrides(mockEntries.map((entry) => entry.id));
+
+  try {
+    const backendResult = await callAdminBackend<{ data?: BackendCompetitionListItem[] } | BackendCompetitionListItem[]>("/v2/admin/competitions");
+    const backendPayload = unwrapBackendData<BackendCompetitionListItem[]>(backendResult.data);
+    if (backendResult.ok && backendPayload) {
+      const backendCompetitions = backendPayload
+        .map((competition) => mapCompetitionFromBackend(competition))
+        .filter((entry): entry is AdminCompetition => Boolean(entry));
+
+      if (backendCompetitions.length > 0) {
+        const overrides = await getCompetitionAuditOverrides(backendCompetitions.map((entry) => entry.id));
+        return {
+          data: backendCompetitions.map((entry) => applyCompetitionOverrides(entry, overrides)),
+          usingMockData: false,
+        };
+      }
+    }
+  } catch {
+    // Falls back to audit-backed mock data below.
+  }
+
   return {
-    data: mockEntries.map((entry) => buildAdminCompetitionFromMock(entry, overrides)),
+    data: mockEntries.map((entry) => buildAdminCompetitionFromMock(entry, mockOverrides)),
     usingMockData: true,
   };
 }
@@ -3024,6 +3258,41 @@ export async function getAdminCompetitionByIdOrMock(
   competitionId: string,
   mockEntries: MockCompetition[],
 ): Promise<AdminDataResult<AdminCompetition | null>> {
+  try {
+    const backendResult = await callAdminBackend<{
+      data?: {
+        competition?: BackendCompetitionListItem | null;
+        entries?: BackendCompetitionEntryItem[] | null;
+        votes?: unknown[] | null;
+      };
+    } | {
+      competition?: BackendCompetitionListItem | null;
+      entries?: BackendCompetitionEntryItem[] | null;
+      votes?: unknown[] | null;
+    }>(`/v2/admin/competitions/${competitionId}`);
+    const backendPayload = unwrapBackendData<{
+      competition?: BackendCompetitionListItem | null;
+      entries?: BackendCompetitionEntryItem[] | null;
+      votes?: unknown[] | null;
+    }>(backendResult.data);
+
+    if (backendResult.ok && backendPayload?.competition) {
+      const mapped = mapCompetitionFromBackend(
+        backendPayload.competition,
+        backendPayload.entries ?? [],
+      );
+      if (mapped) {
+        const overrides = await getCompetitionAuditOverrides([competitionId]);
+        return {
+          data: applyCompetitionOverrides(mapped, overrides),
+          usingMockData: false,
+        };
+      }
+    }
+  } catch {
+    // Falls back to audit-backed mock detail below.
+  }
+
   const competition = mockEntries.find((entry) => entry.id === competitionId) ?? null;
   if (!competition) {
     return { data: null, usingMockData: true };

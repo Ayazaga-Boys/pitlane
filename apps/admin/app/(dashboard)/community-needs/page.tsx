@@ -36,7 +36,7 @@ export default async function CommunityNeedsPage({
     <PageShell
       eyebrow="V2.6 community operations"
       title="Community Needs"
-      description="Yedek parça, yakıt ve yardım ilanlarını izler; 24 saatte 5+ paylaşım yapan kullanıcıları spam sinyaliyle öne çıkarır."
+      description="Yedek parça, yakıt ve yardım ilanlarını izler; backend flagged akışı ve spam sinyallerini operasyona taşır."
     >
       {searchParams?.result === "suspended" ? (
         <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
@@ -47,7 +47,7 @@ export default async function CommunityNeedsPage({
       <DataStateBanner
         usingMockData={usingMockData}
         mockLabel="Community needs kontratı için örnek spam izleme ekranı gösteriliyor."
-        liveLabel="Gerçek community need verisi okunuyor ve 24 saatlik spam sinyali hesaplanıyor."
+        liveLabel="Gerçek community need verisi okunuyor; backend flagged, spam score ve spam reason alanları öncelikleniyor."
       />
 
       <div className="grid gap-lg xl:grid-cols-[0.8fr_0.2fr]">
@@ -62,6 +62,7 @@ export default async function CommunityNeedsPage({
               <select className="focus-ring min-h-12 w-full rounded-sm border border-surface-3 bg-surface-1 px-md py-md text-sm text-text-primary" defaultValue={status} name="status">
                 <option value="">Tümü</option>
                 <option value="open">Açık</option>
+                <option value="flagged">Flagli</option>
                 <option value="resolved">Çözüldü</option>
                 <option value="closed">Kapalı</option>
               </select>
@@ -109,7 +110,7 @@ export default async function CommunityNeedsPage({
               <p className="mt-xs text-3xl font-semibold text-text-primary">5+</p>
             </div>
             <p className="text-sm leading-6 text-text-secondary">
-              Aynı kullanıcı 24 saat içinde 5+ ilan ürettiğinde otomatik flag oluşur. Canlı veride operatör bu ekrandan 7 günlük suspend uygulayabilir.
+              Aynı kullanıcı 24 saat içinde 5+ ilan ürettiğinde backend yeni kaydı otomatik `flagged` işaretleyebilir. Varsa spam score ve reason tabloya düşer; operatör bu ekrandan 7 günlük suspend uygulayabilir.
             </p>
           </div>
         </section>

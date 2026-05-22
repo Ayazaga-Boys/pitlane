@@ -35,7 +35,7 @@ export default async function CompetitionDetailPage({
     <PageShell
       eyebrow="V2.6 yarışma operasyonu"
       title="Yarışma detayı"
-      description="Backend kontratı tamamlanana kadar yarışma metriklerini ve moderasyon hazırlığını mock veri üzerinden takip eder."
+      description="Yarışma metriklerini ve moderasyon aksiyonlarını canlı backend varsa doğrudan, yoksa güvenli fallback ile takip eder."
     >
       <Link
         className="focus-ring inline-flex items-center gap-sm rounded-sm text-sm font-medium text-text-secondary hover:text-text-primary"
@@ -64,7 +64,7 @@ export default async function CompetitionDetailPage({
       <DataStateBanner
         usingMockData={usingMockData}
         mockLabel="Entry ve vote endpoint’leri tamamlanmadığı için detay ekranı mock veriyle çalışıyor; admin override aksiyonları audit log’dan geri okunuyor."
-        liveLabel=""
+        liveLabel="Gerçek yarışma detayı açık. Yalnız eksik write kontratları audit fallback ile desteklenir."
       />
 
       <section className="surface-panel p-xl">

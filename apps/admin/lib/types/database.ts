@@ -399,7 +399,9 @@ export interface CommunityNeedRow {
   type: "parts" | "fuel" | "tools" | "ride_help" | "other";
   urgency_color: "yellow" | "red";
   body: string;
-  status: "open" | "resolved" | "closed";
+  status: "open" | "resolved" | "closed" | "flagged";
+  spam_score?: number | null;
+  spam_reason?: string | null;
   created_at: string;
   updated_at: string;
 }
