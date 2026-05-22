@@ -51,7 +51,15 @@ export async function middleware(request: NextRequest) {
   }
 
   if (role === "moderator") {
-    const moderatorAllowed = pathname === "/reports" || pathname.startsWith("/reports/");
+    const moderatorAllowed =
+      pathname === "/reports" ||
+      pathname.startsWith("/reports/") ||
+      pathname === "/posts" ||
+      pathname.startsWith("/posts/") ||
+      pathname === "/comments" ||
+      pathname.startsWith("/comments/") ||
+      pathname === "/stories" ||
+      pathname.startsWith("/stories/");
     if (!moderatorAllowed) {
       return NextResponse.redirect(new URL("/reports", request.url));
     }

@@ -59,11 +59,18 @@ export default async function CommunityDetailPage({
               Bu aksiyon topluluk kaydını ve ilişkili üyelikleri siler. Gerçek veri açık değilse buton pasif kalır.
             </p>
           </div>
-          <form action={deleteAction}>
-            <Button disabled={usingMockData} type="submit" variant="destructive">
-              Topluluğu sil
-            </Button>
-          </form>
+          <div className="flex flex-wrap gap-sm">
+            <Link href={`/communities/${params.id}/roles`}>
+              <Button type="button" variant="secondary">
+                Rolleri görüntüle
+              </Button>
+            </Link>
+            <form action={deleteAction}>
+              <Button disabled={usingMockData} type="submit" variant="destructive">
+                Topluluğu sil
+              </Button>
+            </form>
+          </div>
         </div>
       </section>
       <CommunityDetailGrid community={community} />

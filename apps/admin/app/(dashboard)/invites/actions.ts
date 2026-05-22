@@ -58,3 +58,53 @@ export async function createInviteBatch(formData: FormData) {
   revalidateAdminModerationPaths("/invites");
   redirect(`/invites?result=created&count=${count}`);
 }
+
+export async function revokeCommunityInvite(formData: FormData) {
+  const inviteId = String(formData.get("inviteId") ?? "").trim();
+  if (!inviteId) {
+    throw new Error("Davet kaydı bulunamadı.");
+  }
+
+  const { actorId, adminClient } = await requireAdminActor();
+  const existingResult = await adminClient
+    .from("community_invites")
+    .select("id, community_id, link_slug, code, uses_count, max_uses, expires_at")
+    .eq("id", inviteId)
+    .maybeSingle();
+
+  const existingInvite = existingResult.data as {
+    id: string;
+    community_id: string;
+    link_slug: string | null;
+    code: string | null;
+    uses_count: number;
+    max_uses: number | null;
+    expires_at: string | null;
+  } | null;
+
+  if (existingResult.error || !existingInvite) {
+    throw new Error("Topluluk daveti bulunamadı.");
+  }
+
+  const revokedAt = new Date().toISOString();
+  const updateResult = await adminClient
+    .from("community_invites")
+    .update({ expires_at: revokedAt, max_uses: existingInvite.uses_count } as never)
+    .eq("id", inviteId);
+
+  if (updateResult.error) {
+    throw new Error("Topluluk daveti revoke edilemedi.");
+  }
+
+  await writeAuditLog(actorId, "config_changed", "community_invite", inviteId, {
+    community_id: existingInvite.community_id,
+    token: existingInvite.link_slug ?? existingInvite.code,
+    previous_expires_at: existingInvite.expires_at,
+    previous_max_uses: existingInvite.max_uses,
+    revoked_at: revokedAt,
+    source: "admin_panel",
+  });
+
+  revalidateAdminModerationPaths("/invites");
+  redirect("/invites?result=community_invite_revoked");
+}
