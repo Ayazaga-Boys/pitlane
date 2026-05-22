@@ -63,6 +63,7 @@ export default async function AuditPage({
                 <option value="user_banned">Kullanıcı banlandı</option>
                 <option value="user_unbanned">Ban kaldırıldı</option>
                 <option value="content_deleted">İçerik silindi</option>
+                <option value="content_restored">İçerik geri yüklendi</option>
                 <option value="pin_verified">Pin doğrulandı</option>
                 <option value="pin_rejected">Pin reddedildi</option>
                 <option value="config_changed">Yapılandırma</option>
@@ -79,7 +80,12 @@ export default async function AuditPage({
                 <option value="">Tüm hedefler</option>
                 <option value="profile">Profile</option>
                 <option value="business_pin">Business pin</option>
+                <option value="business_application">Business application</option>
                 <option value="community">Community</option>
+                <option value="community_event">Community event</option>
+                <option value="competition">Competition</option>
+                <option value="competition_entry">Competition entry</option>
+                <option value="feed_override">Feed override</option>
                 <option value="support_note">Support note</option>
                 <option value="report">Report</option>
                 <option value="message">Message</option>

@@ -10,6 +10,8 @@ function actionLabel(action: AdminAuditEntry["action"]) {
       return "Ban kaldırıldı";
     case "content_deleted":
       return "İçerik silindi";
+    case "content_restored":
+      return "İçerik geri yüklendi";
     case "pin_verified":
       return "Pin doğrulandı";
     case "pin_rejected":
@@ -29,6 +31,8 @@ function actionTone(action: AdminAuditEntry["action"]) {
     case "content_deleted":
     case "pin_rejected":
       return "error" as const;
+    case "content_restored":
+      return "info" as const;
     case "report_resolved":
     case "config_changed":
       return "warning" as const;

@@ -732,6 +732,14 @@ function summarizeAuditMetadata(metadata: Record<string, unknown> | null) {
   }
 
   if (typeof metadata.action === "string") {
+    if (metadata.action === "business_approved") {
+      const businessName = typeof metadata.business_name === "string" ? metadata.business_name : "İşletme";
+      return `${businessName} başvurusu onaylandı.`;
+    }
+    if (metadata.action === "business_rejected") {
+      const businessName = typeof metadata.business_name === "string" ? metadata.business_name : "İşletme";
+      return `${businessName} başvurusu reddedildi${typeof metadata.reason === "string" ? `: ${metadata.reason}` : "."}`;
+    }
     if (metadata.action === "competition_canceled") {
       return `Yarışma iptal edildi${typeof metadata.reason === "string" ? `: ${metadata.reason}` : "."}`;
     }
@@ -741,6 +749,23 @@ function summarizeAuditMetadata(metadata: Record<string, unknown> | null) {
     if (metadata.action === "competition_entry_rejected") {
       const title = typeof metadata.entry_title === "string" ? metadata.entry_title : "Entry";
       return `${title} katılımı reddedildi${typeof metadata.reason === "string" ? `: ${metadata.reason}` : "."}`;
+    }
+    if (metadata.action === "event_canceled") {
+      const title = typeof metadata.title === "string" ? metadata.title : "Etkinlik";
+      return `${title} iptal edildi${typeof metadata.reason === "string" ? `: ${metadata.reason}` : "."}`;
+    }
+    if (metadata.action === "user_warned") {
+      return "Kullanıcıya uyarı bildirimi gönderildi.";
+    }
+    if (metadata.action === "community_deleted") {
+      const name = typeof metadata.name === "string" ? metadata.name : "Topluluk";
+      return `${name} silindi.`;
+    }
+    if (metadata.action === "cleared") {
+      return "Override temizlendi.";
+    }
+    if (metadata.action === "boost" || metadata.action === "shadowban") {
+      return `Feed override: ${metadata.action}`;
     }
     return `Aksiyon: ${metadata.action}`;
   }
