@@ -58,6 +58,7 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `POST /v2/follow-requests/:id/accept` ve `/reject`
 - [x] `GET /v2/follow-requests/incoming`
 - [x] Block kontrolü follow'larda — blocked kullanıcı follow edemez
+- [x] Valkey sync: `follows:<followerId>` set'i follow/unfollow/private accept sonrası güncellenir (Go `subscribe_user` için)
 
 ### V2.2 — Post & Yorum & Beğeni (Hafta 3-4)
 
@@ -147,6 +148,7 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `POST /v2/business/applications` — başvuru oluştur
 - [x] `POST /v2/business/applications/:id/documents` — belge yükle (private R2)
 - [x] `GET /v2/business/applications/me`
+- [x] `GET /v2/business/locations/nearby?h3cell=&k=&category=` — aktif onaylı işletme lokasyonları (foto-bubble harita)
 - [x] **Admin** (Tufan kullanacak): `GET /v2/admin/business/applications?status=pending`
 - [x] **Admin**: `POST /v2/admin/business/applications/:id/approve` (+ location yarat)
 - [x] **Admin**: `POST /v2/admin/business/applications/:id/reject` (+ neden)

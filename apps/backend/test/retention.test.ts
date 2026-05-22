@@ -5,7 +5,7 @@ import { getRetentionCutoffs } from '../src/jobs/retention.js';
 import { runUserExportJob } from '../src/jobs/user-export.js';
 import { parseSentryDsn } from '../src/services/sentry.js';
 import { createUserExportStorageKey } from '../src/services/user-export.js';
-import { normalizeLocationCellsToHeatmapCounts } from '../src/services/valkey.js';
+import { addFollowCache, normalizeLocationCellsToHeatmapCounts, removeFollowCache } from '../src/services/valkey.js';
 
 describe('retention jobs', () => {
   it('calculates canonical retention cutoffs', () => {
@@ -50,6 +50,23 @@ describe('retention jobs', () => {
     ]);
 
     expect(counts['8828308281fffff']).toBe(2);
+  });
+
+  it('treats follow cache sync as a no-op without Valkey configuration', async () => {
+    const previousAddr = process.env.VALKEY_ADDR;
+    delete process.env.VALKEY_ADDR;
+
+    await expect(addFollowCache(
+      '00000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000002',
+    )).resolves.toBe(false);
+    await expect(removeFollowCache(
+      '00000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000002',
+    )).resolves.toBe(false);
+
+    if (previousAddr) process.env.VALKEY_ADDR = previousAddr;
+    else delete process.env.VALKEY_ADDR;
   });
 
   it('builds sentry envelope endpoint from dsn', () => {

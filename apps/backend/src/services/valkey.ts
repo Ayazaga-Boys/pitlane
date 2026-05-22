@@ -6,6 +6,7 @@ const HEATMAP_SNAPSHOT_KEY = 'heatmap:snapshot';
 const VEHICLE_HEATMAP_SNAPSHOT_PREFIX = 'heatmap:snapshot:vehicle';
 const LOCATION_KEY_PATTERN = 'loc:*';
 const LOCATION_USER_KEY_PREFIX = 'loc:user:';
+const FOLLOW_SET_KEY_PREFIX = 'follows:';
 const HEATMAP_RESOLUTION = 8;
 const DEFAULT_TIMEOUT_MS = 1500;
 export type HeatmapVehicleType = 'any' | 'car' | 'motorcycle';
@@ -65,6 +66,14 @@ export async function fetchActiveUsersInCells(cells: string[]): Promise<string[]
   }
 }
 
+export async function addFollowCache(followerId: string, followeeId: string): Promise<boolean> {
+  return updateFollowCache('SADD', followerId, followeeId);
+}
+
+export async function removeFollowCache(followerId: string, followeeId: string): Promise<boolean> {
+  return updateFollowCache('SREM', followerId, followeeId);
+}
+
 function mapCountsToCells(counts: Record<string, number>, bounds: string[]): HeatmapCell[] {
   const cells = bounds.length > 0 ? bounds : Object.keys(counts).sort();
 
@@ -114,6 +123,19 @@ async function getValkeyHeatmapCounts(snapshotKey: string): Promise<Record<strin
     } while (cursor !== '0');
 
     return normalizeLocationCellsToHeatmapCounts(cells);
+  } finally {
+    client.close();
+  }
+}
+
+async function updateFollowCache(command: 'SADD' | 'SREM', followerId: string, followeeId: string): Promise<boolean> {
+  const addr = process.env.VALKEY_ADDR;
+  if (!addr) return false;
+
+  const client = await ValkeyClient.connect(addr);
+  try {
+    await client.command([command, `${FOLLOW_SET_KEY_PREFIX}${followerId}`, followeeId]);
+    return true;
   } finally {
     client.close();
   }
