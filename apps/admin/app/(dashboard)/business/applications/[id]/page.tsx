@@ -135,6 +135,11 @@ export default async function BusinessApplicationDetailPage({
 
           <section className="surface-panel p-xl">
             <h3 className="text-lg font-semibold text-text-primary">Belgeler</h3>
+            <div className="mt-md rounded-md border border-warning/25 bg-warning/10 p-md text-sm leading-6 text-text-primary">
+              {usingMockData
+                ? "Signed URL kontrati hazir olmadigi icin belgeler simdilik metadata ve storage key uzerinden kontrol ediliyor."
+                : "Belge signed URL preview kontrati henuz acik degil. Bu ekranda storage key ve yukleme metadata'si gosteriliyor; signed preview geldiginde belge onizlemesi dogrudan acilacak."}
+            </div>
             <div className="mt-lg space-y-md">
               {detail.documents.length > 0 ? (
                 detail.documents.map((document) => (
@@ -150,7 +155,10 @@ export default async function BusinessApplicationDetailPage({
                         {document.status}
                       </Badge>
                     </div>
-                    <p className="mt-md font-mono text-xs text-text-tertiary">{document.storageKey}</p>
+                    <div className="mt-md space-y-xs">
+                      <p className="font-mono text-xs text-text-tertiary">{document.storageKey}</p>
+                      <p className="text-xs text-text-tertiary">Preview durumu: signed URL bekleniyor</p>
+                    </div>
                   </div>
                 ))
               ) : (
