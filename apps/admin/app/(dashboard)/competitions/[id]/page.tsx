@@ -153,6 +153,10 @@ export default async function CompetitionDetailPage({
           <p className="mt-md text-sm leading-6 text-text-secondary">
             Backend yarışma kontratı beklenirken bu aksiyonlar audit tabanlı admin override olarak kaydedilir ve sayfaya geri yansır.
           </p>
+          <div className="mt-md rounded-md border border-warning/25 bg-warning/10 p-md text-sm leading-6 text-text-primary">
+            Hazır olanlar: iptal, oylamayı durdur, entry reddet, audit izi.
+            Bekleyenler: gerçek katılımcı medyası, oy kırılımı ve backend vote temizleme endpoint'i.
+          </div>
           <div className="mt-lg grid gap-md">
             <form action={cancelAction} className="space-y-sm">
               <input name="competitionId" type="hidden" value={competition.id} />

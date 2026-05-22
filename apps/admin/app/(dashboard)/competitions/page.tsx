@@ -31,6 +31,7 @@ export default async function CompetitionsPage({
   const suspiciousCount = competitions.filter((competition) => competition.suspicious).length;
   const activeVotingCount = competitions.filter((competition) => competition.status === "voting").length;
   const blockedEntriesCount = competitions.reduce((total, competition) => total + competition.blockedEntriesCount, 0);
+  const overrideCount = competitions.filter((competition) => competition.adminActionLabel).length;
 
   return (
     <PageShell
@@ -103,9 +104,17 @@ export default async function CompetitionsPage({
               <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Bloklu entry</p>
               <p className="mt-xs text-3xl font-semibold text-text-primary">{blockedEntriesCount}</p>
             </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Admin override</p>
+              <p className="mt-xs text-3xl font-semibold text-text-primary">{overrideCount}</p>
+            </div>
             <div className="rounded-md border border-warning/25 bg-warning/10 p-lg text-sm leading-6 text-text-primary">
               Backend açıkları:
               `competitions`, `competition_entries` ve vote akışı henüz tamamlanmadı. O zamana kadar admin aksiyonları audit tabanlı override olarak tutuluyor.
+            </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg text-sm leading-6 text-text-secondary">
+              Hazır kontratlar: yarışma liste görünümü, risk sıralaması, audit override.
+              Bekleyen kontratlar: gerçek entry listesi, vote breakdown, topluluk bazlı yarışma endpoint'leri.
             </div>
           </div>
         </section>

@@ -155,9 +155,14 @@ export default async function BusinessApplicationDetailPage({
                         {document.status}
                       </Badge>
                     </div>
+                    <div className="mt-md flex flex-wrap gap-xs">
+                      <Badge tone="warning">signed URL bekleniyor</Badge>
+                      <Badge tone="default">metadata ile kontrol</Badge>
+                    </div>
                     <div className="mt-md space-y-xs">
                       <p className="font-mono text-xs text-text-tertiary">{document.storageKey}</p>
                       <p className="text-xs text-text-tertiary">Preview durumu: signed URL bekleniyor</p>
+                      <p className="text-xs text-text-tertiary">Sonraki adım: backend signed preview kontratı açıldığında bu karta önizleme butonu bağlanacak.</p>
                     </div>
                   </div>
                 ))
