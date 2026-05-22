@@ -82,8 +82,8 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `GET /v2/posts/:id/likes` (kim beğendi listesi)
 
 **Push:**
-- [ ] Trigger.dev job: post yorum geldiğinde push (eğer kullanıcı uygulamada değilse — Burak'ın presence kontrolü)
-- [ ] Trigger.dev job: post beğenisi geldiğinde push (debounced — 10 dk'da en çok 1)
+- [x] Server job: post yorum geldiğinde notification + push (presence/DND ve quiet hours push service tarafından kontrol edilir)
+- [x] Server job: post beğenisi geldiğinde notification + push (10 dk post bazlı debounce)
 
 ### V2.3 — Story + Keşfet + Feed Algoritması (Hafta 5-6)
 

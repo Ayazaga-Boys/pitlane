@@ -8,6 +8,8 @@ export const PUSH_NOTIFICATION_TYPES = [
   'flare_invite',
   'flare_starting',
   'dm_new',
+  'post_comment',
+  'post_like',
   'community_message',
   'community_invite',
   'system',

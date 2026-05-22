@@ -6,6 +6,8 @@ export const NotificationPrefsSchema = z.object({
   flare_invite: z.boolean().optional(),
   flare_starting: z.boolean().optional(),
   dm_new: z.boolean().optional(),
+  post_comment: z.boolean().optional(),
+  post_like: z.boolean().optional(),
   community_message: z.boolean().optional(),
   community_invite: z.boolean().optional(),
   system: z.boolean().optional(),

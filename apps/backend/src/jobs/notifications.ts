@@ -13,7 +13,7 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 export interface NotificationJobInput {
   supabase: SupabaseClient;
-  provider: PushProvider;
+  provider: PushProvider | null;
   userId: string;
   payload: PushPayload;
   now?: Date;
@@ -21,6 +21,12 @@ export interface NotificationJobInput {
 
 export interface NotificationJobResult {
   notification: unknown;
+  push: PushDeliverySummary;
+}
+
+export interface PostNotificationResult {
+  notification_created: boolean;
+  debounced?: boolean;
   push: PushDeliverySummary;
 }
 
@@ -49,17 +55,102 @@ export async function createNotificationAndPush(input: NotificationJobInput): Pr
 
   if (notificationResult.error) throw new Error(notificationResult.error.message);
 
-  const push = await sendPushToUser(
-    input.supabase,
-    input.userId,
-    input.payload,
-    input.provider,
-    input.now ?? new Date(),
-  );
+  const push = input.provider
+    ? await sendPushToUser(
+      input.supabase,
+      input.userId,
+      input.payload,
+      input.provider,
+      input.now ?? new Date(),
+    )
+    : skippedPushSummary('provider_unconfigured');
 
   return {
     notification: notificationResult.data,
     push,
+  };
+}
+
+export async function sendPostCommentNotification(input: Omit<NotificationJobInput, 'payload'> & {
+  postId: string;
+  commentId: string;
+  commenterId: string;
+  commenterName: string;
+  commentPreview: string;
+}): Promise<PostNotificationResult> {
+  if (input.userId === input.commenterId) return emptyPostNotificationResult();
+
+  const jobInput: NotificationJobInput = {
+    supabase: input.supabase,
+    provider: input.provider,
+    userId: input.userId,
+    payload: {
+      type: 'post_comment',
+      title: `${input.commenterName} yorum yaptı`,
+      body: input.commentPreview,
+      data: {
+        post_id: input.postId,
+        comment_id: input.commentId,
+        actor_id: input.commenterId,
+      },
+    },
+  };
+  if (input.now) jobInput.now = input.now;
+
+  const result = await createNotificationAndPush(jobInput);
+
+  return {
+    notification_created: true,
+    push: result.push,
+  };
+}
+
+export async function sendPostLikeNotification(input: Omit<NotificationJobInput, 'payload'> & {
+  postId: string;
+  likerId: string;
+  likerName: string;
+}): Promise<PostNotificationResult> {
+  if (input.userId === input.likerId) return emptyPostNotificationResult();
+
+  const now = input.now ?? new Date();
+  const since = new Date(now.getTime() - 10 * 60 * 1000).toISOString();
+  const recentResult = await input.supabase
+    .from('notifications')
+    .select('id')
+    .eq('user_id', input.userId)
+    .eq('type', 'post_like')
+    .contains('data', { post_id: input.postId })
+    .gte('created_at', since)
+    .limit(1);
+
+  if (recentResult.error) throw new Error(recentResult.error.message);
+  if ((recentResult.data ?? []).length > 0) {
+    return {
+      notification_created: false,
+      debounced: true,
+      push: skippedPushSummary('debounced'),
+    };
+  }
+
+  const result = await createNotificationAndPush({
+    supabase: input.supabase,
+    provider: input.provider,
+    userId: input.userId,
+    now,
+    payload: {
+      type: 'post_like',
+      title: `${input.likerName} gönderini beğendi`,
+      body: 'Gönderine yeni bir beğeni geldi.',
+      data: {
+        post_id: input.postId,
+        actor_id: input.likerId,
+      },
+    },
+  });
+
+  return {
+    notification_created: true,
+    push: result.push,
   };
 }
 
@@ -204,6 +295,24 @@ function emptyHelpNearbyResult(
       invalidTokensDeleted: 0,
       skipped: false,
     },
+  };
+}
+
+function emptyPostNotificationResult(): PostNotificationResult {
+  return {
+    notification_created: false,
+    push: skippedPushSummary('self_action'),
+  };
+}
+
+function skippedPushSummary(reason?: string): PushDeliverySummary {
+  return {
+    attempted: 0,
+    sent: 0,
+    failed: 0,
+    invalidTokensDeleted: 0,
+    skipped: true,
+    ...(reason === 'provider_unconfigured' ? { skipReason: 'disabled' as const } : {}),
   };
 }
 

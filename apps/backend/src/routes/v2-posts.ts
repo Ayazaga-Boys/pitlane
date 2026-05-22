@@ -1,6 +1,10 @@
 import { Hono, type Context } from 'hono';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 import {
+  sendPostCommentNotification,
+  sendPostLikeNotification,
+} from '../jobs/notifications.js';
+import {
   V2CommentIdParamSchema,
   V2CreateCommentSchema,
   V2CreatePostSchema,
@@ -10,6 +14,7 @@ import {
   V2UsernameParamSchema,
 } from '../schemas/v2-social.schema.js';
 import { toPresenceResponse } from './v2-presence.js';
+import { getConfiguredPushProvider } from '../services/fcm.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
@@ -29,6 +34,13 @@ type PostAccessRow = {
   author_id: string;
   visibility: 'public' | 'followers' | 'private';
   author?: { is_private?: boolean | null } | null;
+};
+
+type CommentNotificationRow = {
+  id: string;
+  post_id: string;
+  author_id: string;
+  body: string;
 };
 
 v2PostRoutes.post('/', async (c) => {
@@ -147,6 +159,7 @@ v2PostRoutes.post('/:id/comments', async (c) => {
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  await notifyPostCommentOwner(supabase, data as CommentNotificationRow);
   return c.json({ data }, 201);
 });
 
@@ -395,12 +408,75 @@ async function setPostLike(c: Context<AppEnv>, shouldLike: boolean) {
 
   const { data, error } = await supabase
     .from('post_likes')
-    .upsert({ post_id: params.data.id, user_id: userId }, { onConflict: 'post_id,user_id' })
+    .insert({ post_id: params.data.id, user_id: userId })
     .select('post_id,user_id,created_at')
     .single();
 
+  if (error?.code === '23505') return c.json({ data: { liked: true } });
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  await notifyPostLikeOwner(supabase, params.data.id, userId);
   return c.json({ data: { liked: true, like: data } });
+}
+
+async function notifyPostCommentOwner(supabase: Supabase, comment: CommentNotificationRow) {
+  try {
+    const post = await fetchPostNotificationTarget(supabase, comment.post_id);
+    if (!post) return;
+    const commenterName = await fetchProfileDisplayName(supabase, comment.author_id);
+    await sendPostCommentNotification({
+      supabase,
+      provider: getConfiguredPushProvider(),
+      userId: post.author_id,
+      postId: comment.post_id,
+      commentId: comment.id,
+      commenterId: comment.author_id,
+      commenterName,
+      commentPreview: comment.body,
+    });
+  } catch {
+    // Notifications are best-effort; comment creation remains the source action.
+  }
+}
+
+async function notifyPostLikeOwner(supabase: Supabase, postId: string, likerId: string) {
+  try {
+    const post = await fetchPostNotificationTarget(supabase, postId);
+    if (!post) return;
+    const likerName = await fetchProfileDisplayName(supabase, likerId);
+    await sendPostLikeNotification({
+      supabase,
+      provider: getConfiguredPushProvider(),
+      userId: post.author_id,
+      postId,
+      likerId,
+      likerName,
+    });
+  } catch {
+    // Notifications are best-effort; liking remains the source action.
+  }
+}
+
+async function fetchPostNotificationTarget(supabase: Supabase, postId: string): Promise<{ author_id: string } | null> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('author_id')
+    .eq('id', postId)
+    .is('deleted_at', null)
+    .maybeSingle<{ author_id: string }>();
+
+  if (error) throw error;
+  return data ?? null;
+}
+
+async function fetchProfileDisplayName(supabase: Supabase, userId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('username,display_name')
+    .eq('id', userId)
+    .maybeSingle<{ username: string | null; display_name: string | null }>();
+
+  if (error) throw error;
+  return data?.display_name || data?.username || 'Bir kullanıcı';
 }
 
 async function canViewPost(supabase: Supabase, viewerId: string, postId: string) {
