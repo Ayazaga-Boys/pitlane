@@ -106,6 +106,7 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `GET /v2/discover/feed?cursor=` — algoritma tabanlı
 - [x] Score = `(0.5 * engagement_rate) + (0.3 * recency_decay) + (0.2 * follow_signal)`
 - [x] V1: Postgres view + materialized refresh hourly
+- [x] `feed_overrides` — admin manuel feature/shadowban tablosu; discover feed `boost` için +1 skor, `shadowban` için gizleme uygular
 - [ ] İlerleyen sürüm: Redis Sorted Set + score güncelleme
 
 ### V2.4 — Topluluk RBAC + Etkinlik + Davet (Hafta 7-8)

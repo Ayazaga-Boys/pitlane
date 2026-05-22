@@ -24,6 +24,12 @@ type DiscoverScoreRow = {
   refreshed_at: string;
 };
 
+type FeedOverrideRow = {
+  post_id: string;
+  action_type: 'boost' | 'shadowban';
+  expires_at: string | null;
+};
+
 type PostRow = {
   id: string;
   author_id: string;
@@ -70,15 +76,24 @@ v2DiscoverRoutes.get('/feed', async (c) => {
   const { data: scoreRows, error: scoreError } = await scoreQuery;
   if (scoreError) return c.json({ code: 'INTERNAL_ERROR', error: scoreError.message }, 500);
 
+  const overrideRows = await fetchActiveFeedOverrides(
+    supabase,
+    ((scoreRows ?? []) as DiscoverScoreRow[]).map((row) => row.post_id),
+  );
+  const overridesByPostId = new Map(overrideRows.map((override) => [override.post_id, override]));
+
   const visibleScores = ((scoreRows ?? []) as DiscoverScoreRow[])
-    .filter((row) => canIncludeScoreRow({ row, userId, followingIds, blockedIds }))
+    .filter((row) => canIncludeScoreRow({ row, userId, followingIds, blockedIds, overridesByPostId }))
     .map((row) => {
       const followSignal = followingIds.has(row.author_id) ? 1 : 0;
-      const score = Number(row.base_score) + (0.2 * followSignal);
+      const override = overridesByPostId.get(row.post_id);
+      const overrideBoost = override?.action_type === 'boost' ? 1 : 0;
+      const score = Number(row.base_score) + (0.2 * followSignal) + overrideBoost;
       return {
         row,
         score,
         follow_signal: followSignal,
+        override_action: override?.action_type ?? null,
       };
     })
     .sort((left, right) => {
@@ -111,6 +126,7 @@ v2DiscoverRoutes.get('/feed', async (c) => {
           engagement_rate: Number(entry.row.engagement_rate),
           recency_decay: Number(entry.row.recency_decay),
           follow_signal: entry.follow_signal,
+          override_action: entry.override_action,
           like_count: entry.row.like_count,
           comment_count: entry.row.comment_count,
           refreshed_at: entry.row.refreshed_at,
@@ -127,11 +143,29 @@ function canIncludeScoreRow(input: {
   userId: string;
   followingIds: Set<string>;
   blockedIds: Set<string>;
+  overridesByPostId: Map<string, FeedOverrideRow>;
 }): boolean {
   if (input.row.author_id === input.userId) return true;
+  if (input.overridesByPostId.get(input.row.post_id)?.action_type === 'shadowban') return false;
   if (input.blockedIds.has(input.row.author_id)) return false;
   if (input.row.author_is_private && !input.followingIds.has(input.row.author_id)) return false;
   if (input.row.visibility === 'private') return false;
   if (input.row.visibility === 'followers' && !input.followingIds.has(input.row.author_id)) return false;
   return true;
+}
+
+async function fetchActiveFeedOverrides(supabase: NonNullable<ReturnType<typeof getServiceSupabaseClient>>, postIds: string[]): Promise<FeedOverrideRow[]> {
+  if (postIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('feed_overrides')
+    .select('post_id,action_type,expires_at')
+    .in('post_id', postIds)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+
+  if (error) {
+    if (error.code === '42P01' || error.code === 'PGRST205') return [];
+    throw error;
+  }
+  return (data ?? []) as FeedOverrideRow[];
 }
