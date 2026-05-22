@@ -51,12 +51,13 @@ describe('app routes', () => {
 
   it('keeps profile routes protected', async () => {
     const app = createApp();
-    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse] = await Promise.all([
+    const [profileResponse, vehiclesResponse, exportResponse, deleteResponse, cancelDeletionResponse, publicCancelResponse] = await Promise.all([
       app.request('/v1/profiles/me'),
       app.request('/v1/profiles/me/vehicles'),
       app.request('/v1/profiles/me/export'),
       app.request('/v1/profiles/me', { method: 'DELETE' }),
       app.request('/v1/profiles/me/deletion/cancel', { method: 'POST' }),
+      app.request('/v1/profiles/deletion/cancel/test-token', { method: 'POST' }),
     ]);
 
     expect(profileResponse.status).toBe(401);
@@ -64,6 +65,7 @@ describe('app routes', () => {
     expect(exportResponse.status).toBe(401);
     expect(deleteResponse.status).toBe(401);
     expect(cancelDeletionResponse.status).toBe(401);
+    expect(publicCancelResponse.status).not.toBe(401);
   });
 
   it('keeps v2 social routes protected', async () => {
@@ -102,6 +104,8 @@ describe('app routes', () => {
       nearbyBusinessLocationsResponse,
       v2HeatmapResponse,
       v2HelpResponse,
+      createNeedResponse,
+      listNeedsResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
@@ -136,6 +140,8 @@ describe('app routes', () => {
       app.request('/v2/business/locations/nearby?h3cell=8928308280fffff'),
       app.request('/v2/map/heatmap?vehicle_type=car'),
       app.request('/v2/help', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs', { method: 'POST' }),
+      app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs?status=open'),
     ]);
 
     expect(avatarResponse.status).toBe(401);
@@ -171,6 +177,8 @@ describe('app routes', () => {
     expect(nearbyBusinessLocationsResponse.status).toBe(401);
     expect(v2HeatmapResponse.status).toBe(401);
     expect(v2HelpResponse.status).toBe(401);
+    expect(createNeedResponse.status).toBe(401);
+    expect(listNeedsResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
@@ -272,10 +280,18 @@ describe('app routes', () => {
     delete process.env.TRIGGER_SECRET_KEY;
 
     const app = createApp();
-    const [retentionResponse, profileDeletionResponse, discoverRefreshResponse] = await Promise.all([
+    const [
+      retentionResponse,
+      profileDeletionResponse,
+      discoverRefreshResponse,
+      helpExpirationResponse,
+      userExportResponse,
+    ] = await Promise.all([
       app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/profile-deletion/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/discover-refresh/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/help-expiration/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/user-export/run', { method: 'POST', body: '{}' }),
     ]);
 
     restoreEnv('INTERNAL_JOB_SECRET', previousSecret);
@@ -284,6 +300,8 @@ describe('app routes', () => {
     expect(retentionResponse.status).toBe(401);
     expect(profileDeletionResponse.status).toBe(401);
     expect(discoverRefreshResponse.status).toBe(401);
+    expect(helpExpirationResponse.status).toBe(401);
+    expect(userExportResponse.status).toBe(401);
   });
 
   it('keeps message routes protected', async () => {

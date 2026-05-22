@@ -160,15 +160,15 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 
 **Migration:**
 - [x] `help_requests` tablosuna kolon ekle: `target_type` ENUM('nearby','followers','group'), `target_id` UUID nullable, `urgency` ENUM
-- [ ] `community_needs` — yedek parça/yakıt ilanları (`community_id`, `type`, `urgency_color`, `body`)
+- [x] `community_needs` — yedek parça/yakıt ilanları (`community_id`, `type`, `urgency_color`, `body`)
 - [ ] `competitions` — yarışmalar (`id`, `community_id`, `title`, `filters` JSONB, `voting_starts_at`, `voting_ends_at`)
 - [ ] `competition_entries`
 - [ ] `competition_votes`
 
 **Endpoint:**
 - [x] `POST /v2/help` — `target_type` ve `target_id` ile (Burak realtime'a iletecek)
-- [ ] `POST /v2/communities/:id/needs` — tagged need (sarı/kırmızı)
-- [ ] `GET /v2/communities/:id/needs?status=open`
+- [x] `POST /v2/communities/:id/needs` — tagged need (sarı/kırmızı)
+- [x] `GET /v2/communities/:id/needs?status=open`
 - [ ] `POST /v2/competitions` (rol kontrolü)
 - [ ] `POST /v2/competitions/:id/entries` (filtre eşleşmesi kontrolü)
 - [ ] `POST /v2/competitions/:id/entries/:entryId/vote`

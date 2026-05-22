@@ -163,6 +163,115 @@ Doğrulama:
 - `flutter analyze` geçti.
 - `flutter test` geçti.
 
+### İş 9 — V2.1 Realtime Follow Presence Çekirdeği
+
+Sprint 1 / Kişi 1 V2 kapsamında yapıldı:
+
+- WS inbound kontratına `subscribe_user` ve `unsubscribe_user` eklendi.
+- WS outbound kontratına `presence_update` ve `location_share` eklendi.
+- Go realtime client'ı takip edilen kullanıcı aboneliklerini tutacak hale getirildi.
+- `location_share` fanout'u sadece ilgili kullanıcıya subscribe olan client'lara gönderiliyor.
+- Gürültüyü azaltmak için aynı H3 cell'de 30 saniye cooldown eklendi; H3 cell değişirse event hemen gönderiliyor.
+- Ghost mode aktifken konum store'a yazılmıyor ve `location_share` gönderilmiyor.
+- Valkey follow cache desteği eklendi: `follows:<user_id>` set'i `subscribe_user` güvenlik kontrolünde okunuyor.
+- Follow cache izin vermiyorsa `subscribe_user` `FORBIDDEN` döner; arbitrary kullanıcı takibi engellendi.
+- `docs/KISI_1_TRACK_V2.md` içinde V2.1 Go realtime maddeleri tamamlandı olarak işaretlendi.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+
+### İş 10 — V2.1 Flutter Followed User Locations Provider
+
+Sprint 1 / Kişi 1 V2 kapsamında yapıldı:
+
+- Flutter WS service `presence_update` ve `location_share` eventlerini parse edecek hale getirildi.
+- WS reconnect sonrası `subscribe_user` abonelikleri otomatik tekrar gönderiliyor.
+- `/v2/follows/following` endpoint'inden takip edilen kullanıcı ID'lerini çeken repository eklendi.
+- `followedUserLocationsProvider` eklendi; takip edilen kullanıcıların son H3 cell ve presence durumunu tutuyor.
+- `followedUserPinsProvider` eklendi; H3 cell'i harita marker pozisyonuna çevirip takip edilen kullanıcı pinlerini üretiyor.
+- Map screen normal pinlerle takip edilen kullanıcı pinlerini birlikte render ediyor.
+- Offline kullanıcılar haritada gösterilmiyor.
+- `docs/KISI_1_TRACK_V2.md` içinde Flutter `followed_users_locations_provider` maddesi tamamlandı olarak işaretlendi.
+
+Doğrulama:
+
+- `dart format --output=none --set-exit-if-changed lib/ test/` geçti.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./... -race` geçti.
+
+### İş 11 — V2 Sprint 1 Map Filtreleri, Konum Paylaşımı ve Araç İkon Altyapısı
+
+Kişi 1 sınırında yapıldı:
+
+- Map filter modeline `hideBusinesses` eklendi.
+- Filter sheet'e "Takip" filtresi, "İşletmeleri gizle" ve "Konumumu takipçilerle paylaş" kontrolleri eklendi.
+- "Sadece takip ettiklerim" filtresi `followedUserPinsProvider` ile bağlandı.
+- "İşletmeleri gizle" filtresi business marker'larını haritadan düşürüyor.
+- Araç tipi heatmap filtresi `/v2/map/heatmap?vehicle_type=any|car|motorcycle` kontratına bağlandı.
+- Konum paylaşımı kapalıyken mobile tarafı WS `location` mesajı göndermiyor; yerel H3 takibi ve cell subscription devam ediyor.
+- Araç ikonları için local `VehicleIconSlug` katalog modeli eklendi.
+- Marker başına tekrar render yapmamak için `VehicleMarkerIconCache` / `BitmapDescriptor` cache altyapısı eklendi.
+- `docs/KISI_1_TRACK_V2.md` içinde V2.1 konum paylaşımı ve V2.4 Flutter filtre maddeleri tamamlandı olarak işaretlendi.
+
+Not:
+
+- `GET /v2/vehicles/icons` ve `vehicles.icon_slug` backend kontratı bekleniyor; araç ikon cache'i şimdilik altyapı olarak hazır.
+
+Doğrulama:
+
+- `dart format --output=none --set-exit-if-changed lib/ test/` geçti.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./... -race` geçti.
+
+### İş 7 — V2 Vehicle Filtered Heatmap Snapshot Kontratı
+
+Erol'dan gelen kontrat:
+
+- Backend endpoint: `GET /v2/map/heatmap?vehicle_type=any|car|motorcycle`
+- Realtime/Valkey snapshot key'leri:
+  - `heatmap:snapshot`
+  - `heatmap:snapshot:vehicle:car`
+  - `heatmap:snapshot:vehicle:motorcycle`
+- Beklenen value formatı: H3 cell -> user count JSON map.
+
+Yapıldı:
+
+- WebSocket `location` mesajına opsiyonel `vehicle_type` alanı eklendi.
+- Go realtime store interface'i araç tipine göre cell count ve snapshot yazımı destekleyecek şekilde genişletildi.
+- In-memory store'da `car` ve `motorcycle` filtreli heatmap sayımları eklendi.
+- Valkey store'da `loc:<user>` raw H3 formatında bırakıldı; backend fallback kırılmasın diye araç tipi ayrı `locveh:<user>` key'inde tutuldu.
+- Broadcaster her heatmap yayını sırasında üç snapshot key'ini Valkey'e yazacak hale getirildi.
+- `docs/KISI_1_TRACK_V2.md` içinde V2.4 Go realtime/backend snapshot maddeleri tamamlandı olarak işaretlendi.
+
+Doğrulama:
+
+- `gofmt` çalıştırıldı.
+- `go test ./... -race` geçti.
+- `go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run` geçti.
+
+### İş 8 — Flutter CI Format Hatası Düzeltmesi
+
+Sebep:
+
+- GitHub Actions Flutter job'ı `dart format --output=none --set-exit-if-changed lib/ test/` adımında kalıyordu.
+- CI logunda formatlanması gereken dosya `apps/mobile/lib/src/features/profile/data/profile_repository.dart` olarak görünüyordu.
+
+Yapıldı:
+
+- `getCurrentProfile` içindeki tek satırlık null kontrolü blok forma çekildi.
+- Satır sonu yorumunun formatter tarafından farklı biçimlenmesi engellendi.
+
+Doğrulama:
+
+- `dart format --output=none --set-exit-if-changed lib/ test/` geçti.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+
 ### İş 7 — Realtime Server-Side k-ring ve Valkey Pub/Sub
 
 Yapıldı:

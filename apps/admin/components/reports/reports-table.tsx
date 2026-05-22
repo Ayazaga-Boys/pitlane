@@ -27,6 +27,10 @@ export function ReportsTable({ reports }: { reports: MockReport[] }) {
                       ? "mesaj"
                       : report.contentType === "flare"
                         ? "flare"
+                        : report.contentType === "post"
+                          ? "post"
+                          : report.contentType === "comment"
+                            ? "yorum"
                         : "topluluk gönderisi"}
                   </Link>
                 </TD>

@@ -95,9 +95,15 @@ type DeleteProfileResponse = {
     deletion_requested_at: string;
     delete_after: string; // deletion_requested_at + 30 gün
     ghost_mode: true;
+    deletion_cancel_token: string; // Tek seferlik, sadece bu response'ta döner
+    deletion_cancel_url: string;   // rollpit.com/undelete?token=...
   };
 };
 ```
+
+### POST /v1/profiles/deletion/cancel/:token — Public
+
+E-posta/derin linkten gelen tek kullanımlık token ile hesap silme penceresini iptal eder.
 
 ### POST /v1/profiles/me/deletion/cancel — Response
 
@@ -493,6 +499,8 @@ V1 canonical Cloudflare Images varyantları: `thumb` (120x120 cover), `feed` (64
 ```
 POST /v1/internal/jobs/retention/run — Retention cleanup çalıştır
 POST /v1/internal/jobs/profile-deletion/run — 30 günü dolan hesap silme taleplerini anonimleştir
+POST /v1/internal/jobs/help-expiration/run — Süresi dolan açık yardım taleplerini expired yap
+POST /v1/internal/jobs/user-export/run — Kullanıcı veri export JSON arşivini üret
 ```
 
 Auth: `Authorization: Bearer <INTERNAL_JOB_SECRET>`; bu yoksa fallback olarak `TRIGGER_SECRET_KEY` kabul edilir.
@@ -505,6 +513,15 @@ type RetentionCleanupResponse = {
     deleted_read_notifications: number;
     deleted_resolved_help_requests: number;
     deleted_ended_flares: number;
+  };
+};
+```
+
+```typescript
+type HelpRequestExpirationResponse = {
+  data: {
+    expired_help_requests: number;
+    expired_at: string;
   };
 };
 ```

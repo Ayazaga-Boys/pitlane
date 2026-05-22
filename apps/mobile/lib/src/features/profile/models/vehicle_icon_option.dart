@@ -73,9 +73,8 @@ abstract final class VehicleIconCatalog {
   ];
 
   static List<VehicleIconOption> optionsFor(VehicleType type) {
-    final filtered = options
-        .where((option) => option.type == type)
-        .toList(growable: false);
+    final filtered =
+        options.where((option) => option.type == type).toList(growable: false);
     return filtered.isEmpty ? const [other] : filtered;
   }
 

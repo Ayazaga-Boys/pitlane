@@ -49,6 +49,12 @@ async function getReportTarget(reportId: string): Promise<ReportTargetInfo> {
     targetUserId = (pinResult.data as { owner_id: string } | null)?.owner_id ?? null;
   } else if (report.content_type === "profile") {
     targetUserId = report.content_id;
+  } else if (report.content_type === "post") {
+    const postResult = await adminClient.from("posts").select("author_id").eq("id", report.content_id).maybeSingle();
+    targetUserId = (postResult.data as { author_id: string } | null)?.author_id ?? null;
+  } else if (report.content_type === "comment") {
+    const commentResult = await adminClient.from("comments").select("author_id").eq("id", report.content_id).maybeSingle();
+    targetUserId = (commentResult.data as { author_id: string } | null)?.author_id ?? null;
   }
 
   return {
@@ -86,6 +92,10 @@ export async function deleteReportedContent(reportId: string) {
     await adminClient.from("flares").update({ status: "cancelled" } as unknown as never).eq("id", target.contentId);
   } else if (target.contentType === "community") {
     await adminClient.from("communities").delete().eq("id", target.contentId);
+  } else if (target.contentType === "post") {
+    await adminClient.from("posts").update({ deleted_at: new Date().toISOString() } as never).eq("id", target.contentId);
+  } else if (target.contentType === "comment") {
+    await adminClient.from("comments").update({ is_deleted: true } as never).eq("id", target.contentId);
   }
 
   await resolveReport(reportId, { status: "reviewed", actionTaken: "content_deleted" });

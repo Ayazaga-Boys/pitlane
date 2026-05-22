@@ -5,6 +5,7 @@ import { cellToParent, isValidCell } from 'h3-js';
 const HEATMAP_SNAPSHOT_KEY = 'heatmap:snapshot';
 const VEHICLE_HEATMAP_SNAPSHOT_PREFIX = 'heatmap:snapshot:vehicle';
 const LOCATION_KEY_PATTERN = 'loc:*';
+const LOCATION_USER_KEY_PREFIX = 'loc:user:';
 const HEATMAP_RESOLUTION = 8;
 const DEFAULT_TIMEOUT_MS = 1500;
 export type HeatmapVehicleType = 'any' | 'car' | 'motorcycle';
@@ -25,6 +26,43 @@ export async function getVehicleHeatmapCells(vehicleType: HeatmapVehicleType, bo
   const key = vehicleType === 'any' ? HEATMAP_SNAPSHOT_KEY : `${VEHICLE_HEATMAP_SNAPSHOT_PREFIX}:${vehicleType}`;
   const counts = await getValkeyHeatmapCounts(key);
   return mapCountsToCells(counts, bounds);
+}
+
+export async function fetchActiveUsersInCells(cells: string[]): Promise<string[]> {
+  const addr = process.env.VALKEY_ADDR;
+  if (!addr || cells.length === 0) return [];
+
+  const cellSet = new Set(cells.filter(isValidCell));
+  if (cellSet.size === 0) return [];
+
+  const client = await ValkeyClient.connect(addr);
+  try {
+    const userIds = new Set<string>();
+    let cursor = '0';
+    do {
+      const scan = await client.command(['SCAN', cursor, 'MATCH', `${LOCATION_USER_KEY_PREFIX}*`, 'COUNT', '100']);
+      if (!Array.isArray(scan) || scan.length < 2 || typeof scan[0] !== 'string' || !Array.isArray(scan[1])) {
+        break;
+      }
+      cursor = scan[0];
+      const keys = scan[1].filter((key): key is string => typeof key === 'string');
+      if (keys.length === 0) continue;
+
+      const values = await client.command(['MGET', ...keys]);
+      if (!Array.isArray(values)) continue;
+
+      values.forEach((value, index) => {
+        const key = keys[index];
+        if (!key || typeof value !== 'string' || !cellSet.has(value)) return;
+        const userId = key.slice(LOCATION_USER_KEY_PREFIX.length);
+        if (userId) userIds.add(userId);
+      });
+    } while (cursor !== '0');
+
+    return Array.from(userIds);
+  } finally {
+    client.close();
+  }
 }
 
 function mapCountsToCells(counts: Record<string, number>, bounds: string[]): HeatmapCell[] {

@@ -113,6 +113,68 @@ func TestGetCellCountsRes8CellPassthrough(t *testing.T) {
 	}
 }
 
+func TestGetCellCountsByVehicle(t *testing.T) {
+	store := newTestStore()
+	ctx := context.Background()
+
+	_ = store.SetUserCellWithVehicle(ctx, "car-1", validRes9Cell, "car")
+	_ = store.SetUserCellWithVehicle(ctx, "car-2", validRes9Cell, "car")
+	_ = store.SetUserCellWithVehicle(ctx, "moto-1", validRes9Cell, "motorcycle")
+	_ = store.SetUserCellWithVehicle(ctx, "unknown-1", validRes9Cell, "truck")
+
+	parent, _ := h3CellToParent(validRes9Cell, heatmapResolution)
+	anyCounts := store.GetCellCounts(ctx)
+	carCounts := store.GetCellCountsByVehicle(ctx, "car")
+	motorcycleCounts := store.GetCellCountsByVehicle(ctx, "motorcycle")
+
+	if anyCounts[parent] != 4 {
+		t.Errorf("expected any count 4, got %d", anyCounts[parent])
+	}
+	if carCounts[parent] != 2 {
+		t.Errorf("expected car count 2, got %d", carCounts[parent])
+	}
+	if motorcycleCounts[parent] != 1 {
+		t.Errorf("expected motorcycle count 1, got %d", motorcycleCounts[parent])
+	}
+}
+
+func TestNormalizeVehicleType(t *testing.T) {
+	if got := normalizeVehicleType("car"); got != "car" {
+		t.Errorf("expected car, got %s", got)
+	}
+	if got := normalizeVehicleType("motorcycle"); got != "motorcycle" {
+		t.Errorf("expected motorcycle, got %s", got)
+	}
+	if got := normalizeVehicleType("truck"); got != "" {
+		t.Errorf("expected unsupported type to normalize empty, got %s", got)
+	}
+}
+
+func TestFollowCache(t *testing.T) {
+	store := newTestStore()
+	ctx := context.Background()
+
+	if err := store.SetFollowees(ctx, "user-a", []string{"user-b", "user-c"}); err != nil {
+		t.Fatalf("SetFollowees failed: %v", err)
+	}
+
+	ok, err := store.IsFollowing(ctx, "user-a", "user-b")
+	if err != nil {
+		t.Fatalf("IsFollowing failed: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected user-a to follow user-b")
+	}
+
+	ok, err = store.IsFollowing(ctx, "user-a", "user-x")
+	if err != nil {
+		t.Fatalf("IsFollowing failed: %v", err)
+	}
+	if ok {
+		t.Fatal("expected user-a not to follow user-x")
+	}
+}
+
 func TestLocationTTLEviction(t *testing.T) {
 	store := &Store{data: make(map[string]cellEntry)}
 

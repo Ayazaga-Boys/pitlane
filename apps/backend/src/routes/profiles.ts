@@ -1,7 +1,9 @@
+import { createHash, randomBytes } from 'node:crypto';
 import { Hono } from 'hono';
 import {
   CreateVehicleSchema,
   DeleteProfileSchema,
+  ProfileDeletionCancelTokenParamSchema,
   UpdateProfileSchema,
   UpdateVehicleSchema,
   UsernameParamSchema,
@@ -9,13 +11,43 @@ import {
 } from '../schemas/profile.schema.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import { serviceUnavailable, validationError } from '../lib/http.js';
-import { buildUserExportArchive, uploadUserExportArchive } from '../services/user-export.js';
+import { runUserExportJob } from '../jobs/user-export.js';
 import type { AppEnv } from '../types/hono.js';
 
 export const profileRoutes = new Hono<AppEnv>();
+export const publicProfileRoutes = new Hono();
 
 const PROFILE_PRIVATE_SELECT =
   'id,username,display_name,avatar_url,bio,ghost_mode,is_verified,role,notification_prefs,deletion_requested_at,delete_after,deletion_reason,created_at,updated_at';
+
+const PROFILE_DELETION_CANCEL_SELECT = 'id,deletion_requested_at,delete_after,ghost_mode';
+
+publicProfileRoutes.post('/deletion/cancel/:token', async (c) => {
+  const params = ProfileDeletionCancelTokenParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const tokenHash = hashDeletionCancelToken(params.data.token);
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      deletion_requested_at: null,
+      delete_after: null,
+      deletion_reason: null,
+      deletion_cancel_token_hash: null,
+      deletion_cancel_token_expires_at: null,
+    })
+    .eq('deletion_cancel_token_hash', tokenHash)
+    .gt('deletion_cancel_token_expires_at', new Date().toISOString())
+    .select(PROFILE_DELETION_CANCEL_SELECT)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ code: 'NOT_FOUND', error: 'Deletion cancel token not found or expired' }, 404);
+  return c.json({ data });
+});
 
 profileRoutes.get('/me', async (c) => {
   const userId = c.get('userId') as string;
@@ -35,17 +67,15 @@ profileRoutes.get('/me', async (c) => {
 
 profileRoutes.get('/me/export', async (c) => {
   const userId = c.get('userId') as string;
-  const supabase = getServiceSupabaseClient();
-  if (!supabase) return serviceUnavailable(c);
 
   try {
-    const generatedAt = new Date();
-    const archive = await buildUserExportArchive(supabase, userId, generatedAt);
-    const delivery = await uploadUserExportArchive({ archive, generatedAt });
+    const delivery = await runUserExportJob({ userId });
     return c.json({ data: delivery });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Export failed';
-    if (message === 'Cloudflare R2 is not configured') return serviceUnavailable(c);
+    if (message === 'Cloudflare R2 is not configured' || message === 'Supabase service client is not configured') {
+      return serviceUnavailable(c);
+    }
     if (message.startsWith('R2 put failed')) {
       return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
     }
@@ -103,6 +133,8 @@ profileRoutes.delete('/me', async (c) => {
 
   const now = new Date();
   const deleteAfter = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const cancelToken = generateDeletionCancelToken();
+  const cancelUrl = buildDeletionCancelUrl(cancelToken);
 
   const { data, error } = await supabase
     .from('profiles')
@@ -111,9 +143,11 @@ profileRoutes.delete('/me', async (c) => {
       deletion_requested_at: now.toISOString(),
       delete_after: deleteAfter.toISOString(),
       deletion_reason: parsed.data.reason,
+      deletion_cancel_token_hash: hashDeletionCancelToken(cancelToken),
+      deletion_cancel_token_expires_at: deleteAfter.toISOString(),
     })
     .eq('id', userId)
-    .select('id,deletion_requested_at,delete_after,ghost_mode')
+    .select(PROFILE_DELETION_CANCEL_SELECT)
     .maybeSingle();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
@@ -121,7 +155,13 @@ profileRoutes.delete('/me', async (c) => {
 
   await supabase.from('push_devices').delete().eq('user_id', userId);
 
-  return c.json({ data });
+  return c.json({
+    data: {
+      ...data,
+      deletion_cancel_token: cancelToken,
+      deletion_cancel_url: cancelUrl,
+    },
+  });
 });
 
 profileRoutes.post('/me/deletion/cancel', async (c) => {
@@ -135,9 +175,11 @@ profileRoutes.post('/me/deletion/cancel', async (c) => {
       deletion_requested_at: null,
       delete_after: null,
       deletion_reason: null,
+      deletion_cancel_token_hash: null,
+      deletion_cancel_token_expires_at: null,
     })
     .eq('id', userId)
-    .select('id,deletion_requested_at,delete_after,ghost_mode')
+    .select(PROFILE_DELETION_CANCEL_SELECT)
     .maybeSingle();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
@@ -145,6 +187,19 @@ profileRoutes.post('/me/deletion/cancel', async (c) => {
 
   return c.json({ data });
 });
+
+function generateDeletionCancelToken(): string {
+  return randomBytes(32).toString('base64url');
+}
+
+function hashDeletionCancelToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+function buildDeletionCancelUrl(token: string): string {
+  const baseUrl = process.env.APP_PUBLIC_URL ?? 'https://rollpit.com';
+  return new URL(`/undelete?token=${encodeURIComponent(token)}`, baseUrl).toString();
+}
 
 profileRoutes.post('/me/ghost-mode', async (c) => {
   const body = await c.req.json().catch(() => null);

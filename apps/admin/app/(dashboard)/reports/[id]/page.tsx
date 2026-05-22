@@ -22,6 +22,10 @@ function contentTypeLabel(contentType: string) {
       return "İşletme pini";
     case "profile":
       return "Profil";
+    case "post":
+      return "Post";
+    case "comment":
+      return "Yorum";
     default:
       return "İçerik";
   }
@@ -33,6 +37,10 @@ function previewTone(contentType: string) {
   }
 
   if (contentType === "flare") {
+    return "flare";
+  }
+
+  if (contentType === "post") {
     return "flare";
   }
 

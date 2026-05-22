@@ -202,3 +202,17 @@ export const V2CreateCommunityPollSchema = z.object({
   question: z.string().trim().min(3).max(240),
   options: z.array(z.string().trim().min(1).max(120)).min(2).max(10),
 });
+
+export const V2CommunityNeedStatusSchema = z.enum(['open', 'resolved', 'closed']);
+
+export const V2CreateCommunityNeedSchema = z.object({
+  type: z.enum(['parts', 'fuel', 'tools', 'ride_help', 'other']),
+  urgency_color: z.enum(['yellow', 'red']),
+  body: z.string().trim().min(3).max(500),
+});
+
+export const V2CommunityNeedsQuerySchema = z.object({
+  status: V2CommunityNeedStatusSchema.default('open'),
+  cursor: z.string().datetime().optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});

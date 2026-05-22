@@ -29,21 +29,26 @@ func isValidH3Cell(s string) bool {
 }
 
 const (
-	writeWait      = 10 * time.Second
-	pongWait       = 60 * time.Second
-	pingPeriod     = (pongWait * 9) / 10
-	maxMessageSize = 512
-	sendBufferSize = 256
+	writeWait             = 10 * time.Second
+	pongWait              = 60 * time.Second
+	pingPeriod            = (pongWait * 9) / 10
+	maxMessageSize        = 512
+	sendBufferSize        = 256
+	locationShareCooldown = 30 * time.Second
 )
 
 // Client — tek bir WebSocket bağlantısı
 type Client struct {
-	hub           *Hub
-	conn          *websocket.Conn
-	userID        string
-	send          chan []byte
-	subscriptions map[string]int
-	mu            sync.RWMutex
+	hub               *Hub
+	conn              *websocket.Conn
+	userID            string
+	send              chan []byte
+	subscriptions     map[string]int
+	userSubscriptions map[string]struct{}
+	ghostMode         bool
+	lastSharedCell    string
+	lastSharedAt      time.Time
+	mu                sync.RWMutex
 }
 
 func (c *Client) readPump() {
@@ -102,18 +107,27 @@ func (c *Client) handleMessage(msg InboundMessage) {
 			c.sendError("BAD_PAYLOAD", "h3_cell invalid")
 			return
 		}
-		if err := c.hub.store.SetUserCell(ctx, c.userID, msg.H3Cell); err != nil {
+		if c.isGhostMode() {
+			log.Debug().Str("userID", c.userID).Msg("location_ignored_ghost_mode")
+			return
+		}
+		if err := c.hub.store.SetUserCellWithVehicle(ctx, c.userID, msg.H3Cell, msg.VehicleType); err != nil {
 			log.Error().Err(err).Str("userID", c.userID).Msg("set_user_cell_failed")
 			return
 		}
 		c.hub.broadcaster.OnCellUpdate(ctx, c.userID, msg.H3Cell, c.hub)
+		if c.shouldShareLocation(msg.H3Cell, time.Now()) {
+			c.hub.SendLocationShareToUserSubscribers(c.userID, msg.H3Cell)
+		}
 
 	case TypeGhostOn:
+		c.setGhostMode(true)
 		_ = c.hub.store.DeleteUserCell(ctx, c.userID)
 		c.clearSubscriptions()
 		log.Debug().Str("userID", c.userID).Msg("ghost_on")
 
 	case TypeGhostOff:
+		c.setGhostMode(false)
 		log.Debug().Str("userID", c.userID).Msg("ghost_off")
 
 	case TypeSubscribeCell:
@@ -131,6 +145,33 @@ func (c *Client) handleMessage(msg InboundMessage) {
 		}
 		c.unsubscribeCell(msg.H3Cell)
 		log.Debug().Str("userID", c.userID).Str("h3Cell", msg.H3Cell).Msg("cell_unsubscribed")
+
+	case TypeSubscribeUser:
+		if !isValidUserID(msg.UserID) {
+			c.sendError("BAD_PAYLOAD", "user_id invalid")
+			return
+		}
+		allowed, err := c.hub.store.IsFollowing(ctx, c.userID, msg.UserID)
+		if err != nil {
+			log.Warn().Err(err).Str("userID", c.userID).Str("targetUserID", msg.UserID).Msg("follow_cache_check_failed")
+			c.sendError("FOLLOW_CACHE_UNAVAILABLE", "Follow cache unavailable")
+			return
+		}
+		if !allowed {
+			c.sendError("FORBIDDEN", "Not following user")
+			return
+		}
+		c.subscribeUser(msg.UserID)
+		c.hub.SendPresenceSnapshot(c, msg.UserID)
+		log.Debug().Str("userID", c.userID).Str("targetUserID", msg.UserID).Msg("user_subscribed")
+
+	case TypeUnsubscribeUser:
+		if !isValidUserID(msg.UserID) {
+			c.sendError("BAD_PAYLOAD", "user_id invalid")
+			return
+		}
+		c.unsubscribeUser(msg.UserID)
+		log.Debug().Str("userID", c.userID).Str("targetUserID", msg.UserID).Msg("user_unsubscribed")
 
 	default:
 		log.Debug().Str("type", msg.Type).Msg("unknown_message_type")
@@ -159,6 +200,58 @@ func (c *Client) clearSubscriptions() {
 	c.mu.Lock()
 	c.subscriptions = nil
 	c.mu.Unlock()
+}
+
+func (c *Client) subscribeUser(userID string) {
+	c.mu.Lock()
+	if c.userSubscriptions == nil {
+		c.userSubscriptions = make(map[string]struct{})
+	}
+	c.userSubscriptions[userID] = struct{}{}
+	c.mu.Unlock()
+}
+
+func (c *Client) unsubscribeUser(userID string) {
+	c.mu.Lock()
+	delete(c.userSubscriptions, userID)
+	c.mu.Unlock()
+}
+
+func (c *Client) followsUser(userID string) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	_, ok := c.userSubscriptions[userID]
+	return ok
+}
+
+func (c *Client) setGhostMode(enabled bool) {
+	c.mu.Lock()
+	c.ghostMode = enabled
+	if enabled {
+		c.lastSharedCell = ""
+		c.lastSharedAt = time.Time{}
+	}
+	c.mu.Unlock()
+}
+
+func (c *Client) isGhostMode() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.ghostMode
+}
+
+func (c *Client) shouldShareLocation(h3Cell string, now time.Time) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.ghostMode {
+		return false
+	}
+	if c.lastSharedCell == h3Cell && now.Sub(c.lastSharedAt) < locationShareCooldown {
+		return false
+	}
+	c.lastSharedCell = h3Cell
+	c.lastSharedAt = now
+	return true
 }
 
 func (c *Client) isInterestedInWithMinK(h3Cell string, minK int) bool {
@@ -203,6 +296,23 @@ func (c *Client) writePump() {
 			}
 		}
 	}
+}
+
+func isValidUserID(s string) bool {
+	if len(s) < 3 || len(s) > 128 {
+		return false
+	}
+	for _, c := range s {
+		if (c >= 'a' && c <= 'z') ||
+			(c >= 'A' && c <= 'Z') ||
+			(c >= '0' && c <= '9') ||
+			c == '-' ||
+			c == '_' {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 func (c *Client) sendError(code, message string) {

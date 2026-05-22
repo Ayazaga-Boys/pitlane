@@ -10,6 +10,8 @@ function actionLabel(action: AdminAuditEntry["action"]) {
       return "Ban kaldırıldı";
     case "content_deleted":
       return "İçerik silindi";
+    case "content_restored":
+      return "İçerik geri yüklendi";
     case "pin_verified":
       return "Pin doğrulandı";
     case "pin_rejected":
@@ -29,6 +31,8 @@ function actionTone(action: AdminAuditEntry["action"]) {
     case "content_deleted":
     case "pin_rejected":
       return "error" as const;
+    case "content_restored":
+      return "info" as const;
     case "report_resolved":
     case "config_changed":
       return "warning" as const;
@@ -50,6 +54,35 @@ function roleTone(role: AdminAuditEntry["actorRole"]) {
       return "default" as const;
     default:
       return "warning" as const;
+  }
+}
+
+function targetLabel(targetType: AdminAuditEntry["targetType"]) {
+  switch (targetType) {
+    case "profile":
+      return "Profil";
+    case "business_pin":
+      return "Business pin";
+    case "business_application":
+      return "İşletme başvurusu";
+    case "community":
+      return "Topluluk";
+    case "community_event":
+      return "Topluluk etkinliği";
+    case "competition":
+      return "Yarışma";
+    case "competition_entry":
+      return "Yarışma katılımı";
+    case "feed_override":
+      return "Feed override";
+    case "support_note":
+      return "Destek notu";
+    case "report":
+      return "Şikayet";
+    case "message":
+      return "Mesaj";
+    default:
+      return targetType;
   }
 }
 
@@ -82,7 +115,7 @@ export function AuditTable({ entries }: { entries: AdminAuditEntry[] }) {
                 </TD>
                 <TD>
                   <div className="space-y-xs">
-                    <p className="font-medium text-text-primary">{entry.targetType}</p>
+                    <p className="font-medium text-text-primary">{targetLabel(entry.targetType)}</p>
                     <p className="text-xs text-text-tertiary">{entry.targetId}</p>
                   </div>
                 </TD>

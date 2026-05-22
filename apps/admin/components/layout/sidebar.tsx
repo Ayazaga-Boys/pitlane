@@ -10,7 +10,7 @@ export function Sidebar({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const visibleItems =
     role === "moderator"
-      ? navigationItems.filter((item) => item.href === "/reports")
+      ? navigationItems.filter((item) => item.href === "/reports" || item.href === "/posts" || item.href === "/comments" || item.href === "/stories")
       : navigationItems;
   const isActiveLink = (href: string) => {
     if (href === "/") {
@@ -91,7 +91,7 @@ export function Sidebar({ role }: { role: UserRole }) {
 
         <div className="mt-lg rounded-md border border-surface-3 bg-surface-2 p-md text-xs leading-5 text-text-secondary">
           {role === "moderator"
-            ? "Moderatör görünümü yalnızca şikayet kuyruğu ve içerik aksiyonlarını açar."
+            ? "Moderatör görünümü şikayet, post, yorum ve story moderasyon akışlarını açar."
             : "Sadece admin rolü tam erişebilir. Service role anahtarı yalnızca server tarafında tutulur."}
         </div>
       </aside>

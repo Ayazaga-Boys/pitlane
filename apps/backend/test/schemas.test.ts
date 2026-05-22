@@ -16,7 +16,7 @@ import {
   TaxDocumentUploadUrlSchema,
   UpdatePinSchema,
 } from '../src/schemas/pin.schema.js';
-import { CreateVehicleSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
+import { CreateVehicleSchema, ProfileDeletionCancelTokenParamSchema, UpdateProfileSchema } from '../src/schemas/profile.schema.js';
 import {
   V2BusinessApplicationDocumentSchema,
   V2BusinessLocationsNearbyQuerySchema,
@@ -27,6 +27,7 @@ import {
   V2CreateCommentSchema,
   V2CreateCommunityEventSchema,
   V2CreateCommunityInviteSchema,
+  V2CreateCommunityNeedSchema,
   V2CreateCommunityPollSchema,
   V2CreateCommunityRoleSchema,
   V2CreatePostSchema,
@@ -86,6 +87,15 @@ describe('profile schemas', () => {
       model: 'E30',
       year: 1800,
     })).toThrow();
+  });
+
+  it('accepts deletion cancel tokens', () => {
+    expect(ProfileDeletionCancelTokenParamSchema.safeParse({
+      token: 'a'.repeat(43),
+    }).success).toBe(true);
+    expect(ProfileDeletionCancelTokenParamSchema.safeParse({
+      token: 'bad token',
+    }).success).toBe(false);
   });
 });
 
@@ -182,6 +192,26 @@ describe('v2 social schemas', () => {
     expect(V2CreateCommunityPollSchema.safeParse({
       question: 'One option?',
       options: ['Only'],
+    }).success).toBe(false);
+  });
+
+  it('accepts community tagged needs', () => {
+    const parsed = V2CreateCommunityNeedSchema.parse({
+      type: 'parts',
+      urgency_color: 'red',
+      body: 'Need a spare chain near the meet point.',
+    });
+
+    expect(parsed.urgency_color).toBe('red');
+    expect(V2CreateCommunityNeedSchema.safeParse({
+      type: 'fuel',
+      urgency_color: 'blue',
+      body: 'Need fuel',
+    }).success).toBe(false);
+    expect(V2CreateCommunityNeedSchema.safeParse({
+      type: 'parts',
+      urgency_color: 'yellow',
+      body: '',
     }).success).toBe(false);
   });
 });
@@ -457,6 +487,24 @@ describe('moderation schemas', () => {
     });
 
     expect(parsed.reason).toBe('spam');
+  });
+
+  it('accepts post and comment report targets', () => {
+    expect(
+      CreateReportSchema.safeParse({
+        content_type: 'post',
+        content_id: '00000000-0000-4000-8000-000000000001',
+        reason: 'inappropriate',
+      }).success,
+    ).toBe(true);
+
+    expect(
+      CreateReportSchema.safeParse({
+        content_type: 'comment',
+        content_id: '00000000-0000-4000-8000-000000000001',
+        reason: 'harassment',
+      }).success,
+    ).toBe(true);
   });
 
   it('validates block user params', () => {

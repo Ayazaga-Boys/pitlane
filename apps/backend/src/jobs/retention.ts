@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { expireOpenHelpRequests } from './help-expiration.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -65,27 +66,6 @@ export async function runRetentionCleanup(input: {
     deleted_resolved_help_requests: deletedResolvedHelpRequests,
     deleted_ended_flares: deletedEndedFlares,
   };
-}
-
-async function expireOpenHelpRequests(supabase: SupabaseClient, nowIso: string): Promise<number> {
-  const count = await countRows(
-    supabase
-      .from('help_requests')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'open')
-      .lt('expires_at', nowIso) as PromiseLike<CountableQuery>,
-  );
-
-  if (count === 0) return 0;
-
-  const { error } = await supabase
-    .from('help_requests')
-    .update({ status: 'expired' })
-    .eq('status', 'open')
-    .lt('expires_at', nowIso);
-
-  if (error) throw new Error(error.message);
-  return count;
 }
 
 async function deleteNotifications(
