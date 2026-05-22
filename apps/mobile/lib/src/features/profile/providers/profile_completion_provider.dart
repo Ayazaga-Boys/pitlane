@@ -103,6 +103,7 @@ class ProfileCompletionNotifier extends AsyncNotifier<ProfileCompletionState> {
     required String model,
     int? year,
     String? color,
+    String? iconSlug,
   }) async {
     final previous = state.valueOrNull ?? const ProfileCompletionState();
     state = const AsyncLoading();
@@ -113,10 +114,47 @@ class ProfileCompletionNotifier extends AsyncNotifier<ProfileCompletionState> {
             model: model,
             year: year,
             color: color,
+            iconSlug: iconSlug,
           );
+      final vehicleWithLocalIcon = Vehicle(
+        id: vehicle.id,
+        type: vehicle.type,
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        color: vehicle.color,
+        photoUrl: vehicle.photoUrl,
+        iconSlug: vehicle.iconSlug ?? iconSlug,
+        isPrimary: vehicle.isPrimary,
+      );
       return previous.copyWith(
-        vehicles: [vehicle, ...previous.vehicles],
+        vehicles: [vehicleWithLocalIcon, ...previous.vehicles],
         step: ProfileCompletionStep.permissions,
+      );
+    });
+  }
+
+  Future<void> setPrimaryVehicle(String vehicleId) async {
+    final previous = state.valueOrNull ?? const ProfileCompletionState();
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(profileRepositoryProvider).setPrimaryVehicle(vehicleId);
+      return previous.copyWith(
+        vehicles: previous.vehicles
+            .map(
+              (vehicle) => Vehicle(
+                id: vehicle.id,
+                type: vehicle.type,
+                make: vehicle.make,
+                model: vehicle.model,
+                year: vehicle.year,
+                color: vehicle.color,
+                photoUrl: vehicle.photoUrl,
+                iconSlug: vehicle.iconSlug,
+                isPrimary: vehicle.id == vehicleId,
+              ),
+            )
+            .toList(growable: false),
       );
     });
   }

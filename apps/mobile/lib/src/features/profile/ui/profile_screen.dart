@@ -8,6 +8,7 @@ import '../../../features/auth/providers/auth_provider.dart';
 import '../../../shared/widgets/rollpit_button.dart';
 import '../models/vehicle.dart';
 import '../providers/profile_completion_provider.dart';
+import 'widgets/vehicle_icon_picker.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -28,6 +29,9 @@ class ProfileScreen extends ConsumerWidget {
             data: (state) => _ProfileContent(
               state: state,
               email: user?.email,
+              onSetPrimaryVehicle: (vehicleId) => ref
+                  .read(profileCompletionProvider.notifier)
+                  .setPrimaryVehicle(vehicleId),
               onSignOut: () async {
                 await ref.read(authNotifierProvider.notifier).signOut();
                 if (context.mounted) context.go('/auth/login');
@@ -43,12 +47,14 @@ class ProfileScreen extends ConsumerWidget {
 class _ProfileContent extends StatelessWidget {
   const _ProfileContent({
     required this.state,
+    required this.onSetPrimaryVehicle,
     required this.onSignOut,
     this.email,
   });
 
   final ProfileCompletionState state;
   final String? email;
+  final ValueChanged<String> onSetPrimaryVehicle;
   final VoidCallback onSignOut;
 
   @override
@@ -149,7 +155,12 @@ class _ProfileContent extends StatelessWidget {
                 ),
           )
         else
-          ...state.vehicles.map((vehicle) => _VehicleTile(vehicle: vehicle)),
+          ...state.vehicles.map(
+            (vehicle) => _VehicleTile(
+              vehicle: vehicle,
+              onSetPrimary: () => onSetPrimaryVehicle(vehicle.id),
+            ),
+          ),
         const SizedBox(height: AppSpacing.xl3),
         RollpitButton(
           label: 'Çıkış Yap',
@@ -162,9 +173,13 @@ class _ProfileContent extends StatelessWidget {
 }
 
 class _VehicleTile extends StatelessWidget {
-  const _VehicleTile({required this.vehicle});
+  const _VehicleTile({
+    required this.vehicle,
+    required this.onSetPrimary,
+  });
 
   final Vehicle vehicle;
+  final VoidCallback onSetPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -183,17 +198,22 @@ class _VehicleTile extends StatelessWidget {
           border: Border.all(color: AppColors.surface3),
         ),
         child: ListTile(
-          leading: Icon(
-            vehicle.type == VehicleType.motorcycle
-                ? Icons.two_wheeler_outlined
-                : Icons.directions_car_outlined,
-            color: AppColors.pitRed,
+          leading: VehicleIconBadge(
+            type: vehicle.type,
+            iconSlug: vehicle.iconSlug,
           ),
           title: Text('${vehicle.make} ${vehicle.model}'),
           subtitle: Text(subtitle),
           trailing: vehicle.isPrimary
-              ? const Icon(Icons.star, color: AppColors.warning)
-              : null,
+              ? const Tooltip(
+                  message: 'Haritada görünen araç',
+                  child: Icon(Icons.star, color: AppColors.warning),
+                )
+              : IconButton(
+                  tooltip: 'Haritada göster',
+                  icon: const Icon(Icons.star_border),
+                  onPressed: onSetPrimary,
+                ),
         ),
       ),
     );

@@ -41,8 +41,8 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
   - Grid görünümde ikon kataloğu (SVG siluetler)
   - Kategori filtreleri: Motosiklet / Otomobil
   - Seçili ikon vurgulu
-- [ ] **Aktif araç seçimi** — birden fazla araç varsa hangisinin haritada görüneceği
-- [ ] **Önizleme** — "Haritada böyle görünürsün" mini harita kartı
+- [x] **Aktif araç seçimi** — birden fazla araç varsa hangisinin haritada görüneceği
+- [x] **Önizleme** — "Haritada böyle görünürsün" mini harita kartı
 - [ ] İkon dosyaları: basit tek renk SVG siluetler (`assets/vehicle_icons/`)
 
 ### V2.0 — V1 Buglar (Sprint Öncesi) ⭐ İlk iş

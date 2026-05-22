@@ -25,6 +25,7 @@ class Vehicle {
     this.year,
     this.color,
     this.photoUrl,
+    this.iconSlug,
     this.isPrimary = false,
   });
 
@@ -38,6 +39,7 @@ class Vehicle {
       year: json['year'] as int?,
       color: json['color'] as String?,
       photoUrl: json['photo_url'] as String?,
+      iconSlug: json['icon_slug'] as String?,
       isPrimary: json['is_primary'] as bool? ?? false,
     );
   }
@@ -49,5 +51,6 @@ class Vehicle {
   final int? year;
   final String? color;
   final String? photoUrl;
+  final String? iconSlug;
   final bool isPrimary;
 }
