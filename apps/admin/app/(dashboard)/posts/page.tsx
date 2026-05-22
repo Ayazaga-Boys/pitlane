@@ -32,6 +32,7 @@ export default async function PostsPage({
   });
   const reportedCount = posts.filter((post) => post.reportsCount > 0).length;
   const removedCount = posts.filter((post) => Boolean(post.deletedAt)).length;
+  const autoFlaggedCount = posts.filter((post) => post.mediaModeration && post.mediaModeration.status !== "clean").length;
 
   return (
     <PageShell
@@ -109,9 +110,13 @@ export default async function PostsPage({
               <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Kaldırılmış post</p>
               <p className="mt-xs text-3xl font-semibold text-text-primary">{removedCount}</p>
             </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">CF moderation sinyali</p>
+              <p className="mt-xs text-3xl font-semibold text-text-primary">{autoFlaggedCount}</p>
+            </div>
             <div className="rounded-md border border-warning/25 bg-warning/10 p-lg text-sm leading-6 text-text-primary">
-              Cloudflare Images auto-flag kontratı henüz admin kuyruğuna bağlanmadı.
-              Şu an bu ekran yalnızca kullanıcı raporları ve manuel moderasyon aksiyonlarıyla çalışıyor.
+              Cloudflare Images skoru media asset üzerinde varsa bu ekran onu otomatik okuyup postu kuyruğun üstüne taşır.
+              Sinyal henüz backend’e düşmediyse akış rapor ve manuel moderasyonla devam eder.
             </div>
           </div>
         </section>

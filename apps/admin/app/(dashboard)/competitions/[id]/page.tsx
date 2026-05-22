@@ -47,17 +47,17 @@ export default async function CompetitionDetailPage({
 
       {searchParams?.result === "canceled" ? (
         <div className="rounded-md border border-error/30 bg-error/10 p-md text-sm leading-6 text-text-primary">
-          Yarışma admin override ile iptal edildi ve audit log’a işlendi.
+          Yarışma aksiyonu işlendi; backend endpoint açıksa gerçek komut gönderildi, değilse audit override olarak kaydedildi.
         </div>
       ) : null}
       {searchParams?.result === "paused" ? (
         <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
-          Oylama geçici olarak durduruldu. Karar audit log üzerinde saklanıyor.
+          Oylama aksiyonu işlendi. Canlı endpoint yoksa karar audit override olarak korunuyor.
         </div>
       ) : null}
       {searchParams?.result === "entry_rejected" ? (
         <div className="rounded-md border border-warning/30 bg-warning/10 p-md text-sm leading-6 text-text-primary">
-          Seçilen entry reddedildi ve liste üzerinde bloklu olarak işaretlendi.
+          Entry reddetme aksiyonu işlendi; backend sync yoksa liste audit override ile bloklu görünür.
         </div>
       ) : null}
 
@@ -151,7 +151,7 @@ export default async function CompetitionDetailPage({
         <section className="surface-panel p-xl">
           <h3 className="text-lg font-semibold text-text-primary">Moderasyon aksiyonları</h3>
           <p className="mt-md text-sm leading-6 text-text-secondary">
-            Backend yarışma kontratı beklenirken bu aksiyonlar audit tabanlı admin override olarak kaydedilir ve sayfaya geri yansır.
+            Panel önce gerçek backend admin endpoint’ini dener. Endpoint henüz açık değilse aynı aksiyon audit tabanlı override olarak kaydedilir ve sayfaya geri yansır.
           </p>
           <div className="mt-md rounded-md border border-warning/25 bg-warning/10 p-md text-sm leading-6 text-text-primary">
             Hazır olanlar: iptal, oylamayı durdur, entry reddet, audit izi.

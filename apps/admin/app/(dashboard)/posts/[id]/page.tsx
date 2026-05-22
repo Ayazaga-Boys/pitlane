@@ -16,6 +16,14 @@ function mapVisibilityLabel(visibility: "public" | "followers" | "private") {
   return "public";
 }
 
+function formatModerationScore(score: number | null | undefined) {
+  if (typeof score !== "number" || Number.isNaN(score)) {
+    return "Yok";
+  }
+
+  return `${Math.round(score * 100)} / 100`;
+}
+
 export default async function PostDetailPage({
   params,
   searchParams,
@@ -81,12 +89,23 @@ export default async function PostDetailPage({
             </div>
 
             <div className="flex flex-wrap gap-sm">
-              <Badge tone={detail.post.deletedAt ? "error" : detail.post.reportsCount > 0 ? "warning" : "success"}>
-                {detail.post.deletedAt ? "kaldırıldı" : detail.post.reportsCount > 0 ? "incelemede" : "temiz"}
+              <Badge tone={detail.post.deletedAt ? "error" : detail.post.mediaModeration?.status === "blocked" ? "error" : detail.post.mediaModeration?.status === "review" || detail.post.reportsCount > 0 ? "warning" : "success"}>
+                {detail.post.deletedAt
+                  ? "kaldırıldı"
+                  : detail.post.mediaModeration?.status === "blocked"
+                    ? "oto engel"
+                    : detail.post.mediaModeration?.status === "review" || detail.post.reportsCount > 0
+                      ? "incelemede"
+                      : "temiz"}
               </Badge>
               <Badge tone="default">{mapVisibilityLabel(detail.post.visibility)}</Badge>
               <Badge tone="info">{detail.post.reportsCount} rapor</Badge>
               <Badge tone="default">{detail.post.commentsCount} yorum</Badge>
+              {detail.post.mediaModeration ? (
+                <Badge tone={detail.post.mediaModeration.status === "blocked" ? "error" : detail.post.mediaModeration.status === "review" ? "warning" : "success"}>
+                  CF {detail.post.mediaModeration.status === "blocked" ? "engel" : detail.post.mediaModeration.status === "review" ? "incele" : "temiz"}
+                </Badge>
+              ) : null}
             </div>
           </div>
 
@@ -107,6 +126,16 @@ export default async function PostDetailPage({
               <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Kaldırılma</p>
               <p className="mt-xs text-sm text-text-primary">{detail.post.deletedAt ?? "Aktif"}</p>
             </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">CF skor</p>
+              <p className="mt-xs text-sm text-text-primary">{formatModerationScore(detail.post.mediaModeration?.score)}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">CF etiket</p>
+              <p className="mt-xs text-sm text-text-primary">
+                {detail.post.mediaModeration?.labels.length ? detail.post.mediaModeration.labels.join(", ") : "Yok"}
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -126,6 +155,30 @@ export default async function PostDetailPage({
                 Canlı medya URL’si hazır değil. Medya kaydı panelde bağlı görünüyor olsa da önizleme üretilemedi.
               </div>
             )}
+          </div>
+
+          <div className="mt-lg rounded-md border border-surface-3 bg-surface-2 p-lg">
+            <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Cloudflare Images moderasyon sinyali</p>
+            <div className="mt-md rounded-md border border-surface-3/80 bg-surface-1 p-md text-sm leading-6 text-text-secondary">
+              {detail.post.mediaModeration ? (
+                <>
+                  <p className="font-medium text-text-primary">
+                    {detail.post.mediaModeration.status === "blocked"
+                      ? "Medya otomatik olarak yüksek risk sinyali verdi."
+                      : detail.post.mediaModeration.status === "review"
+                        ? "Medya manuel inceleme eşiğine düştü."
+                        : "Medya temiz görünüyor."}
+                  </p>
+                  <p className="mt-2">
+                    Sağlayıcı: {detail.post.mediaModeration.provider} · Skor: {formatModerationScore(detail.post.mediaModeration.score)}
+                  </p>
+                  {detail.post.mediaModeration.reason ? <p className="mt-2">Neden: {detail.post.mediaModeration.reason}</p> : null}
+                  {detail.post.mediaModeration.flaggedAt ? <p className="mt-2">İşaretlenme: {detail.post.mediaModeration.flaggedAt}</p> : null}
+                </>
+              ) : (
+                "Media asset üzerinde moderasyon alanı görünmüyor. Backend sinyali düştüğünde bu kart otomatik dolacak."
+              )}
+            </div>
           </div>
 
           <div className="mt-lg rounded-md border border-surface-3 bg-surface-2 p-lg">

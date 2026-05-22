@@ -356,6 +356,14 @@ export interface AdminModerationPost {
   latestReportAt: string | null;
   createdAt: string;
   deletedAt: string | null;
+  mediaModeration?: {
+    provider: string;
+    score: number | null;
+    status: "clean" | "review" | "blocked";
+    labels: string[];
+    reason: string | null;
+    flaggedAt: string | null;
+  } | null;
 }
 
 export interface AdminModerationComment {
@@ -626,7 +634,9 @@ interface DirectInviteRecord extends Pick<CommunityDirectInviteRow, "community_i
 interface JoinRequestRecord extends Pick<CommunityJoinRequestRow, "community_id" | "source_invite_id" | "status"> {}
 type WaitingListRecord = Pick<WaitingListRow, "id" | "email" | "vehicle_type" | "city" | "invited_at" | "created_at">;
 
-interface MediaAssetRecord extends Pick<MediaAssetRow, "id" | "asset_type" | "storage_key" | "cf_image_id" | "cf_stream_id" | "status"> {}
+interface MediaAssetRecord extends Pick<MediaAssetRow, "id" | "asset_type" | "storage_key" | "cf_image_id" | "cf_stream_id" | "status"> {
+  [key: string]: unknown;
+}
 
 interface PostRecord extends Pick<PostRow, "id" | "author_id" | "caption" | "visibility" | "deleted_at" | "created_at" | "updated_at"> {
   author_profile: Pick<ProfileRow, "username" | "display_name" | "avatar_url" | "role"> | null;
@@ -1459,6 +1469,141 @@ function resolveMediaPreviewUrl(media: MediaAssetRecord | null): string | null {
   return null;
 }
 
+function readNumberCandidate(source: Record<string, unknown>, keys: string[]): number | null {
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === "string" && value.trim().length > 0) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+  }
+
+  return null;
+}
+
+function readStringCandidate(source: Record<string, unknown>, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+
+  return null;
+}
+
+function readBooleanCandidate(source: Record<string, unknown>, keys: string[]): boolean {
+  for (const key of keys) {
+    if (source[key] === true) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function readLabelsCandidate(source: Record<string, unknown>, keys: string[]): string[] {
+  for (const key of keys) {
+    const value = source[key];
+    if (Array.isArray(value)) {
+      return value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0);
+    }
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value
+        .split(/[;,]/)
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+    }
+  }
+
+  return [];
+}
+
+function normalizeModerationStatus(value: string | null, score: number | null, hasManualFlag: boolean) {
+  const normalized = value?.toLocaleLowerCase("tr-TR") ?? null;
+
+  if (normalized) {
+    if (["blocked", "reject", "rejected", "removed", "unsafe", "deny"].includes(normalized)) {
+      return "blocked" as const;
+    }
+    if (["review", "flagged", "flag", "pending_review", "manual_review", "needs_review"].includes(normalized)) {
+      return "review" as const;
+    }
+    if (["clean", "approved", "safe", "ready"].includes(normalized)) {
+      return "clean" as const;
+    }
+  }
+
+  if (hasManualFlag) {
+    return "review" as const;
+  }
+
+  if (score !== null) {
+    if (score >= 0.9) return "blocked" as const;
+    if (score >= 0.6) return "review" as const;
+    return "clean" as const;
+  }
+
+  return null;
+}
+
+function resolveMediaModerationSignal(
+  media: MediaAssetRecord | null,
+): AdminModerationPost["mediaModeration"] {
+  if (!media) {
+    return null;
+  }
+
+  const raw = media as Record<string, unknown>;
+  const score = readNumberCandidate(raw, [
+    "moderation_score",
+    "moderationScore",
+    "cloudflare_moderation_score",
+    "cf_moderation_score",
+    "safety_score",
+    "ai_score",
+  ]);
+  const labels = readLabelsCandidate(raw, [
+    "moderation_labels",
+    "moderationLabels",
+    "cloudflare_moderation_labels",
+    "flags",
+    "categories",
+  ]);
+  const reason = readStringCandidate(raw, [
+    "moderation_reason",
+    "moderationReason",
+    "moderation_summary",
+    "review_reason",
+  ]);
+  const provider = readStringCandidate(raw, ["moderation_provider", "moderationProvider"]) ?? (score !== null || labels.length > 0 ? "cloudflare_images" : null);
+  const flaggedAt = readStringCandidate(raw, ["moderation_flagged_at", "moderationFlaggedAt", "reviewed_at"]);
+  const hasManualFlag = readBooleanCandidate(raw, ["moderation_flagged", "flagged_by_moderation", "requires_review", "is_flagged"]);
+  const status = normalizeModerationStatus(
+    readStringCandidate(raw, ["moderation_status", "moderationStatus", "safety_status", "review_status"]),
+    score,
+    hasManualFlag,
+  );
+
+  if (!provider && score === null && labels.length === 0 && !reason && !flaggedAt && !status) {
+    return null;
+  }
+
+  return {
+    provider: provider ?? "cloudflare_images",
+    score,
+    status: status ?? "review",
+    labels,
+    reason,
+    flaggedAt: flaggedAt ? formatDateTime(flaggedAt) : null,
+  };
+}
+
 function mapModerationPost(
   post: PostRecord,
   reports: ContentReportRecord[],
@@ -1483,6 +1628,7 @@ function mapModerationPost(
     latestReportAt: latestReport ? formatDateTime(latestReport.created_at) : null,
     createdAt: formatDateTime(post.created_at),
     deletedAt: post.deleted_at ? formatDateTime(post.deleted_at) : null,
+    mediaModeration: resolveMediaModerationSignal(post.media),
   };
 }
 
@@ -3072,7 +3218,7 @@ export async function getAdminPostsOrMock(
       supabase
         .from("posts")
         .select(
-          "id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status)",
+          "id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(*)",
         )
         .order("created_at", { ascending: false })
         .limit(100),
@@ -3108,6 +3254,9 @@ export async function getAdminPostsOrMock(
       .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
       .map((post) => mapModerationPost(post, reportsByPost.get(post.id) ?? [], commentsCountByPost.get(post.id) ?? 0))
       .sort((left, right) => {
+        const leftModerationRank = left.mediaModeration?.status === "blocked" ? 2 : left.mediaModeration?.status === "review" ? 1 : 0;
+        const rightModerationRank = right.mediaModeration?.status === "blocked" ? 2 : right.mediaModeration?.status === "review" ? 1 : 0;
+        if (rightModerationRank !== leftModerationRank) return rightModerationRank - leftModerationRank;
         if (right.reportsCount !== left.reportsCount) return right.reportsCount - left.reportsCount;
         return (right.latestReportAt ? 1 : 0) - (left.latestReportAt ? 1 : 0);
       });
@@ -3154,7 +3303,7 @@ export async function getAdminPostByIdOrMock(
       supabase
         .from("posts")
         .select(
-          "id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(id, asset_type, storage_key, cf_image_id, cf_stream_id, status)",
+          "id, author_id, caption, visibility, deleted_at, created_at, updated_at, author_profile:profiles!posts_author_id_fkey(username, display_name, avatar_url, role), media:media_assets!posts_media_id_fkey(*)",
         )
         .eq("id", id)
         .maybeSingle(),

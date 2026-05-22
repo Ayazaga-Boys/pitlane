@@ -110,7 +110,7 @@ export default async function CompetitionsPage({
             </div>
             <div className="rounded-md border border-warning/25 bg-warning/10 p-lg text-sm leading-6 text-text-primary">
               Backend açıkları:
-              `competitions`, `competition_entries` ve vote akışı henüz tamamlanmadı. O zamana kadar admin aksiyonları audit tabanlı override olarak tutuluyor.
+              Yarışma read/write kontratı tam oturana kadar admin aksiyonları önce gerçek endpoint’i dener, düşmezse audit tabanlı override olarak tutulur.
             </div>
             <div className="rounded-md border border-surface-3 bg-surface-2 p-lg text-sm leading-6 text-text-secondary">
               Hazır kontratlar: yarışma liste görünümü, risk sıralaması, audit override.
