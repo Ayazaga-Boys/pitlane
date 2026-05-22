@@ -116,6 +116,13 @@ export default async function CompetitionsPage({
               Hazır kontratlar: yarışma liste görünümü, risk sıralaması, audit override.
               Bekleyen kontratlar: gerçek entry listesi, vote breakdown, topluluk bazlı yarışma endpoint'leri.
             </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-lg">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Admin kullanım notu</p>
+              <p className="mt-sm text-sm leading-6 text-text-primary">
+                Bu ekran şu an operasyon kararını kaybetmemek için override-first çalışır. Backend sync geldiğinde aynı sayfa gerçek yarışma
+                kayıtlarını okuyacak; mevcut audit izleri ise korunmaya devam edecek.
+              </p>
+            </div>
           </div>
         </section>
       </div>

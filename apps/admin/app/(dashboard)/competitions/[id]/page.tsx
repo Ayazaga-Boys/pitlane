@@ -157,6 +157,20 @@ export default async function CompetitionDetailPage({
             Hazır olanlar: iptal, oylamayı durdur, entry reddet, audit izi.
             Bekleyenler: gerçek katılımcı medyası, oy kırılımı ve backend vote temizleme endpoint'i.
           </div>
+          <div className="mt-md grid gap-md md:grid-cols-3">
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-md">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Bugün çalışan</p>
+              <p className="mt-sm text-sm text-text-primary">Admin kararları kaybolmaz; audit ve detay rozeti olarak ekrana geri yansır.</p>
+            </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-md">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Sync gelince</p>
+              <p className="mt-sm text-sm text-text-primary">Aynı aksiyon alanı gerçek entry ve vote verisiyle beslenecek, override mantığı korunacak.</p>
+            </div>
+            <div className="rounded-md border border-surface-3 bg-surface-2 p-md">
+              <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">Operatör notu</p>
+              <p className="mt-sm text-sm text-text-primary">Bugün burada alınan iptal/durdurma kararları geçici değil; audit üzerinden kalıcı iz bırakır.</p>
+            </div>
+          </div>
           <div className="mt-lg grid gap-md">
             <form action={cancelAction} className="space-y-sm">
               <input name="competitionId" type="hidden" value={competition.id} />

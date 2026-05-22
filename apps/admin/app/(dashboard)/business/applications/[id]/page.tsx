@@ -140,6 +140,20 @@ export default async function BusinessApplicationDetailPage({
                 ? "Signed URL kontrati hazir olmadigi icin belgeler simdilik metadata ve storage key uzerinden kontrol ediliyor."
                 : "Belge signed URL preview kontrati henuz acik degil. Bu ekranda storage key ve yukleme metadata'si gosteriliyor; signed preview geldiginde belge onizlemesi dogrudan acilacak."}
             </div>
+            <div className="mt-md grid gap-md md:grid-cols-3">
+              <div className="rounded-md border border-surface-3 bg-surface-2 p-md">
+                <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">1. Dosya geldi mi?</p>
+                <p className="mt-sm text-sm text-text-primary">`uploaded` durumundaki belgeler backend'e basarili ulasmis sayilir.</p>
+              </div>
+              <div className="rounded-md border border-surface-3 bg-surface-2 p-md">
+                <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">2. Onizleme acik mi?</p>
+                <p className="mt-sm text-sm text-text-primary">Signed URL gelene kadar storage key ve mime bilgisiyle manuel kontrol yapilir.</p>
+              </div>
+              <div className="rounded-md border border-surface-3 bg-surface-2 p-md">
+                <p className="text-xs uppercase tracking-[0.16em] text-text-tertiary">3. Sonraki adim</p>
+                <p className="mt-sm text-sm text-text-primary">Preview endpoint branch'e dustugunde bu karttan dogrudan belge acilacak.</p>
+              </div>
+            </div>
             <div className="mt-lg space-y-md">
               {detail.documents.length > 0 ? (
                 detail.documents.map((document) => (
