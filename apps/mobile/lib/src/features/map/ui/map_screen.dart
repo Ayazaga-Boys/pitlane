@@ -45,6 +45,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   bool _vehicleIconsStartedLoading = false;
   int _vehicleIconAngle = 0;
   double _currentZoom = _istanbul.zoom;
+  final Map<String, BitmapDescriptor> _businessMarkerIconCache = {};
   Set<Marker> _clusteredMarkers = {};
   gmc.ClusterManager<MapPinClusterItem>? _clusterManager;
 
@@ -436,6 +437,17 @@ class _MapScreenState extends ConsumerState<MapScreen>
     MapPin pin,
     double scale,
   ) async {
+    final scaleBucket = (scale * 100).round();
+    final cacheKey = [
+      pin.id,
+      pin.photoUrl ?? '',
+      pin.title,
+      pin.category ?? '',
+      scaleBucket,
+    ].join('|');
+    final cached = _businessMarkerIconCache[cacheKey];
+    if (cached != null) return cached;
+
     final width = 132.0 * scale;
     final height = 82.0 * scale;
     final photoSize = 52.0 * scale;
@@ -514,11 +526,13 @@ class _MapScreenState extends ConsumerState<MapScreen>
     final imageOut =
         await recorder.endRecording().toImage(width.toInt(), height.toInt());
     final bytes = await imageOut.toByteData(format: ui.ImageByteFormat.png);
-    return BitmapDescriptor.bytes(
+    final descriptor = BitmapDescriptor.bytes(
       bytes!.buffer.asUint8List(),
       width: width,
       height: height,
     );
+    _businessMarkerIconCache[cacheKey] = descriptor;
+    return descriptor;
   }
 
   Future<ui.Image?> _loadNetworkImage(String? url) async {
