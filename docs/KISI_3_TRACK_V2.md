@@ -45,7 +45,7 @@ V2'de admin paneline 4 büyük yeni alan geliyor:
 - [ ] Aksiyonlar: içerik kaldır, yazarı uyar, yazarı banla
 - [ ] **Yorum moderasyon sayfası** (`/admin/comments`)
 - [x] **Cloudflare Images otomatik flag** — NSFW/violence skoru yüksekse otomatik kuyruğa düşer — backend: `GET /v2/admin/moderation/media`
-- [ ] Audit log: `content_removed`, `content_restored`
+- [x] Audit log: `content_deleted`, `content_restored` DB action desteği + V2 admin moderation delete/restore endpoint'leri
 
 ### V2.3 — Story & Keşfet Moderasyonu (Hafta 5-6)
 

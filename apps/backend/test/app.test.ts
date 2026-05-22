@@ -114,6 +114,12 @@ describe('app routes', () => {
       adminCompetitionCancelResponse,
       adminCompetitionEntryRejectResponse,
       adminMediaModerationResponse,
+      adminPostDeleteResponse,
+      adminPostRestoreResponse,
+      adminCommentDeleteResponse,
+      adminCommentRestoreResponse,
+      adminStoryDeleteResponse,
+      adminStoryRestoreResponse,
       nearbyBusinessLocationsResponse,
       v2HeatmapResponse,
       v2HelpResponse,
@@ -166,6 +172,12 @@ describe('app routes', () => {
       app.request('/v2/admin/competitions/00000000-0000-4000-8000-000000000001/cancel', { method: 'POST' }),
       app.request('/v2/admin/competitions/00000000-0000-4000-8000-000000000001/entries/00000000-0000-4000-8000-000000000002/reject', { method: 'POST' }),
       app.request('/v2/admin/moderation/media'),
+      app.request('/v2/admin/moderation/posts/00000000-0000-4000-8000-000000000001/delete', { method: 'POST' }),
+      app.request('/v2/admin/moderation/posts/00000000-0000-4000-8000-000000000001/restore', { method: 'POST' }),
+      app.request('/v2/admin/moderation/comments/00000000-0000-4000-8000-000000000001/delete', { method: 'POST' }),
+      app.request('/v2/admin/moderation/comments/00000000-0000-4000-8000-000000000001/restore', { method: 'POST' }),
+      app.request('/v2/admin/moderation/stories/00000000-0000-4000-8000-000000000001/delete', { method: 'POST' }),
+      app.request('/v2/admin/moderation/stories/00000000-0000-4000-8000-000000000001/restore', { method: 'POST' }),
       app.request('/v2/business/locations/nearby?h3cell=8928308280fffff'),
       app.request('/v2/map/heatmap?vehicle_type=car'),
       app.request('/v2/help', { method: 'POST' }),
@@ -219,6 +231,12 @@ describe('app routes', () => {
     expect(adminCompetitionCancelResponse.status).toBe(401);
     expect(adminCompetitionEntryRejectResponse.status).toBe(401);
     expect(adminMediaModerationResponse.status).toBe(401);
+    expect(adminPostDeleteResponse.status).toBe(401);
+    expect(adminPostRestoreResponse.status).toBe(401);
+    expect(adminCommentDeleteResponse.status).toBe(401);
+    expect(adminCommentRestoreResponse.status).toBe(401);
+    expect(adminStoryDeleteResponse.status).toBe(401);
+    expect(adminStoryRestoreResponse.status).toBe(401);
     expect(nearbyBusinessLocationsResponse.status).toBe(401);
     expect(v2HeatmapResponse.status).toBe(401);
     expect(v2HelpResponse.status).toBe(401);
