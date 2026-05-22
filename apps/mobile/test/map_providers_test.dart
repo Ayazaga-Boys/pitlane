@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rollpit/src/features/map/data/ws_service.dart';
 import 'package:rollpit/src/features/map/providers/ghost_mode_provider.dart';
 import 'package:rollpit/src/features/map/providers/location_sharing_provider.dart';
+import 'package:rollpit/src/features/map/providers/map_cluster_provider.dart';
 import 'package:rollpit/src/features/map/providers/map_pins_provider.dart';
 import 'package:rollpit/src/features/map/ui/map_filter_sheet.dart';
 
@@ -20,6 +21,9 @@ const _mockPins = [
     type: MapPinType.business,
     title: 'Test Business',
     position: LatLng(41.0600, 28.9870),
+    photoUrl: 'https://cdn.rollpit.test/business.jpg',
+    category: 'garage',
+    address: 'Maslak, Istanbul',
   ),
   MapPin(
     id: 'help-1',
@@ -130,6 +134,37 @@ void main() {
 
       final pins = container.read(filteredPinsProvider(const MapFilters()));
       expect(pins, isEmpty);
+    });
+  });
+
+  group('Map V2 marker models', () {
+    test('business pin carries V2 photo bubble fields', () {
+      final pin = _mockPins.firstWhere((p) => p.type == MapPinType.business);
+
+      expect(pin.photoUrl, 'https://cdn.rollpit.test/business.jpg');
+      expect(pin.category, 'garage');
+      expect(pin.address, 'Maslak, Istanbul');
+    });
+
+    test('1000 marker cluster items keep stable locations', () {
+      final pins = List.generate(
+        1000,
+        (index) => MapPin(
+          id: 'stress-$index',
+          type: index.isEven ? MapPinType.business : MapPinType.followedUser,
+          title: 'Marker $index',
+          position: LatLng(
+            41 + (index % 100) * 0.0008,
+            29 + (index ~/ 100) * 0.0008,
+          ),
+        ),
+      );
+
+      final items = pins.map(MapPinClusterItem.new).toList(growable: false);
+
+      expect(items, hasLength(1000));
+      expect(items.first.location.latitude, closeTo(41, 0.00001));
+      expect(items.last.geohash, isNotEmpty);
     });
   });
 

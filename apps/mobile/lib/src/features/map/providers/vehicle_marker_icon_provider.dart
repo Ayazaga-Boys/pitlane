@@ -12,6 +12,17 @@ enum VehicleIconSlug {
   suv('suv'),
   van('van'),
   classic('classic'),
+  motorcycleStandard('motorcycle_standard'),
+  motorcycleChopper('motorcycle_chopper'),
+  motorcycleSport('motorcycle_sport'),
+  motorcycleEnduro('motorcycle_enduro'),
+  motorcycleScooter('motorcycle_scooter'),
+  carSedan('car_sedan'),
+  carSuv('car_suv'),
+  carHatchback('car_hatchback'),
+  carPickup('car_pickup'),
+  carClassic('car_classic'),
+  carSport('car_sport'),
   other('other');
 
   const VehicleIconSlug(this.value);
@@ -37,6 +48,23 @@ class VehicleIconCatalogEntry {
 }
 
 const localVehicleIconCatalog = [
+  VehicleIconCatalogEntry(
+      slug: VehicleIconSlug.motorcycleStandard, label: 'Standard'),
+  VehicleIconCatalogEntry(
+      slug: VehicleIconSlug.motorcycleChopper, label: 'Chopper'),
+  VehicleIconCatalogEntry(
+      slug: VehicleIconSlug.motorcycleSport, label: 'Sport'),
+  VehicleIconCatalogEntry(
+      slug: VehicleIconSlug.motorcycleEnduro, label: 'Enduro'),
+  VehicleIconCatalogEntry(
+      slug: VehicleIconSlug.motorcycleScooter, label: 'Scooter'),
+  VehicleIconCatalogEntry(slug: VehicleIconSlug.carSedan, label: 'Sedan'),
+  VehicleIconCatalogEntry(slug: VehicleIconSlug.carSuv, label: 'SUV'),
+  VehicleIconCatalogEntry(
+      slug: VehicleIconSlug.carHatchback, label: 'Hatchback'),
+  VehicleIconCatalogEntry(slug: VehicleIconSlug.carPickup, label: 'Pickup'),
+  VehicleIconCatalogEntry(slug: VehicleIconSlug.carClassic, label: 'Classic'),
+  VehicleIconCatalogEntry(slug: VehicleIconSlug.carSport, label: 'Sport'),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.car, label: 'Otomobil'),
   VehicleIconCatalogEntry(
       slug: VehicleIconSlug.motorcycle, label: 'Motosiklet'),
@@ -50,6 +78,14 @@ const localVehicleIconCatalog = [
 
 class VehicleMarkerIconCache {
   final _cache = <String, BitmapDescriptor>{};
+
+  BitmapDescriptor? getCachedDescriptor(
+    String? slugValue, {
+    bool isSelf = false,
+  }) {
+    final slug = VehicleIconSlug.fromValue(slugValue);
+    return _cache['${slug.value}:$isSelf'];
+  }
 
   Future<BitmapDescriptor> getIcon(
     VehicleIconSlug slug, {
@@ -114,27 +150,53 @@ class VehicleMarkerIconCache {
 
   Color _colorFor(VehicleIconSlug slug) => switch (slug) {
         VehicleIconSlug.motorcycle ||
-        VehicleIconSlug.chopper =>
+        VehicleIconSlug.chopper ||
+        VehicleIconSlug.motorcycleStandard ||
+        VehicleIconSlug.motorcycleChopper ||
+        VehicleIconSlug.motorcycleSport =>
           const Color(0xFFE63946),
+        VehicleIconSlug.motorcycleEnduro => const Color(0xFF2A9D8F),
+        VehicleIconSlug.motorcycleScooter => const Color(0xFFE9A227),
         VehicleIconSlug.pickup ||
-        VehicleIconSlug.suv =>
+        VehicleIconSlug.suv ||
+        VehicleIconSlug.carPickup ||
+        VehicleIconSlug.carSuv =>
           const Color(0xFF457B9D),
         VehicleIconSlug.van => const Color(0xFF2A9D8F),
-        VehicleIconSlug.classic => const Color(0xFFE9A227),
-        VehicleIconSlug.car => const Color(0xFF1D3557),
+        VehicleIconSlug.classic ||
+        VehicleIconSlug.carClassic =>
+          const Color(0xFFE9A227),
+        VehicleIconSlug.car ||
+        VehicleIconSlug.carSedan ||
+        VehicleIconSlug.carHatchback ||
+        VehicleIconSlug.carSport =>
+          const Color(0xFF1D3557),
         VehicleIconSlug.other => const Color(0xFF6C757D),
       };
 
   IconData _iconFor(VehicleIconSlug slug) => switch (slug) {
         VehicleIconSlug.motorcycle ||
-        VehicleIconSlug.chopper =>
+        VehicleIconSlug.chopper ||
+        VehicleIconSlug.motorcycleStandard ||
+        VehicleIconSlug.motorcycleChopper ||
+        VehicleIconSlug.motorcycleSport ||
+        VehicleIconSlug.motorcycleEnduro ||
+        VehicleIconSlug.motorcycleScooter =>
           Icons.two_wheeler,
         VehicleIconSlug.pickup ||
         VehicleIconSlug.suv ||
-        VehicleIconSlug.van =>
+        VehicleIconSlug.van ||
+        VehicleIconSlug.carPickup ||
+        VehicleIconSlug.carSuv =>
           Icons.local_shipping,
-        VehicleIconSlug.classic => Icons.directions_car_filled_outlined,
-        VehicleIconSlug.car => Icons.directions_car,
+        VehicleIconSlug.classic ||
+        VehicleIconSlug.carClassic =>
+          Icons.directions_car_filled_outlined,
+        VehicleIconSlug.car ||
+        VehicleIconSlug.carSedan ||
+        VehicleIconSlug.carHatchback ||
+        VehicleIconSlug.carSport =>
+          Icons.directions_car,
         VehicleIconSlug.other => Icons.navigation,
       };
 }
