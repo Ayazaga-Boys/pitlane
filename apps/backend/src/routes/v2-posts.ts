@@ -1,13 +1,20 @@
 import { Hono, type Context } from 'hono';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 import {
+  sendPostCommentNotification,
+  sendPostLikeNotification,
+} from '../jobs/notifications.js';
+import {
   V2CommentIdParamSchema,
   V2CreateCommentSchema,
   V2CreatePostSchema,
   V2CursorQuerySchema,
   V2PostIdParamSchema,
+  V2UserIdParamSchema,
   V2UsernameParamSchema,
 } from '../schemas/v2-social.schema.js';
+import { toPresenceResponse } from './v2-presence.js';
+import { getConfiguredPushProvider } from '../services/fcm.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
 import type { AppEnv } from '../types/hono.js';
 
@@ -27,6 +34,13 @@ type PostAccessRow = {
   author_id: string;
   visibility: 'public' | 'followers' | 'private';
   author?: { is_private?: boolean | null } | null;
+};
+
+type CommentNotificationRow = {
+  id: string;
+  post_id: string;
+  author_id: string;
+  body: string;
 };
 
 v2PostRoutes.post('/', async (c) => {
@@ -145,6 +159,7 @@ v2PostRoutes.post('/:id/comments', async (c) => {
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  await notifyPostCommentOwner(supabase, data as CommentNotificationRow);
   return c.json({ data }, 201);
 });
 
@@ -313,6 +328,60 @@ v2UserRoutes.get('/:username/posts', async (c) => {
   return c.json({ data });
 });
 
+v2UserRoutes.get('/:userId/presence', async (c) => {
+  const params = V2UserIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+
+  const viewerId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id,presence_status,presence_visible,presence_updated_at')
+    .eq('id', params.data.userId)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!profile) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+
+  const visible = viewerId === params.data.userId || await isFollowing(supabase, viewerId, params.data.userId);
+  return c.json({ data: toPresenceResponse(profile, visible) });
+});
+
+v2UserRoutes.get('/:userId/active-vehicle-icon', async (c) => {
+  const params = V2UserIdParamSchema.safeParse(c.req.param());
+  if (!params.success) return validationError(c, params.error);
+
+  const viewerId = c.get('userId') as string;
+  const supabase = getServiceSupabaseClient();
+  if (!supabase) return serviceUnavailable(c);
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id,is_private')
+    .eq('id', params.data.userId)
+    .maybeSingle();
+
+  if (profileError) return c.json({ code: 'INTERNAL_ERROR', error: profileError.message }, 500);
+  if (!profile) return c.json({ code: 'NOT_FOUND', error: 'Profile not found' }, 404);
+
+  const access = await canViewAuthor(supabase, viewerId, profile.id, Boolean(profile.is_private));
+  if (access.error) return c.json({ code: 'INTERNAL_ERROR', error: access.error.message }, 500);
+  if (!access.allowed) return c.json({ code: 'FORBIDDEN', error: 'Profile is private' }, 403);
+
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select('id,type,make,model,icon_slug,is_primary')
+    .eq('user_id', params.data.userId)
+    .eq('is_primary', true)
+    .maybeSingle();
+
+  if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  if (!data) return c.json({ data: null });
+  return c.json({ data });
+});
+
 async function setPostLike(c: Context<AppEnv>, shouldLike: boolean) {
   const params = V2PostIdParamSchema.safeParse(c.req.param());
   if (!params.success) return validationError(c, params.error);
@@ -339,12 +408,75 @@ async function setPostLike(c: Context<AppEnv>, shouldLike: boolean) {
 
   const { data, error } = await supabase
     .from('post_likes')
-    .upsert({ post_id: params.data.id, user_id: userId }, { onConflict: 'post_id,user_id' })
+    .insert({ post_id: params.data.id, user_id: userId })
     .select('post_id,user_id,created_at')
     .single();
 
+  if (error?.code === '23505') return c.json({ data: { liked: true } });
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  await notifyPostLikeOwner(supabase, params.data.id, userId);
   return c.json({ data: { liked: true, like: data } });
+}
+
+async function notifyPostCommentOwner(supabase: Supabase, comment: CommentNotificationRow) {
+  try {
+    const post = await fetchPostNotificationTarget(supabase, comment.post_id);
+    if (!post) return;
+    const commenterName = await fetchProfileDisplayName(supabase, comment.author_id);
+    await sendPostCommentNotification({
+      supabase,
+      provider: getConfiguredPushProvider(),
+      userId: post.author_id,
+      postId: comment.post_id,
+      commentId: comment.id,
+      commenterId: comment.author_id,
+      commenterName,
+      commentPreview: comment.body,
+    });
+  } catch {
+    // Notifications are best-effort; comment creation remains the source action.
+  }
+}
+
+async function notifyPostLikeOwner(supabase: Supabase, postId: string, likerId: string) {
+  try {
+    const post = await fetchPostNotificationTarget(supabase, postId);
+    if (!post) return;
+    const likerName = await fetchProfileDisplayName(supabase, likerId);
+    await sendPostLikeNotification({
+      supabase,
+      provider: getConfiguredPushProvider(),
+      userId: post.author_id,
+      postId,
+      likerId,
+      likerName,
+    });
+  } catch {
+    // Notifications are best-effort; liking remains the source action.
+  }
+}
+
+async function fetchPostNotificationTarget(supabase: Supabase, postId: string): Promise<{ author_id: string } | null> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('author_id')
+    .eq('id', postId)
+    .is('deleted_at', null)
+    .maybeSingle<{ author_id: string }>();
+
+  if (error) throw error;
+  return data ?? null;
+}
+
+async function fetchProfileDisplayName(supabase: Supabase, userId: string): Promise<string> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('username,display_name')
+    .eq('id', userId)
+    .maybeSingle<{ username: string | null; display_name: string | null }>();
+
+  if (error) throw error;
+  return data?.display_name || data?.username || 'Bir kullanıcı';
 }
 
 async function canViewPost(supabase: Supabase, viewerId: string, postId: string) {
@@ -394,6 +526,18 @@ async function canViewAuthor(
 
   if (authorIsPrivate && !follower.data) return { allowed: false, isFollower: false };
   return { allowed: true, isFollower: Boolean(follower.data) };
+}
+
+async function isFollowing(supabase: Supabase, viewerId: string, targetId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('follows')
+    .select('follower_id')
+    .eq('follower_id', viewerId)
+    .eq('followee_id', targetId)
+    .maybeSingle();
+
+  if (error) return false;
+  return Boolean(data);
 }
 
 async function assertOwnedReadyMedia(supabase: Supabase, userId: string, mediaId: string) {

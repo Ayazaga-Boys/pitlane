@@ -9,6 +9,7 @@ import {
   verifyCloudflareStreamSignature,
 } from '../services/cloudflare-stream.js';
 import {
+  type CloudflareImageModeration,
   copyCloudflareStreamFromUrl,
   deleteCloudflareImage,
   deleteCloudflareStream,
@@ -31,7 +32,8 @@ export const mediaRoutes = new Hono<AppEnv>();
 export const mediaWebhookRoutes = new Hono();
 
 const MEDIA_ASSET_SELECT =
-  'id,uploader_id,asset_type,storage_key,cf_image_id,cf_stream_id,width,height,duration_sec,size_bytes,status,created_at';
+  'id,uploader_id,asset_type,storage_key,cf_image_id,cf_stream_id,cf_moderation_status,cf_moderation_score,cf_moderation_labels,width,height,duration_sec,size_bytes,status,created_at';
+const DEFAULT_IMAGE_MODERATION_THRESHOLD = 0.85;
 
 interface MediaAssetRow {
   id: string;
@@ -185,6 +187,12 @@ mediaRoutes.post('/finalize', async (c) => {
         storageKey: mediaAsset.storage_key,
       });
       update.cf_image_id = image.id;
+      const moderation = normalizeImageModeration(image.moderation);
+      if (moderation) {
+        update.cf_moderation_status = isModerationFlagged(moderation) ? 'flagged' : 'clean';
+        update.cf_moderation_score = moderation.score;
+        update.cf_moderation_labels = moderation.labels;
+      }
     } catch (cloudflareError) {
       const message = cloudflareError instanceof Error ? cloudflareError.message : 'Cloudflare Images import failed';
       return c.json({ code: 'DOWNSTREAM_ERROR', error: message }, 502);
@@ -220,6 +228,7 @@ mediaRoutes.post('/finalize', async (c) => {
 
   if (updateError) return c.json({ code: 'INTERNAL_ERROR', error: updateError.message }, 500);
   if (!data) return c.json({ code: 'NOT_FOUND', error: 'Media asset not found' }, 404);
+  await enqueueImageModerationReport(supabase, data as { id: string; uploader_id: string; cf_moderation_status?: string; cf_moderation_score?: number | null });
 
   return c.json({ data });
 });
@@ -291,3 +300,58 @@ mediaRoutes.delete('/:id', async (c) => {
 
   return c.json({ data: { id: params.data.id, deleted: true } });
 });
+
+function normalizeImageModeration(moderation: CloudflareImageModeration | undefined): {
+  score: number;
+  labels: Record<string, number>;
+} | null {
+  if (!moderation || typeof moderation !== 'object') return null;
+  const labels = moderation.labels && typeof moderation.labels === 'object' && !Array.isArray(moderation.labels)
+    ? moderation.labels
+    : {};
+  const highestLabelScore = Object.values(labels)
+    .filter((value): value is number => typeof value === 'number' && Number.isFinite(value))
+    .reduce((highest, value) => Math.max(highest, value), 0);
+  const rawScore = typeof moderation.score === 'number' && Number.isFinite(moderation.score)
+    ? moderation.score
+    : highestLabelScore;
+  const score = Math.max(0, Math.min(1, rawScore));
+  if (!moderation.flagged && score === 0 && Object.keys(labels).length === 0) return null;
+  return { score, labels };
+}
+
+function isModerationFlagged(moderation: { score: number }): boolean {
+  const threshold = Number(process.env.CF_IMAGES_MODERATION_THRESHOLD ?? DEFAULT_IMAGE_MODERATION_THRESHOLD);
+  const safeThreshold = Number.isFinite(threshold) && threshold >= 0 && threshold <= 1
+    ? threshold
+    : DEFAULT_IMAGE_MODERATION_THRESHOLD;
+  return moderation.score >= safeThreshold;
+}
+
+async function enqueueImageModerationReport(
+  supabase: NonNullable<ReturnType<typeof getServiceSupabaseClient>>,
+  media: { id: string; uploader_id: string; cf_moderation_status?: string; cf_moderation_score?: number | null },
+): Promise<void> {
+  if (media.cf_moderation_status !== 'flagged') return;
+
+  const { data: existing, error: existingError } = await supabase
+    .from('reports')
+    .select('id')
+    .eq('content_type', 'media_asset')
+    .eq('content_id', media.id)
+    .eq('status', 'pending')
+    .maybeSingle();
+
+  if (existingError || existing) return;
+
+  await supabase
+    .from('reports')
+    .insert({
+      reporter_id: media.uploader_id,
+      content_type: 'media_asset',
+      content_id: media.id,
+      reason: 'inappropriate',
+      description: `Auto-flagged by Cloudflare Images moderation score ${media.cf_moderation_score ?? 'unknown'}`,
+      status: 'pending',
+    });
+}

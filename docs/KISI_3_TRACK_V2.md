@@ -44,7 +44,7 @@ V2'de admin paneline 4 büyük yeni alan geliyor:
 - [ ] Post detay — caption + media preview + yorum sayısı + şikayet sayısı
 - [ ] Aksiyonlar: içerik kaldır, yazarı uyar, yazarı banla
 - [ ] **Yorum moderasyon sayfası** (`/admin/comments`)
-- [ ] **Cloudflare Images otomatik flag** — NSFW/violence skoru yüksekse otomatik kuyruğa düşer
+- [x] **Cloudflare Images otomatik flag** — NSFW/violence skoru yüksekse otomatik kuyruğa düşer — backend: `GET /v2/admin/moderation/media`
 - [ ] Audit log: `content_removed`, `content_restored`
 
 ### V2.3 — Story & Keşfet Moderasyonu (Hafta 5-6)
@@ -73,7 +73,7 @@ V2'de admin paneline 4 büyük yeni alan geliyor:
 - [ ] **Başvuru kuyruğu** (`/admin/business/applications?status=pending`)
 - [ ] **Başvuru detay sayfası**:
   - İşletme adı, tür (tamirci/galeri/satıcı/diğer)
-  - Vergi levhası önizleme (R2 private bucket'tan signed URL)
+  - Vergi levhası önizleme (R2 private bucket'tan signed URL) — backend: `GET /v2/admin/business/documents/:id/preview-url`
   - Ruhsat önizleme
   - Lokasyon (harita preview)
   - İşletme sahibi bilgileri
@@ -88,11 +88,11 @@ V2'de admin paneline 4 büyük yeni alan geliyor:
 
 > Bağımlılık: Erol'un `competitions`, `competition_entries`, `community_needs`
 
-- [ ] **Yarışma listesi** (`/admin/competitions`)
-- [ ] Yarışma detay — katılımcılar, oy sayıları, şikayet bayrakları
-- [ ] Aksiyonlar: yarışma iptal, katılım reddet
-- [ ] **Yedek parça/tagged need genel bakış** (`/admin/community-needs`) — spam tespiti
-- [ ] **Otomotik spam koruma**: aynı kullanıcı 24 saatte 5+ need yayınlarsa otomatik flag
+- [x] **Yarışma listesi** (`/admin/competitions`) — backend: `GET /v2/admin/competitions`
+- [x] Yarışma detay — katılımcılar, oy sayıları, şikayet bayrakları — backend: `GET /v2/admin/competitions/:id`
+- [x] Aksiyonlar: yarışma iptal, katılım reddet — backend: `POST /v2/admin/competitions/:id/cancel`, `POST /v2/admin/competitions/:id/entries/:entryId/reject`
+- [x] **Yedek parça/tagged need genel bakış** (`/admin/community-needs`) — spam tespiti — backend: `GET /v2/admin/community-needs`
+- [x] **Otomotik spam koruma**: aynı kullanıcı 24 saatte 5+ need yayınlarsa otomatik flag
 
 ---
 

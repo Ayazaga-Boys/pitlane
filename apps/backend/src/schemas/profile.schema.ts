@@ -6,6 +6,8 @@ export const NotificationPrefsSchema = z.object({
   flare_invite: z.boolean().optional(),
   flare_starting: z.boolean().optional(),
   dm_new: z.boolean().optional(),
+  post_comment: z.boolean().optional(),
+  post_like: z.boolean().optional(),
   community_message: z.boolean().optional(),
   community_invite: z.boolean().optional(),
   system: z.boolean().optional(),
@@ -43,6 +45,7 @@ export const CreateVehicleSchema = z.object({
   color: z.string().trim().max(40).optional(),
   photo_url: z.string().url().optional(),
   is_primary: z.boolean().default(false),
+  icon_slug: z.string().regex(/^(motorcycle_(standard|chopper|sport|enduro|scooter)|car_(sedan|suv|hatchback|pickup|classic|sport))$/).optional(),
 });
 
 export const UpdateVehicleSchema = CreateVehicleSchema.partial().refine(

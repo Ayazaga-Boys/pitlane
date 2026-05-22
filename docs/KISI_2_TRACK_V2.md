@@ -23,22 +23,22 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 ### V2.0b — Presence Status + Araç İkonu Altyapısı (Hafta 1-2 paralel)
 
 **Presence (çevrimiçi durumu):**
-- [ ] `profiles` tablosuna kolon: `presence_status` ENUM('online','dnd','offline'), `presence_visible` BOOLEAN
-- [ ] `POST /v2/presence` — kullanıcı kendi durumunu günceller (online/dnd/offline)
-- [ ] `GET /v2/users/:userId/presence` — takip ettiğin birinin durumu
-- [ ] Otomatik offline: son aktiflikten 5 dk sonra Trigger.dev job ile `offline`'a çeker
-- [ ] DND modunda bildirimler susturulur (push service entegrasyonu)
-- [ ] `presence_visible: false` ise herkese `offline` görünür (gizlilik)
+- [x] `profiles` tablosuna kolon: `presence_status` ENUM('online','dnd','offline'), `presence_visible` BOOLEAN
+- [x] `POST /v2/presence` — kullanıcı kendi durumunu günceller (online/dnd/offline)
+- [x] `GET /v2/users/:userId/presence` — takip ettiğin birinin durumu
+- [x] Otomatik offline: son aktiflikten 5 dk sonra Trigger.dev job ile `offline`'a çeker — `POST /v1/internal/jobs/presence-offline/run`
+- [x] DND modunda bildirimler susturulur (push service entegrasyonu)
+- [x] `presence_visible: false` ise herkese `offline` görünür (gizlilik)
 
 **Araç İkonu Kataloğu:**
-- [ ] `vehicles` tablosuna kolon: `icon_slug` TEXT (örn: `motorcycle_chopper`, `car_golf`, `car_suv`)
-- [ ] `GET /v2/vehicles/icons` — ikon kataloğunu döner (slug + display_name + category)
-- [ ] `PATCH /v2/profiles/me/vehicles/:id` — aktif araç seçimi (`is_active: true`)
-- [ ] İkon kataloğu başlangıç listesi (JSON seed):
+- [x] `vehicles` tablosuna kolon: `icon_slug` TEXT (örn: `motorcycle_chopper`, `car_golf`, `car_suv`)
+- [x] `GET /v2/vehicles/icons` — ikon kataloğunu döner (slug + display_name + category)
+- [x] `PATCH /v2/profiles/me/vehicles/:id` — aktif araç seçimi (`is_active: true`)
+- [x] İkon kataloğu başlangıç listesi (JSON seed):
   - Motosiklet: `motorcycle_standard`, `motorcycle_chopper`, `motorcycle_sport`, `motorcycle_enduro`, `motorcycle_scooter`
   - Otomobil: `car_sedan`, `car_suv`, `car_hatchback`, `car_pickup`, `car_classic`, `car_sport`
   - Marka ikonları (ilerleyen aşama): `car_golf`, `car_mustang`, `motorcycle_harley`
-- [ ] Harita için: `GET /v2/users/:userId/active-vehicle-icon` — Burak'ın marker ihtiyacı
+- [x] Harita için: `GET /v2/users/:userId/active-vehicle-icon` — Burak'ın marker ihtiyacı
 
 ### V2.1 — Profil & Follow Temeli (Hafta 1-2)
 
@@ -58,6 +58,7 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `POST /v2/follow-requests/:id/accept` ve `/reject`
 - [x] `GET /v2/follow-requests/incoming`
 - [x] Block kontrolü follow'larda — blocked kullanıcı follow edemez
+- [x] Valkey sync: `follows:<followerId>` set'i follow/unfollow/private accept sonrası güncellenir (Go `subscribe_user` için)
 
 ### V2.2 — Post & Yorum & Beğeni (Hafta 3-4)
 
@@ -81,8 +82,8 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `GET /v2/posts/:id/likes` (kim beğendi listesi)
 
 **Push:**
-- [ ] Trigger.dev job: post yorum geldiğinde push (eğer kullanıcı uygulamada değilse — Burak'ın presence kontrolü)
-- [ ] Trigger.dev job: post beğenisi geldiğinde push (debounced — 10 dk'da en çok 1)
+- [x] Server job: post yorum geldiğinde notification + push (presence/DND ve quiet hours push service tarafından kontrol edilir)
+- [x] Server job: post beğenisi geldiğinde notification + push (10 dk post bazlı debounce)
 
 ### V2.3 — Story + Keşfet + Feed Algoritması (Hafta 5-6)
 
@@ -99,12 +100,13 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `DELETE /v2/stories/:id`
 
 **Trigger.dev:**
-- [ ] Story expiry job — saatlik cron, `expires_at < now()` olanları sil + Cloudflare Stream/Images temizliği
+- [x] Story expiry job — saatlik cron endpoint'i `POST /v1/internal/jobs/story-expiration/run`, `expires_at < now()` story'leri sil + Cloudflare Stream/Images/R2 cleanup
 
 **Keşfet (Feed):**
 - [x] `GET /v2/discover/feed?cursor=` — algoritma tabanlı
 - [x] Score = `(0.5 * engagement_rate) + (0.3 * recency_decay) + (0.2 * follow_signal)`
 - [x] V1: Postgres view + materialized refresh hourly
+- [x] `feed_overrides` — admin manuel feature/shadowban tablosu; discover feed `boost` için +1 skor, `shadowban` için gizleme uygular
 - [ ] İlerleyen sürüm: Redis Sorted Set + score güncelleme
 
 ### V2.4 — Topluluk RBAC + Etkinlik + Davet (Hafta 7-8)
@@ -147,6 +149,7 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 - [x] `POST /v2/business/applications` — başvuru oluştur
 - [x] `POST /v2/business/applications/:id/documents` — belge yükle (private R2)
 - [x] `GET /v2/business/applications/me`
+- [x] `GET /v2/business/locations/nearby?h3cell=&k=&category=` — aktif onaylı işletme lokasyonları (foto-bubble harita)
 - [x] **Admin** (Tufan kullanacak): `GET /v2/admin/business/applications?status=pending`
 - [x] **Admin**: `POST /v2/admin/business/applications/:id/approve` (+ location yarat)
 - [x] **Admin**: `POST /v2/admin/business/applications/:id/reject` (+ neden)
@@ -161,17 +164,17 @@ V2'nin en büyük yükü sende. Post/story/follow/feed/RBAC/etkinlik — hepsi y
 **Migration:**
 - [x] `help_requests` tablosuna kolon ekle: `target_type` ENUM('nearby','followers','group'), `target_id` UUID nullable, `urgency` ENUM
 - [x] `community_needs` — yedek parça/yakıt ilanları (`community_id`, `type`, `urgency_color`, `body`)
-- [ ] `competitions` — yarışmalar (`id`, `community_id`, `title`, `filters` JSONB, `voting_starts_at`, `voting_ends_at`)
-- [ ] `competition_entries`
-- [ ] `competition_votes`
+- [x] `competitions` — yarışmalar (`id`, `community_id`, `title`, `filters` JSONB, `voting_starts_at`, `voting_ends_at`)
+- [x] `competition_entries`
+- [x] `competition_votes`
 
 **Endpoint:**
 - [x] `POST /v2/help` — `target_type` ve `target_id` ile (Burak realtime'a iletecek)
 - [x] `POST /v2/communities/:id/needs` — tagged need (sarı/kırmızı)
 - [x] `GET /v2/communities/:id/needs?status=open`
-- [ ] `POST /v2/competitions` (rol kontrolü)
-- [ ] `POST /v2/competitions/:id/entries` (filtre eşleşmesi kontrolü)
-- [ ] `POST /v2/competitions/:id/entries/:entryId/vote`
+- [x] `POST /v2/competitions` (rol kontrolü)
+- [x] `POST /v2/competitions/:id/entries` (filtre eşleşmesi kontrolü)
+- [x] `POST /v2/competitions/:id/entries/:entryId/vote`
 
 **Realtime Integration (Burak'la):**
 - [x] `help_targeted` payload Go realtime'a — `POST /internal/realtime/help-event` extend et

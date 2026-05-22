@@ -92,7 +92,7 @@ profileRoutes.get('/:username', async (c) => {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id,username,display_name,avatar_url,bio,is_verified,created_at,vehicles(id,type,make,model,year,color,photo_url,is_primary)')
+    .select('id,username,display_name,avatar_url,bio,is_verified,created_at,vehicles(id,type,make,model,year,color,photo_url,is_primary,icon_slug)')
     .eq('username', parsed.data.username)
     .maybeSingle();
 
@@ -234,7 +234,7 @@ profileRoutes.get('/me/vehicles', async (c) => {
 
   const { data, error } = await supabase
     .from('vehicles')
-    .select('id,type,make,model,year,color,photo_url,is_primary,created_at')
+    .select('id,type,make,model,year,color,photo_url,is_primary,icon_slug,created_at')
     .eq('user_id', userId)
     .order('is_primary', { ascending: false })
     .order('created_at', { ascending: false });
@@ -259,7 +259,7 @@ profileRoutes.post('/me/vehicles', async (c) => {
   const { data, error } = await supabase
     .from('vehicles')
     .insert({ ...parsed.data, user_id: userId })
-    .select('id,type,make,model,year,color,photo_url,is_primary,created_at')
+    .select('id,type,make,model,year,color,photo_url,is_primary,icon_slug,created_at')
     .single();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
@@ -287,7 +287,7 @@ profileRoutes.patch('/me/vehicles/:id', async (c) => {
     .update(parsed.data)
     .eq('id', params.data.id)
     .eq('user_id', userId)
-    .select('id,type,make,model,year,color,photo_url,is_primary,created_at')
+    .select('id,type,make,model,year,color,photo_url,is_primary,icon_slug,created_at')
     .maybeSingle();
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);

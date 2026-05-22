@@ -14,6 +14,13 @@ interface CloudflareApiResponse<T> {
 export interface CloudflareImageResult {
   id: string;
   variants?: string[];
+  moderation?: CloudflareImageModeration;
+}
+
+export interface CloudflareImageModeration {
+  score?: number;
+  flagged?: boolean;
+  labels?: Record<string, number>;
 }
 
 export interface CloudflareImageDirectUploadResult {

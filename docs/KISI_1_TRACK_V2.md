@@ -27,7 +27,7 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 
 - [x] Custom marker: 11 araç SVG siluet ikonu (`assets/vehicle_icons/`) — 5 motor, 6 araba
 - [x] **Performans**: `BitmapDescriptor` cache altyapısı hazır (`vehicle_marker_icon_provider.dart`)
-- [ ] Flutter: `icon_slug`'a göre marker'a ikon bağla — Erol'un `GET /v2/vehicles/icons` bekliyor
+- [ ] Flutter: `icon_slug`'a göre marker'a ikon bağla — Erol `GET /v2/vehicles/icons` hazır
 - [ ] Zoom level < 12 → generic cluster, zoom ≥ 12 → araç ikonu göster
 - [ ] Kendi konumun için de araç ikonu (mavi outline vurgulu)
 
@@ -41,11 +41,11 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 - [x] Flutter: `followed_users_locations_provider` — haritada takip ettiklerini gösterir
 - [x] Flutter: Konum paylaşımı kontrolü — kullanıcı kimlerle paylaşacağını seçer (ghost mode v2)
 
-Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend bu cache'i doldurmadığında `subscribe_user` güvenlik için `FORBIDDEN` döner.
+Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend follow/unfollow/accept akışında bu set'i best-effort sync eder.
 
 ### V2.2 — Foto-Bubble Lokasyonlar (Hafta 3-4)
 
-> Bağımlılık: Erol'un `business_locations` tablosu + admin onayı (Tufan)
+> Bağımlılık: Erol'un `business_locations` tablosu + admin onayı (Tufan) hazır; mobil `GET /v2/business/locations/nearby?h3cell=&k=&category=` ile okuyabilir.
 
 - [ ] Flutter: harita marker → custom widget (foto + işletme adı + tür ikonu) — Erol bekliyor
 - [ ] Flutter: zoom level'a göre boyut animasyonu

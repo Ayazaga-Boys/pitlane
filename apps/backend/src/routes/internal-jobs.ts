@@ -2,8 +2,10 @@ import { Hono, type Context } from 'hono';
 import { z } from 'zod';
 import { refreshDiscoverFeedScores } from '../jobs/discover.js';
 import { runHelpRequestExpiration } from '../jobs/help-expiration.js';
+import { runPresenceOfflineCleanup } from '../jobs/presence.js';
 import { runProfileDeletionCleanup } from '../jobs/profile-deletion.js';
 import { runRetentionCleanup } from '../jobs/retention.js';
+import { runStoryExpiration } from '../jobs/story-expiration.js';
 import { runUserExportJob } from '../jobs/user-export.js';
 import { serviceUnavailable, validationError } from '../lib/http.js';
 
@@ -61,6 +63,34 @@ internalJobRoutes.post('/help-expiration/run', async (c) => {
     return c.json({ data });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Help request expiration failed';
+    if (message === 'Supabase service client is not configured') return serviceUnavailable(c);
+    return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
+  }
+});
+
+internalJobRoutes.post('/presence-offline/run', async (c) => {
+  const authError = validateInternalJobAuth(c);
+  if (authError) return authError;
+
+  try {
+    const data = await runPresenceOfflineCleanup();
+    return c.json({ data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Presence offline cleanup failed';
+    if (message === 'Supabase service client is not configured') return serviceUnavailable(c);
+    return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
+  }
+});
+
+internalJobRoutes.post('/story-expiration/run', async (c) => {
+  const authError = validateInternalJobAuth(c);
+  if (authError) return authError;
+
+  try {
+    const data = await runStoryExpiration();
+    return c.json({ data });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Story expiration failed';
     if (message === 'Supabase service client is not configured') return serviceUnavailable(c);
     return c.json({ code: 'INTERNAL_ERROR', error: message }, 500);
   }

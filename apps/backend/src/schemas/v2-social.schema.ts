@@ -10,12 +10,44 @@ export const V2PrivacySchema = z.object({
   is_private: z.boolean().optional(),
   location_share_mode: V2LocationShareModeSchema.optional(),
   bio_extended: z.string().trim().max(1000).nullable().optional(),
+  presence_visible: z.boolean().optional(),
 }).refine((value) => Object.keys(value).length > 0, {
   message: 'At least one field is required',
 });
 
+export const V2PresenceSchema = z.object({
+  status: z.enum(['online', 'dnd', 'offline']),
+  visible: z.boolean().optional(),
+});
+
 export const V2UserIdParamSchema = z.object({
   userId: z.string().uuid(),
+});
+
+export const V2VehicleIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const V2VehicleIconSlugSchema = z.enum([
+  'motorcycle_standard',
+  'motorcycle_chopper',
+  'motorcycle_sport',
+  'motorcycle_enduro',
+  'motorcycle_scooter',
+  'car_sedan',
+  'car_suv',
+  'car_hatchback',
+  'car_pickup',
+  'car_classic',
+  'car_sport',
+]);
+
+export const V2UpdateVehicleSchema = z.object({
+  icon_slug: V2VehicleIconSlugSchema.nullable().optional(),
+  is_primary: z.boolean().optional(),
+  is_active: z.boolean().optional(),
+}).refine((value) => Object.keys(value).length > 0, {
+  message: 'At least one field is required',
 });
 
 export const V2FollowListQuerySchema = z.object({
@@ -215,4 +247,69 @@ export const V2CommunityNeedsQuerySchema = z.object({
   status: V2CommunityNeedStatusSchema.default('open'),
   cursor: z.string().datetime().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const V2CompetitionIdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const V2CompetitionEntryVoteParamSchema = z.object({
+  id: z.string().uuid(),
+  entryId: z.string().uuid(),
+});
+
+export const V2CompetitionFiltersSchema = z.object({
+  vehicle_type: z.enum(['any', 'car', 'motorcycle']).default('any'),
+  media_type: z.enum(['any', 'photo', 'video']).default('photo'),
+}).strict().default({});
+
+export const V2CreateCompetitionSchema = z.object({
+  community_id: z.string().uuid(),
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(2000).nullable().optional(),
+  filters: V2CompetitionFiltersSchema,
+  voting_starts_at: z.string().datetime(),
+  voting_ends_at: z.string().datetime(),
+}).superRefine((value, ctx) => {
+  const startsAt = Date.parse(value.voting_starts_at);
+  const endsAt = Date.parse(value.voting_ends_at);
+  if (startsAt <= Date.now()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['voting_starts_at'],
+      message: 'voting_starts_at must be in the future',
+    });
+  }
+  if (endsAt <= startsAt) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['voting_ends_at'],
+      message: 'voting_ends_at must be after voting_starts_at',
+    });
+  }
+});
+
+export const V2CreateCompetitionEntrySchema = z.object({
+  media_id: z.string().uuid(),
+  vehicle_id: z.string().uuid().optional(),
+  caption: z.string().trim().max(500).optional(),
+});
+
+export const V2AdminCompetitionsQuerySchema = z.object({
+  status: z.enum(['open', 'voting', 'closed', 'canceled']).optional(),
+  community_id: z.string().uuid().optional(),
+  cursor: z.string().datetime().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+
+export const V2AdminRejectCompetitionEntrySchema = z.object({
+  reason: z.string().trim().min(3).max(500).optional(),
+}).default({});
+
+export const V2AdminCommunityNeedsQuerySchema = z.object({
+  status: V2CommunityNeedStatusSchema.or(z.literal('flagged')).default('flagged'),
+  community_id: z.string().uuid().optional(),
+  creator_id: z.string().uuid().optional(),
+  cursor: z.string().datetime().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
 });

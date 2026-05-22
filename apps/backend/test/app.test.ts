@@ -73,12 +73,17 @@ describe('app routes', () => {
     const [
       avatarResponse,
       privacyResponse,
+      updateVehicleResponse,
+      presenceResponse,
       followResponse,
       followersResponse,
       requestResponse,
       createPostResponse,
       postResponse,
       userPostsResponse,
+      userPresenceResponse,
+      activeVehicleIconResponse,
+      vehicleIconsResponse,
       commentLikeResponse,
       createStoryResponse,
       storyFeedResponse,
@@ -99,22 +104,37 @@ describe('app routes', () => {
       businessApplicationDocumentsResponse,
       myBusinessApplicationsResponse,
       adminBusinessApplicationsResponse,
+      adminBusinessDocumentPreviewResponse,
       approveBusinessApplicationResponse,
       rejectBusinessApplicationResponse,
+      adminCommunityNeedsResponse,
+      adminCompetitionsResponse,
+      adminCompetitionDetailResponse,
+      adminCompetitionCancelResponse,
+      adminCompetitionEntryRejectResponse,
+      adminMediaModerationResponse,
       nearbyBusinessLocationsResponse,
       v2HeatmapResponse,
       v2HelpResponse,
       createNeedResponse,
       listNeedsResponse,
+      createCompetitionResponse,
+      createCompetitionEntryResponse,
+      voteCompetitionEntryResponse,
     ] = await Promise.all([
       app.request('/v2/profiles/me/avatar', { method: 'POST' }),
       app.request('/v2/profiles/me/privacy', { method: 'PATCH' }),
+      app.request('/v2/profiles/me/vehicles/00000000-0000-4000-8000-000000000001', { method: 'PATCH' }),
+      app.request('/v2/presence', { method: 'POST' }),
       app.request('/v2/follows/00000000-0000-4000-8000-000000000001', { method: 'POST' }),
       app.request('/v2/follows/followers?user_id=00000000-0000-4000-8000-000000000001'),
       app.request('/v2/follow-requests/incoming'),
       app.request('/v2/posts', { method: 'POST' }),
       app.request('/v2/posts/00000000-0000-4000-8000-000000000001'),
       app.request('/v2/users/erol/posts'),
+      app.request('/v2/users/00000000-0000-4000-8000-000000000001/presence'),
+      app.request('/v2/users/00000000-0000-4000-8000-000000000001/active-vehicle-icon'),
+      app.request('/v2/vehicles/icons'),
       app.request('/v2/comments/00000000-0000-4000-8000-000000000001/like', { method: 'POST' }),
       app.request('/v2/stories', { method: 'POST' }),
       app.request('/v2/stories/feed'),
@@ -135,23 +155,38 @@ describe('app routes', () => {
       app.request('/v2/business/applications/00000000-0000-4000-8000-000000000001/documents', { method: 'POST' }),
       app.request('/v2/business/applications/me'),
       app.request('/v2/admin/business/applications'),
+      app.request('/v2/admin/business/documents/00000000-0000-4000-8000-000000000001/preview-url'),
       app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/approve', { method: 'POST' }),
       app.request('/v2/admin/business/applications/00000000-0000-4000-8000-000000000001/reject', { method: 'POST' }),
+      app.request('/v2/admin/community-needs'),
+      app.request('/v2/admin/competitions'),
+      app.request('/v2/admin/competitions/00000000-0000-4000-8000-000000000001'),
+      app.request('/v2/admin/competitions/00000000-0000-4000-8000-000000000001/cancel', { method: 'POST' }),
+      app.request('/v2/admin/competitions/00000000-0000-4000-8000-000000000001/entries/00000000-0000-4000-8000-000000000002/reject', { method: 'POST' }),
+      app.request('/v2/admin/moderation/media'),
       app.request('/v2/business/locations/nearby?h3cell=8928308280fffff'),
       app.request('/v2/map/heatmap?vehicle_type=car'),
       app.request('/v2/help', { method: 'POST' }),
       app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs', { method: 'POST' }),
       app.request('/v2/communities/00000000-0000-4000-8000-000000000001/needs?status=open'),
+      app.request('/v2/competitions', { method: 'POST' }),
+      app.request('/v2/competitions/00000000-0000-4000-8000-000000000001/entries', { method: 'POST' }),
+      app.request('/v2/competitions/00000000-0000-4000-8000-000000000001/entries/00000000-0000-4000-8000-000000000002/vote', { method: 'POST' }),
     ]);
 
     expect(avatarResponse.status).toBe(401);
     expect(privacyResponse.status).toBe(401);
+    expect(updateVehicleResponse.status).toBe(401);
+    expect(presenceResponse.status).toBe(401);
     expect(followResponse.status).toBe(401);
     expect(followersResponse.status).toBe(401);
     expect(requestResponse.status).toBe(401);
     expect(createPostResponse.status).toBe(401);
     expect(postResponse.status).toBe(401);
     expect(userPostsResponse.status).toBe(401);
+    expect(userPresenceResponse.status).toBe(401);
+    expect(activeVehicleIconResponse.status).toBe(401);
+    expect(vehicleIconsResponse.status).toBe(401);
     expect(commentLikeResponse.status).toBe(401);
     expect(createStoryResponse.status).toBe(401);
     expect(storyFeedResponse.status).toBe(401);
@@ -172,13 +207,23 @@ describe('app routes', () => {
     expect(businessApplicationDocumentsResponse.status).toBe(401);
     expect(myBusinessApplicationsResponse.status).toBe(401);
     expect(adminBusinessApplicationsResponse.status).toBe(401);
+    expect(adminBusinessDocumentPreviewResponse.status).toBe(401);
     expect(approveBusinessApplicationResponse.status).toBe(401);
     expect(rejectBusinessApplicationResponse.status).toBe(401);
+    expect(adminCommunityNeedsResponse.status).toBe(401);
+    expect(adminCompetitionsResponse.status).toBe(401);
+    expect(adminCompetitionDetailResponse.status).toBe(401);
+    expect(adminCompetitionCancelResponse.status).toBe(401);
+    expect(adminCompetitionEntryRejectResponse.status).toBe(401);
+    expect(adminMediaModerationResponse.status).toBe(401);
     expect(nearbyBusinessLocationsResponse.status).toBe(401);
     expect(v2HeatmapResponse.status).toBe(401);
     expect(v2HelpResponse.status).toBe(401);
     expect(createNeedResponse.status).toBe(401);
     expect(listNeedsResponse.status).toBe(401);
+    expect(createCompetitionResponse.status).toBe(401);
+    expect(createCompetitionEntryResponse.status).toBe(401);
+    expect(voteCompetitionEntryResponse.status).toBe(401);
   });
 
   it('keeps map routes protected', async () => {
@@ -285,12 +330,16 @@ describe('app routes', () => {
       profileDeletionResponse,
       discoverRefreshResponse,
       helpExpirationResponse,
+      presenceOfflineResponse,
+      storyExpirationResponse,
       userExportResponse,
     ] = await Promise.all([
       app.request('/v1/internal/jobs/retention/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/profile-deletion/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/discover-refresh/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/help-expiration/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/presence-offline/run', { method: 'POST' }),
+      app.request('/v1/internal/jobs/story-expiration/run', { method: 'POST' }),
       app.request('/v1/internal/jobs/user-export/run', { method: 'POST', body: '{}' }),
     ]);
 
@@ -301,6 +350,8 @@ describe('app routes', () => {
     expect(profileDeletionResponse.status).toBe(401);
     expect(discoverRefreshResponse.status).toBe(401);
     expect(helpExpirationResponse.status).toBe(401);
+    expect(presenceOfflineResponse.status).toBe(401);
+    expect(storyExpirationResponse.status).toBe(401);
     expect(userExportResponse.status).toBe(401);
   });
 

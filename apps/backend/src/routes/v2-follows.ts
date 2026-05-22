@@ -6,6 +6,7 @@ import {
   V2UserIdParamSchema,
 } from '../schemas/v2-social.schema.js';
 import { getServiceSupabaseClient } from '../services/supabase.js';
+import { addFollowCache, removeFollowCache } from '../services/valkey.js';
 import type { AppEnv } from '../types/hono.js';
 
 export const v2FollowRoutes = new Hono<AppEnv>();
@@ -94,6 +95,7 @@ v2FollowRoutes.post('/:userId', async (c) => {
     return c.json({ code: 'INTERNAL_ERROR', error: existingFollowError.message }, 500);
   }
   if (existingFollow) {
+    await syncFollowCache('add', requesterId, targetId);
     return c.json({ data: { status: 'following', follow: existingFollow } });
   }
 
@@ -130,6 +132,7 @@ v2FollowRoutes.post('/:userId', async (c) => {
     .single();
 
   if (error && error.code !== '23505') return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  await syncFollowCache('add', requesterId, targetId);
   return c.json({ data: { status: 'following', follow } }, error?.code === '23505' ? 200 : 201);
 });
 
@@ -149,6 +152,7 @@ v2FollowRoutes.delete('/:userId', async (c) => {
     .eq('followee_id', targetId);
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
+  await syncFollowCache('remove', requesterId, targetId);
 
   await supabase
     .from('follow_requests')
@@ -210,6 +214,7 @@ async function respondToFollowRequest(c: Context<AppEnv>, status: 'accepted' | '
       .upsert({ follower_id: request.requester_id, followee_id: request.target_id }, { onConflict: 'follower_id,followee_id' });
 
     if (followError) return c.json({ code: 'INTERNAL_ERROR', error: followError.message }, 500);
+    await syncFollowCache('add', request.requester_id, request.target_id);
   }
 
   const { data, error } = await supabase
@@ -221,6 +226,18 @@ async function respondToFollowRequest(c: Context<AppEnv>, status: 'accepted' | '
 
   if (error) return c.json({ code: 'INTERNAL_ERROR', error: error.message }, 500);
   return c.json({ data });
+}
+
+async function syncFollowCache(action: 'add' | 'remove', followerId: string, followeeId: string) {
+  try {
+    if (action === 'add') {
+      await addFollowCache(followerId, followeeId);
+      return;
+    }
+    await removeFollowCache(followerId, followeeId);
+  } catch {
+    // Follow cache is best-effort; Supabase remains the source of truth.
+  }
 }
 
 async function getTargetProfile(supabase: ReturnType<typeof getServiceSupabaseClient>, targetId: string) {

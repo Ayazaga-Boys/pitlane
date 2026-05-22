@@ -50,6 +50,13 @@ describe('push notification helpers', () => {
     });
   });
 
+  it('blocks push while the user is in dnd presence', () => {
+    expect(getPushPreferenceDecision({}, 'dm_new', localDateAt(12, 0), 'dnd')).toEqual({
+      allowed: false,
+      reason: 'dnd',
+    });
+  });
+
   it('normalizes provider data payloads to strings', () => {
     expect(normalizePushData({
       conversation_id: 'abc',

@@ -8,6 +8,8 @@ export const PUSH_NOTIFICATION_TYPES = [
   'flare_invite',
   'flare_starting',
   'dm_new',
+  'post_comment',
+  'post_like',
   'community_message',
   'community_invite',
   'system',
@@ -47,11 +49,12 @@ export interface PushDeliverySummary {
   failed: number;
   invalidTokensDeleted: number;
   skipped: boolean;
-  skipReason?: 'disabled' | 'quiet_hours';
+  skipReason?: 'disabled' | 'quiet_hours' | 'dnd';
 }
 
 interface ProfileNotificationPrefsRow {
   notification_prefs: NotificationPrefs | null;
+  presence_status?: 'online' | 'dnd' | 'offline' | null;
 }
 
 export const INVALID_PUSH_ERROR_CODES = new Set([
@@ -98,7 +101,9 @@ export function getPushPreferenceDecision(
   prefs: NotificationPrefs | null | undefined,
   type: PushNotificationType,
   now = new Date(),
-): { allowed: true } | { allowed: false; reason: 'disabled' | 'quiet_hours' } {
+  presenceStatus?: 'online' | 'dnd' | 'offline' | null,
+): { allowed: true } | { allowed: false; reason: 'disabled' | 'quiet_hours' | 'dnd' } {
+  if (presenceStatus === 'dnd') return { allowed: false, reason: 'dnd' };
   if (prefs?.[type] === false) return { allowed: false, reason: 'disabled' };
   if (isQuietHoursActive(now, prefs?.quiet_hours_start, prefs?.quiet_hours_end)) {
     return { allowed: false, reason: 'quiet_hours' };
@@ -116,14 +121,14 @@ export async function sendPushToUser(
 ): Promise<PushDeliverySummary> {
   const profileResult = await supabase
     .from('profiles')
-    .select('notification_prefs')
+    .select('notification_prefs,presence_status')
     .eq('id', userId)
     .maybeSingle();
 
   if (profileResult.error) throw new Error(profileResult.error.message);
 
   const profile = profileResult.data as ProfileNotificationPrefsRow | null;
-  const decision = getPushPreferenceDecision(profile?.notification_prefs, payload.type, now);
+  const decision = getPushPreferenceDecision(profile?.notification_prefs, payload.type, now, profile?.presence_status);
   if (!decision.allowed) {
     return {
       attempted: 0,

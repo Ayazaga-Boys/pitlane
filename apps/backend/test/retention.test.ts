@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { runHelpRequestExpiration } from '../src/jobs/help-expiration.js';
 import { buildDeletedProfileUsername } from '../src/jobs/profile-deletion.js';
 import { getRetentionCutoffs } from '../src/jobs/retention.js';
+import { runStoryExpiration } from '../src/jobs/story-expiration.js';
 import { runUserExportJob } from '../src/jobs/user-export.js';
 import { parseSentryDsn } from '../src/services/sentry.js';
 import { createUserExportStorageKey } from '../src/services/user-export.js';
-import { normalizeLocationCellsToHeatmapCounts } from '../src/services/valkey.js';
+import { addFollowCache, normalizeLocationCellsToHeatmapCounts, removeFollowCache } from '../src/services/valkey.js';
 
 describe('retention jobs', () => {
   it('calculates canonical retention cutoffs', () => {
@@ -42,6 +43,11 @@ describe('retention jobs', () => {
       .rejects.toThrow('Supabase service client is not configured');
   });
 
+  it('requires a service client for story expiration jobs', async () => {
+    await expect(runStoryExpiration({ supabase: null }))
+      .rejects.toThrow('Supabase service client is not configured');
+  });
+
   it('groups realtime location cells into res-8 heatmap counts', () => {
     const counts = normalizeLocationCellsToHeatmapCounts([
       '89283082803ffff',
@@ -50,6 +56,23 @@ describe('retention jobs', () => {
     ]);
 
     expect(counts['8828308281fffff']).toBe(2);
+  });
+
+  it('treats follow cache sync as a no-op without Valkey configuration', async () => {
+    const previousAddr = process.env.VALKEY_ADDR;
+    delete process.env.VALKEY_ADDR;
+
+    await expect(addFollowCache(
+      '00000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000002',
+    )).resolves.toBe(false);
+    await expect(removeFollowCache(
+      '00000000-0000-4000-8000-000000000001',
+      '00000000-0000-4000-8000-000000000002',
+    )).resolves.toBe(false);
+
+    if (previousAddr) process.env.VALKEY_ADDR = previousAddr;
+    else delete process.env.VALKEY_ADDR;
   });
 
   it('builds sentry envelope endpoint from dsn', () => {
