@@ -25,6 +25,8 @@ type OutboundMessage struct {
 	PostID      string         `json:"post_id,omitempty"`      // post_liked / post_commented
 	LikerID     string         `json:"liker_id,omitempty"`     // post_liked
 	CommenterID string         `json:"commenter_id,omitempty"` // post_commented
+	ContentType string         `json:"content_type,omitempty"` // content_removed
+	ContentID   string         `json:"content_id,omitempty"`   // content_removed
 	Code        string         `json:"code,omitempty"`         // error
 	Message     string         `json:"message,omitempty"`      // error
 }
@@ -40,8 +42,16 @@ const (
 	TypeStoryPosted    = "story_posted"
 	TypePostLiked      = "post_liked"
 	TypePostCommented  = "post_commented"
+	TypeContentRemoved = "content_removed" // admin moderation: post | story | comment silindi
 	TypePong           = "pong"
 	TypeError          = "error"
+)
+
+// İçerik moderasyon tipleri
+const (
+	ContentTypePost    = "post"
+	ContentTypeStory   = "story"
+	ContentTypeComment = "comment"
 )
 
 const (
