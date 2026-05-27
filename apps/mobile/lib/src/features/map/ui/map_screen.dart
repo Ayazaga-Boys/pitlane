@@ -258,7 +258,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
         content: const Text('Takip ettiğin biri yeni bir story paylaştı.'),
         action: SnackBarAction(
           label: 'Gör',
-          onPressed: () => context.go('/discover'),
+          onPressed: () => context.go('/communities'),
         ),
         duration: const Duration(seconds: 4),
       ),
