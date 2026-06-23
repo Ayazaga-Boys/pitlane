@@ -56,7 +56,7 @@ Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend follow/unfollo
 
 - [x] Flutter: `google_maps_cluster_manager_2` entegrasyonu — zoom out'ta sayı badge'li cluster
 - [x] Flutter: cluster tıklandığında zoom-in animasyonu
-- [ ] Go realtime: H3 res-7 aggregation endpoint (opsiyonel — client-side yeterli şimdilik)
+- [x] Go realtime: H3 res-7 aggregation endpoint (opsiyonel — client-side yeterli şimdilik) — `GET /internal/realtime/h3-aggregate`
 - [x] **Test**: 1000 marker stress test eklendi; gerçek cihaz FPS doğrulaması release profilde koşulacak
 
 ### V2.4 — Heatmap Filtreleri V2 (Hafta 7-8)
