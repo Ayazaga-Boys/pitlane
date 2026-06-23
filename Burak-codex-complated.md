@@ -464,3 +464,60 @@ Doğrulama:
 - `dart format` çalıştırıldı.
 - `flutter analyze` geçti.
 - `flutter test` geçti.
+
+### İş 7 — V2 Harita Araç İkonları, Foto-Bubble İşletmeler ve Load Test Hazırlığı
+
+Yapıldı:
+
+- Branch `origin/main` ile fast-forward eşlendi; Erol'un PR #60 backend V2 işleri alındı.
+- `GET /v2/business/locations/nearby?h3cell=&k=&category=` mobile map pin kaynağına bağlandı.
+- Business pin modeli `photo_url`, kategori, adres, telefon ve web alanlarıyla genişletildi.
+- Haritada işletmeler için foto-bubble marker çizimi eklendi.
+- Foto-bubble marker zoom seviyesine göre boyutlanır hale getirildi.
+- Business marker tap ve info-window tap aksiyonu işletme detay bottom sheet açacak şekilde bağlandı.
+- İşletme detay sheet içinde foto, ad, kategori, adres ve temel aksiyonlar gösterildi.
+- Takip edilen kullanıcı marker'ları için aktif araç `icon_slug` okuma eklendi.
+- `VehicleMarkerIconCache`, Erol'un `/v2/vehicles/icons` slug kontratındaki 11 araç ikonunu tanıyacak şekilde genişletildi.
+- Zoom `< 12` iken takip edilen kullanıcılar generic marker, zoom `>= 12` iken `icon_slug` tabanlı araç marker kullanır hale getirildi.
+- Kendi konum demo marker'ında cache'lenmiş araç ikonu ve mavi outline vurgusu fallback olarak bağlandı.
+- 1000 marker için cluster item stress testi eklendi.
+- Story fan-out için `apps/realtime/load-test/ws_v2_social_fanout.js` k6 senaryosu eklendi.
+- `docs/KISI_1_TRACK_V2.md` tamamlanan Kişi 1 maddelerine göre güncellendi.
+
+Doğrulama:
+
+- `dart format` çalıştırıldı.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./... -race` geçti.
+- `golangci-lint run` denenemedi; local makinede `golangci-lint` komutu bulunamadı.
+
+Not:
+
+- `apps/mobile/run_dev.sh` beklenen untracked local dosya olarak bırakıldı, commit'e alınmadı.
+- Gerçek cihaz FPS doğrulaması ve k6 p95 sonucu ortam/seed gerektirdiği için senaryo hazırlandı; koşum prod/dev Valkey follow cache seed'iyle yapılmalı.
+
+### İş 8 — Kişi 1 V2 Kalan Güvenli İşler: Marker Cache, Res-7 Aggregation Helper, Load Test Dokümantasyonu
+
+Yapıldı:
+
+- Business foto-bubble marker çizimine `BitmapDescriptor` cache eklendi.
+- Cache anahtarı business id, foto URL, başlık, kategori ve zoom scale bucket'a göre ayrıldı.
+- Go realtime tarafında endpoint açmadan kullanılabilir H3 res-7 aggregation helper eklendi:
+  - `AggregateCellCountsToResolution`
+  - `AggregateCellCountsToClusterResolution`
+- Res-7 aggregation için unit test eklendi.
+- V2 social fanout k6 senaryosunda dev auth tokenları 1k kullanıcı için deterministik/benzersiz olacak şekilde düzeltildi.
+- `apps/realtime/load-test/README.md` eklendi; k6 çalıştırma ve Valkey follow cache seed talimatları yazıldı.
+
+Doğrulama:
+
+- `dart format` çalıştırıldı.
+- `gofmt` çalıştırıldı.
+- `flutter analyze` geçti.
+- `flutter test` geçti.
+- `go test ./... -race` geçti.
+
+Not:
+
+- Backend route açılmadı; H3 res-7 helper Go realtime içinde hazır bırakıldı. Bunu public/internal API'ye çevirmek gerekirse Erol'la kontrat netleştirilecek.

@@ -40,6 +40,13 @@ type socialEventRequest struct {
 	CommenterID string `json:"commenter_id,omitempty"`
 }
 
+type contentRemovedRequest struct {
+	ContentType string `json:"content_type"` // "post" | "story" | "comment"
+	ContentID   string `json:"content_id"`   // silinen içeriğin UUID'si
+	ActorID     string `json:"actor_id"`     // admin kullanıcı ID'si (audit için)
+	AuthorID    string `json:"author_id"`    // içerik sahibi — bu kullanıcıya bildirim gönderilir
+}
+
 func newUpgrader(cfg *config.Config) websocket.Upgrader {
 	return websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -440,6 +447,85 @@ func (e helpEventRequest) isValid() bool {
 	default:
 		return false
 	}
+}
+
+// ServeH3Aggregate — mevcut heatmap snapshot'ını res-7'ye katlar ve döner
+// GET /internal/realtime/h3-aggregate
+func (h *Hub) ServeH3Aggregate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if h.cfg.InternalSecret == "" {
+		http.Error(w, "Internal secret not configured", http.StatusServiceUnavailable)
+		return
+	}
+	if r.Header.Get("Authorization") != "Bearer "+h.cfg.InternalSecret {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	rawCounts := h.store.GetCellCounts(r.Context())
+	aggregated, err := location.AggregateCellCountsToClusterResolution(rawCounts)
+	if err != nil {
+		log.Error().Err(err).Msg("h3_aggregate_failed")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	out, err := json.Marshal(map[string]any{"cells": aggregated})
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write(out)
+}
+
+// ServeContentRemovedEvent — admin moderation silme/geri alma aksiyonlarını içerik sahibine iletir
+func (h *Hub) ServeContentRemovedEvent(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if h.cfg.InternalSecret == "" {
+		http.Error(w, "Internal secret not configured", http.StatusServiceUnavailable)
+		return
+	}
+	if r.Header.Get("Authorization") != "Bearer "+h.cfg.InternalSecret {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req contentRemovedRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	valid := req.ContentID != "" && req.AuthorID != "" &&
+		(req.ContentType == ContentTypePost || req.ContentType == ContentTypeStory || req.ContentType == ContentTypeComment)
+	if !valid {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	// Sadece içerik sahibine bildir — admin silmesini gerçek zamanlı UI'a yansıt
+	payload := OutboundMessage{
+		Type:        TypeContentRemoved,
+		ContentType: req.ContentType,
+		ContentID:   req.ContentID,
+	}
+	msg, err := json.Marshal(payload)
+	if err != nil {
+		log.Error().Err(err).Msg("content_removed_marshal_failed")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	h.SendToUser(req.AuthorID, msg)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_, _ = w.Write([]byte(`{"ok":true}`))
 }
 
 // ActiveCount — anlık bağlı kullanıcı sayısı (Prometheus için)

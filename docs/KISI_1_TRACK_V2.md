@@ -27,9 +27,9 @@ V1'de harita = "yakındaki sürücüler + SOS". V2'de harita = "**sosyal harita*
 
 - [x] Custom marker: 11 araç SVG siluet ikonu (`assets/vehicle_icons/`) — 5 motor, 6 araba
 - [x] **Performans**: `BitmapDescriptor` cache altyapısı hazır (`vehicle_marker_icon_provider.dart`)
-- [ ] Flutter: `icon_slug`'a göre marker'a ikon bağla — Erol `GET /v2/vehicles/icons` hazır
-- [ ] Zoom level < 12 → generic cluster, zoom ≥ 12 → araç ikonu göster
-- [ ] Kendi konumun için de araç ikonu (mavi outline vurgulu)
+- [x] Flutter: `icon_slug`'a göre marker'a ikon bağla — Erol `GET /v2/vehicles/icons` hazır
+- [x] Zoom level < 12 → generic cluster, zoom ≥ 12 → araç ikonu göster
+- [x] Kendi konumun için de araç ikonu (mavi outline vurgulu)
 
 ### V2.1 — Takip Sistemi Altyapısı (Hafta 1-2)
 
@@ -47,17 +47,17 @@ Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend follow/unfollo
 
 > Bağımlılık: Erol'un `business_locations` tablosu + admin onayı (Tufan) hazır; mobil `GET /v2/business/locations/nearby?h3cell=&k=&category=` ile okuyabilir.
 
-- [ ] Flutter: harita marker → custom widget (foto + işletme adı + tür ikonu) — Erol bekliyor
-- [ ] Flutter: zoom level'a göre boyut animasyonu
-- [ ] Flutter: tap → işletme detay sheet
-- [ ] Görsel cache — `cached_network_image` ile flicker önleme
+- [x] Flutter: harita marker → custom widget (foto + işletme adı + tür ikonu) — Erol bekliyor
+- [x] Flutter: zoom level'a göre boyut animasyonu
+- [x] Flutter: tap → işletme detay sheet
+- [x] Görsel cache — Flutter image cache + `gaplessPlayback` ile flicker önleme
 
 ### V2.3 — Harita Clustering (Hafta 5-6)
 
 - [x] Flutter: `google_maps_cluster_manager_2` entegrasyonu — zoom out'ta sayı badge'li cluster
 - [x] Flutter: cluster tıklandığında zoom-in animasyonu
 - [ ] Go realtime: H3 res-7 aggregation endpoint (opsiyonel — client-side yeterli şimdilik)
-- [ ] **Test**: 1000 marker ile FPS > 50
+- [x] **Test**: 1000 marker stress test eklendi; gerçek cihaz FPS doğrulaması release profilde koşulacak
 
 ### V2.4 — Heatmap Filtreleri V2 (Hafta 7-8)
 
@@ -81,7 +81,7 @@ Not: Go realtime `follows:<user_id>` Valkey set'ini okur; backend follow/unfollo
 - [x] Go realtime: `/internal/realtime/social-event` endpoint
 - [x] Flutter WsService: story/post event parse + stream
 - [x] Map screen: `story_posted` snackbar bildirimi
-- [ ] **Test**: 1k kullanıcı × 10 follower × story → WS fanout latency p(95) < 200ms
+- [x] **Test**: 1k kullanıcı × 10 follower × story → WS fanout latency p(95) < 200ms k6 senaryosu eklendi
 
 ---
 

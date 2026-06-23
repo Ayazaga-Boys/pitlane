@@ -55,6 +55,18 @@ class WsLocationShareEvent {
 
 enum WsSocialEventType { storyPosted, postLiked, postCommented }
 
+enum WsContentType { post, story, comment }
+
+class WsContentRemovedEvent {
+  const WsContentRemovedEvent({
+    required this.contentType,
+    required this.contentId,
+  });
+
+  final WsContentType contentType;
+  final String contentId;
+}
+
 class WsSocialEvent {
   const WsSocialEvent({
     required this.type,
@@ -95,6 +107,10 @@ class WsService {
       _locationShareController.stream;
   final _socialEventController = StreamController<WsSocialEvent>.broadcast();
   Stream<WsSocialEvent> get socialEventStream => _socialEventController.stream;
+  final _contentRemovedController =
+      StreamController<WsContentRemovedEvent>.broadcast();
+  Stream<WsContentRemovedEvent> get contentRemovedStream =>
+      _contentRemovedController.stream;
 
   void connect(String jwtToken, {bool resetBackoff = true}) {
     if (_channel != null && _connectedToken == jwtToken) {
@@ -179,6 +195,9 @@ class WsService {
       case 'post_commented':
         final event = parseWsSocialEvent(msg);
         if (event != null) _socialEventController.add(event);
+      case 'content_removed':
+        final event = parseWsContentRemovedEvent(msg);
+        if (event != null) _contentRemovedController.add(event);
       case 'error':
         debugPrint('[WS] error: ${msg['code']} — ${msg['message']}');
     }
@@ -230,6 +249,7 @@ class WsService {
     _presenceController.close();
     _locationShareController.close();
     _socialEventController.close();
+    _contentRemovedController.close();
   }
 
   void _resubscribeAll() {
@@ -349,6 +369,21 @@ WsSocialEvent? _parsePostCommented(Map<String, dynamic> msg) {
     postId: postId,
     commenterId: commenterId,
   );
+}
+
+WsContentRemovedEvent? parseWsContentRemovedEvent(Map<String, dynamic> msg) {
+  if (msg['type'] != 'content_removed') return null;
+  final rawType = msg['content_type'] as String?;
+  final contentId = msg['content_id'] as String?;
+  if (rawType == null || contentId == null || contentId.isEmpty) return null;
+  final contentType = switch (rawType) {
+    'post' => WsContentType.post,
+    'story' => WsContentType.story,
+    'comment' => WsContentType.comment,
+    _ => null,
+  };
+  if (contentType == null) return null;
+  return WsContentRemovedEvent(contentType: contentType, contentId: contentId);
 }
 
 final wsServiceProvider = Provider<WsService>((ref) {

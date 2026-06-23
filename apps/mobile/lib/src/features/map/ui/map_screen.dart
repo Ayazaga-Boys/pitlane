@@ -21,6 +21,7 @@ import '../providers/location_provider.dart';
 import '../providers/map_cluster_provider.dart';
 import '../providers/map_heatmap_provider.dart';
 import '../providers/map_pins_provider.dart';
+import '../providers/vehicle_marker_icon_provider.dart';
 import 'location_permission_screen.dart';
 import 'map_filter_sheet.dart';
 import 'help_detail_sheet.dart';
@@ -43,6 +44,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
   bool _showPermissionRationale = false;
   bool _vehicleIconsStartedLoading = false;
   int _vehicleIconAngle = 0;
+  double _currentZoom = _istanbul.zoom;
+  final Map<String, BitmapDescriptor> _businessMarkerIconCache = {};
   Set<Marker> _clusteredMarkers = {};
   gmc.ClusterManager<MapPinClusterItem>? _clusterManager;
 
@@ -193,7 +196,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
       gmc.Cluster<MapPinClusterItem> cluster) async {
     if (cluster.count == 1) {
       final pin = cluster.items.first.pin;
-      return _toMarker(context, pin);
+      return _toMarker(pin);
     }
     return _buildClusterBadge(cluster);
   }
@@ -255,7 +258,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
         content: const Text('Takip ettiğin biri yeni bir story paylaştı.'),
         action: SnackBarAction(
           label: 'Gör',
-          onPressed: () => context.go('/discover'),
+          onPressed: () => context.go('/communities'),
         ),
         duration: const Duration(seconds: 4),
       ),
@@ -312,6 +315,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   void _handleCameraMove(CameraPosition position) {
+    _currentZoom = position.zoom;
     if (!AppConstants.isDev) return;
     final nextAngle = _nearestVehicleAngle(position.bearing);
     if (nextAngle == _vehicleIconAngle) return;
@@ -328,8 +332,26 @@ class _MapScreenState extends ConsumerState<MapScreen>
     if (!AppConstants.isDev) return {};
 
     final position = _vehiclePosition(currentCell);
-    final icon = _vehicleIcons[_vehicleIconAngle] ??
-        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
+    final selfIconSlug = ref.watch(currentVehicleIconSlugProvider).valueOrNull;
+    if (_currentZoom >= 12 &&
+        ref
+                .read(vehicleMarkerIconCacheProvider)
+                .getCachedDescriptor(selfIconSlug, isSelf: true) ==
+            null) {
+      unawaited(ref
+          .read(vehicleMarkerIconCacheProvider)
+          .getIcon(VehicleIconSlug.fromValue(selfIconSlug), isSelf: true)
+          .then((_) {
+        if (mounted) setState(() {});
+      }));
+    }
+    final icon = _currentZoom >= 12
+        ? (_vehicleIcons[_vehicleIconAngle] ??
+            ref
+                .watch(vehicleMarkerIconCacheProvider)
+                .getCachedDescriptor(selfIconSlug, isSelf: true) ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen))
+        : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen);
 
     return {
       Marker(
@@ -356,6 +378,266 @@ class _MapScreenState extends ConsumerState<MapScreen>
       }
     }
     return const LatLng(41.0102, 28.9808);
+  }
+
+  Future<Marker> _toMarker(MapPin pin) async {
+    if (pin.type == MapPinType.business) {
+      return Marker(
+        markerId: MarkerId(pin.id),
+        position: pin.position,
+        icon: await _businessMarkerIcon(pin, _businessMarkerScale),
+        anchor: const Offset(0.5, 0.92),
+        zIndexInt: 30,
+        infoWindow: InfoWindow(
+          title: pin.title,
+          snippet: pin.subtitle,
+          onTap: () => _showBusinessDetailSheet(pin),
+        ),
+        onTap: () => _showBusinessDetailSheet(pin),
+      );
+    }
+
+    if (pin.type == MapPinType.followedUser && _currentZoom >= 12) {
+      return Marker(
+        markerId: MarkerId(pin.id),
+        position: pin.position,
+        icon: await ref
+            .read(vehicleMarkerIconCacheProvider)
+            .getIcon(VehicleIconSlug.fromValue(pin.iconSlug)),
+        infoWindow: InfoWindow(
+          title: pin.title,
+          snippet: pin.subtitle,
+          onTap: () => _navigateToPin(pin),
+        ),
+        onTap: () => _navigateToPin(pin),
+      );
+    }
+
+    return Marker(
+      markerId: MarkerId(pin.id),
+      position: pin.position,
+      icon: BitmapDescriptor.defaultMarkerWithHue(pinHue(pin.type)),
+      infoWindow: InfoWindow(
+        title: pin.title,
+        snippet: pin.subtitle,
+        onTap: () => _navigateToPin(pin),
+      ),
+      onTap: () => _navigateToPin(pin),
+    );
+  }
+
+  double get _businessMarkerScale {
+    if (_currentZoom < 11) return 0.78;
+    if (_currentZoom < 13) return 0.92;
+    if (_currentZoom < 15) return 1.0;
+    return 1.14;
+  }
+
+  Future<BitmapDescriptor> _businessMarkerIcon(
+    MapPin pin,
+    double scale,
+  ) async {
+    final scaleBucket = (scale * 100).round();
+    final cacheKey = [
+      pin.id,
+      pin.photoUrl ?? '',
+      pin.title,
+      pin.category ?? '',
+      scaleBucket,
+    ].join('|');
+    final cached = _businessMarkerIconCache[cacheKey];
+    if (cached != null) return cached;
+
+    final width = 132.0 * scale;
+    final height = 82.0 * scale;
+    final photoSize = 52.0 * scale;
+    final padding = 7.0 * scale;
+    final bubbleHeight = 66.0 * scale;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final bubbleRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, width, bubbleHeight),
+      Radius.circular(8 * scale),
+    );
+    canvas.drawRRect(
+      bubbleRect,
+      Paint()..color = AppColors.surface1.withAlpha(242),
+    );
+    canvas.drawRRect(
+      bubbleRect,
+      Paint()
+        ..color = AppColors.pitRed.withAlpha(220)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+
+    final path = Path()
+      ..moveTo(width / 2 - 8 * scale, bubbleHeight)
+      ..lineTo(width / 2, height)
+      ..lineTo(width / 2 + 8 * scale, bubbleHeight)
+      ..close();
+    canvas.drawPath(path, Paint()..color = AppColors.surface1.withAlpha(242));
+
+    final photoRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(padding, padding, photoSize, photoSize),
+      Radius.circular(26 * scale),
+    );
+    canvas.save();
+    canvas.clipRRect(photoRect);
+    final image = await _loadNetworkImage(pin.photoUrl);
+    if (image != null) {
+      paintImage(
+        canvas: canvas,
+        rect: Rect.fromLTWH(padding, padding, photoSize, photoSize),
+        image: image,
+        fit: BoxFit.cover,
+      );
+    } else {
+      canvas.drawRRect(photoRect, Paint()..color = AppColors.surface3);
+      _paintCenteredIcon(
+        canvas,
+        Icons.storefront,
+        Rect.fromLTWH(padding, padding, photoSize, photoSize),
+      );
+    }
+    canvas.restore();
+
+    _paintMarkerText(
+      canvas,
+      pin.title,
+      Offset(66 * scale, 11 * scale),
+      maxWidth: 58 * scale,
+      fontSize: 13 * scale,
+      fontWeight: FontWeight.w700,
+      color: Colors.white,
+      maxLines: 2,
+    );
+    _paintMarkerText(
+      canvas,
+      _businessCategoryLabel(pin.category),
+      Offset(66 * scale, 42 * scale),
+      maxWidth: 58 * scale,
+      fontSize: 10 * scale,
+      color: AppColors.textTertiary,
+      maxLines: 1,
+    );
+
+    final imageOut =
+        await recorder.endRecording().toImage(width.toInt(), height.toInt());
+    final bytes = await imageOut.toByteData(format: ui.ImageByteFormat.png);
+    final descriptor = BitmapDescriptor.bytes(
+      bytes!.buffer.asUint8List(),
+      width: width,
+      height: height,
+    );
+    _businessMarkerIconCache[cacheKey] = descriptor;
+    return descriptor;
+  }
+
+  Future<ui.Image?> _loadNetworkImage(String? url) async {
+    if (url == null || url.isEmpty) return null;
+    final completer = Completer<ui.Image?>();
+    final stream = NetworkImage(url).resolve(ImageConfiguration.empty);
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener(
+      (info, _) {
+        if (!completer.isCompleted) completer.complete(info.image);
+        stream.removeListener(listener);
+      },
+      onError: (_, __) {
+        if (!completer.isCompleted) completer.complete(null);
+        stream.removeListener(listener);
+      },
+    );
+    stream.addListener(listener);
+    return completer.future.timeout(
+      const Duration(seconds: 3),
+      onTimeout: () {
+        stream.removeListener(listener);
+        return null;
+      },
+    );
+  }
+
+  void _paintCenteredIcon(Canvas canvas, IconData icon, Rect rect) {
+    final builder = ui.ParagraphBuilder(
+      ui.ParagraphStyle(
+        textAlign: TextAlign.center,
+        fontSize: 25,
+        fontFamily: 'MaterialIcons',
+      ),
+    )
+      ..pushStyle(ui.TextStyle(color: AppColors.textSecondary))
+      ..addText(String.fromCharCode(icon.codePoint));
+    final paragraph = builder.build()
+      ..layout(ui.ParagraphConstraints(width: rect.width));
+    canvas.drawParagraph(
+      paragraph,
+      Offset(rect.left, rect.top + (rect.height - paragraph.height) / 2),
+    );
+  }
+
+  void _paintMarkerText(
+    Canvas canvas,
+    String text,
+    Offset offset, {
+    required double maxWidth,
+    required double fontSize,
+    Color color = Colors.white,
+    FontWeight fontWeight = FontWeight.w500,
+    int maxLines = 1,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+        ),
+      ),
+      maxLines: maxLines,
+      ellipsis: '…',
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxWidth);
+    painter.paint(canvas, offset);
+  }
+
+  String _businessCategoryLabel(String? category) => switch (category) {
+        'garage' => 'Tamirci',
+        'dealer' => 'Galeri',
+        'parts' => 'Parça',
+        'wash' => 'Yıkama',
+        'tire' => 'Lastik',
+        final String value when value.isNotEmpty => value,
+        _ => 'İşletme',
+      };
+
+  void _showBusinessDetailSheet(MapPin pin) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface1,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => _BusinessLocationSheet(pin: pin),
+    );
+  }
+
+  void _navigateToPin(MapPin pin) {
+    switch (pin.type) {
+      case MapPinType.flare:
+        context.push('/flares/${pin.id}');
+      case MapPinType.help:
+        showHelpDetailSheet(context, pin);
+      case MapPinType.business:
+        _showBusinessDetailSheet(pin);
+      case MapPinType.followedUser:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(pin.subtitle ?? pin.title)),
+        );
+    }
   }
 
   @override
@@ -548,31 +830,113 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 }
 
-// ── Pin → Marker (GoRouter navigation) ───────────────────────────────────────
+// ── Business detail sheet ────────────────────────────────────────────────────
 
-Marker _toMarker(BuildContext context, MapPin pin) => Marker(
-      markerId: MarkerId(pin.id),
-      position: pin.position,
-      icon: BitmapDescriptor.defaultMarkerWithHue(pinHue(pin.type)),
-      infoWindow: InfoWindow(
-        title: pin.title,
-        snippet: pin.subtitle,
-        onTap: () => _navigateToPin(context, pin),
+class _BusinessLocationSheet extends StatelessWidget {
+  const _BusinessLocationSheet({required this.pin});
+
+  final MapPin pin;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.xl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: pin.photoUrl == null || pin.photoUrl!.isEmpty
+                    ? Container(
+                        color: AppColors.surface3,
+                        child: const Icon(
+                          Icons.storefront,
+                          color: AppColors.textSecondary,
+                          size: 48,
+                        ),
+                      )
+                    : Image.network(
+                        pin.photoUrl!,
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: AppColors.surface3,
+                          child: const Icon(
+                            Icons.storefront,
+                            color: AppColors.textSecondary,
+                            size: 48,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              pin.title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            if (pin.subtitle != null && pin.subtitle!.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                pin.subtitle!,
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+            ],
+            if (pin.address != null && pin.address!.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.place_outlined,
+                      size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      pin.address!,
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        pin.phone == null || pin.phone!.isEmpty ? null : () {},
+                    icon: const Icon(Icons.phone_outlined),
+                    label: const Text('Ara'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.map_outlined),
+                    label: const Text('Haritada'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
-
-void _navigateToPin(BuildContext context, MapPin pin) {
-  switch (pin.type) {
-    case MapPinType.flare:
-      context.push('/flares/${pin.id}');
-    case MapPinType.help:
-      showHelpDetailSheet(context, pin);
-    case MapPinType.business:
-      context.push('/pins/${pin.id}');
-    case MapPinType.followedUser:
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(pin.subtitle ?? pin.title)),
-      );
   }
 }
 
