@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/v2_state_views.dart';
 import '../models/rollpit_notification.dart';
 import '../providers/notifications_provider.dart';
 import '../providers/push_notifications_provider.dart';
@@ -35,11 +36,18 @@ class NotificationsScreen extends ConsumerWidget {
       body: SafeArea(
         child: notifications.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _NotificationsError(message: error.toString()),
+          error: (error, _) => V2ErrorState(
+            message: error.toString(),
+            onRetry: () => ref.invalidate(notificationsProvider),
+          ),
           data: (items) => RefreshIndicator(
             onRefresh: () => ref.read(notificationsProvider.notifier).refresh(),
             child: items.isEmpty
-                ? const _EmptyNotifications()
+                ? const V2EmptyState(
+                    icon: Icons.notifications_none,
+                    title: 'Bildirim yok',
+                    scrollable: true,
+                  )
                 : ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     itemCount: items.length,
@@ -108,52 +116,5 @@ class _NotificationTile extends ConsumerWidget {
       RollpitNotificationType.communityMessage => Icons.groups_outlined,
       RollpitNotificationType.system => Icons.info_outline,
     };
-  }
-}
-
-class _EmptyNotifications extends StatelessWidget {
-  const _EmptyNotifications();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      children: [
-        const SizedBox(height: AppSpacing.xl2),
-        const Icon(
-          Icons.notifications_none,
-          size: AppSpacing.xl3,
-          color: AppColors.textTertiary,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        Text(
-          'Bildirim yok',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-      ],
-    );
-  }
-}
-
-class _NotificationsError extends StatelessWidget {
-  const _NotificationsError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
-        ),
-      ),
-    );
   }
 }

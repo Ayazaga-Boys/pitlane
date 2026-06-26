@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/v2_state_views.dart';
 import '../models/dm_message.dart';
 import '../models/message_room.dart';
 import '../providers/room_chat_provider.dart';
@@ -57,9 +58,12 @@ class _RoomChatScreenState extends ConsumerState<RoomChatScreen> {
             Expanded(
               child: chat.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => _RoomChatError(message: error.toString()),
+                error: (error, _) => V2ErrorState(message: error.toString()),
                 data: (messages) => messages.isEmpty
-                    ? const _EmptyRoomChat()
+                    ? const V2EmptyState(
+                        icon: Icons.forum_outlined,
+                        title: 'Bu odada henüz mesaj yok',
+                      )
                     : ListView.separated(
                         reverse: true,
                         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -179,48 +183,6 @@ class _RoomComposer extends StatelessWidget {
               tooltip: 'Gönder',
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyRoomChat extends StatelessWidget {
-  const _EmptyRoomChat();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Text(
-          'Bu odada henüz mesaj yok',
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-        ),
-      ),
-    );
-  }
-}
-
-class _RoomChatError extends StatelessWidget {
-  const _RoomChatError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );
