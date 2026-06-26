@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../moderation/models/moderation.dart';
 import '../../moderation/ui/moderation_sheet.dart';
+import '../../../shared/widgets/v2_state_views.dart';
 import '../models/dm_message.dart';
 import '../providers/dm_chat_provider.dart';
 
@@ -75,9 +76,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Expanded(
               child: chat.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => _ChatError(message: error.toString()),
+                error: (error, _) => V2ErrorState(message: error.toString()),
                 data: (messages) => messages.isEmpty
-                    ? const _EmptyChat()
+                    ? const V2EmptyState(
+                        icon: Icons.chat_bubble_outline,
+                        title: 'Henüz mesajınız yok',
+                      )
                     : ListView.separated(
                         reverse: true,
                         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -188,48 +192,6 @@ class _Composer extends StatelessWidget {
               tooltip: 'Gönder',
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyChat extends StatelessWidget {
-  const _EmptyChat();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Text(
-          'Henüz mesajınız yok',
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
-        ),
-      ),
-    );
-  }
-}
-
-class _ChatError extends StatelessWidget {
-  const _ChatError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );

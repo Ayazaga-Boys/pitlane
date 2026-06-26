@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/app_avatar.dart';
+import '../../../shared/widgets/v2_state_views.dart';
 import '../models/dm_thread.dart';
 import '../providers/dm_threads_provider.dart';
 
@@ -20,11 +21,20 @@ class MessagesScreen extends ConsumerWidget {
       body: SafeArea(
         child: threads.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _MessagesError(message: error.toString()),
+          error: (error, _) => V2ErrorState(
+            message: error.toString(),
+            onRetry: () => ref.invalidate(dmThreadsProvider),
+          ),
           data: (items) => RefreshIndicator(
             onRefresh: () => ref.read(dmThreadsProvider.notifier).refresh(),
             child: items.isEmpty
-                ? const _EmptyMessages()
+                ? const V2EmptyState(
+                    icon: Icons.chat_bubble_outline,
+                    title: 'Henüz mesajın yok',
+                    body:
+                        'Profil veya topluluklardan bir sürücüye mesaj attığında konuşmalar burada görünür.',
+                    scrollable: true,
+                  )
                 : ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     itemCount: items.length,
@@ -142,61 +152,6 @@ class _UnreadBadge extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyMessages extends StatelessWidget {
-  const _EmptyMessages();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      children: [
-        const SizedBox(height: AppSpacing.xl2),
-        const Icon(
-          Icons.chat_bubble_outline,
-          size: AppSpacing.xl3,
-          color: AppColors.textTertiary,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        Text(
-          'Henüz mesajın yok',
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Text(
-          'Profil veya topluluklardan bir sürücüye mesaj attığında konuşmalar burada görünür.',
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-        ),
-      ],
-    );
-  }
-}
-
-class _MessagesError extends StatelessWidget {
-  const _MessagesError({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );
