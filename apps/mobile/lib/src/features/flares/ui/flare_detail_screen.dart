@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/app_avatar.dart';
 import '../../../shared/widgets/rollpit_button.dart';
 import '../models/flare.dart';
 import '../providers/flare_detail_provider.dart';
@@ -313,14 +314,10 @@ class _AttendeeTile extends StatelessWidget {
           border: Border.all(color: AppColors.surface3),
         ),
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: AppColors.surface3,
-            backgroundImage: attendee.avatarUrl == null
-                ? null
-                : NetworkImage(attendee.avatarUrl!),
-            child: attendee.avatarUrl == null
-                ? Text(attendee.displayName.characters.first.toUpperCase())
-                : null,
+          leading: AppAvatar(
+            displayName: attendee.displayName,
+            username: attendee.username,
+            imageUrl: attendee.avatarUrl,
           ),
           title: Text(attendee.displayName),
           subtitle: Text(

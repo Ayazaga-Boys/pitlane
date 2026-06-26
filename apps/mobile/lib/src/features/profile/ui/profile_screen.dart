@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../features/auth/providers/auth_provider.dart';
+import '../../../shared/widgets/app_avatar.dart';
 import '../../../shared/widgets/rollpit_button.dart';
 import '../models/vehicle.dart';
 import '../models/vehicle_icon_option.dart';
@@ -81,19 +82,11 @@ class _ProfileContent extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
+            AppAvatar(
+              displayName: title,
+              username: profile?.username,
+              imageUrl: profile?.avatarUrl,
               radius: AppSpacing.xl2,
-              backgroundColor: AppColors.surface3,
-              backgroundImage: profile?.avatarUrl == null
-                  ? null
-                  : NetworkImage(profile!.avatarUrl!),
-              child: profile?.avatarUrl == null
-                  ? const Icon(
-                      Icons.person,
-                      size: AppSpacing.xl2,
-                      color: AppColors.textSecondary,
-                    )
-                  : null,
             ),
             const SizedBox(width: AppSpacing.lg),
             Expanded(

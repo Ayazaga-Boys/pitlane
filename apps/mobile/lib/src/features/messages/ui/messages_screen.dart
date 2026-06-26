@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/presence_dot.dart';
+import '../../../shared/widgets/app_avatar.dart';
 import '../models/dm_thread.dart';
 import '../providers/dm_threads_provider.dart';
 
@@ -110,27 +110,12 @@ class _ThreadAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        CircleAvatar(
-          radius: AppSpacing.xl,
-          backgroundColor: AppColors.surface3,
-          backgroundImage:
-              thread.avatarUrl == null ? null : NetworkImage(thread.avatarUrl!),
-          child: thread.avatarUrl == null
-              ? Text(thread.displayName.characters.first.toUpperCase())
-              : null,
-        ),
-        Positioned(
-          right: -1,
-          bottom: -1,
-          child: PresenceDot(
-            status: thread.presenceStatus,
-            visible: thread.presenceVisible,
-          ),
-        ),
-      ],
+    return AppAvatar(
+      displayName: thread.displayName,
+      username: thread.username,
+      imageUrl: thread.avatarUrl,
+      presenceStatus: thread.presenceStatus,
+      presenceVisible: thread.presenceVisible,
     );
   }
 }
