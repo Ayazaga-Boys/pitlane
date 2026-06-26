@@ -30,9 +30,9 @@ class VehicleIconPicker extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Gerçek marka logosu kullanmadan aracına benzeyen silüeti seç.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.md),
           GridView.builder(
@@ -131,11 +131,7 @@ class VehicleMapPreviewCard extends StatelessWidget {
 }
 
 class VehicleIconBadge extends StatelessWidget {
-  const VehicleIconBadge({
-    super.key,
-    required this.type,
-    this.iconSlug,
-  });
+  const VehicleIconBadge({super.key, required this.type, this.iconSlug});
 
   final VehicleType type;
   final String? iconSlug;

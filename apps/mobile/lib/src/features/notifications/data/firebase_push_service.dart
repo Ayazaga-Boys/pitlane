@@ -89,10 +89,12 @@ class FirebasePushService {
       );
     });
 
-    _foregroundSubscription =
-        FirebaseMessaging.onMessage.listen(_emitDeepLinkForMessage);
-    _openedSubscription =
-        FirebaseMessaging.onMessageOpenedApp.listen(_emitDeepLinkForMessage);
+    _foregroundSubscription = FirebaseMessaging.onMessage.listen(
+      _emitDeepLinkForMessage,
+    );
+    _openedSubscription = FirebaseMessaging.onMessageOpenedApp.listen(
+      _emitDeepLinkForMessage,
+    );
 
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) _emitDeepLinkForMessage(initialMessage);

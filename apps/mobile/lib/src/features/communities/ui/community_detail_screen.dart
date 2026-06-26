@@ -24,10 +24,8 @@ class CommunityDetailScreen extends ConsumerWidget {
       body: SafeArea(
         child: detail.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => _CommunityDetailError(
-            message: error.toString(),
-            slug: slug,
-          ),
+          error: (error, _) =>
+              _CommunityDetailError(message: error.toString(), slug: slug),
           data: (state) => _CommunityDetailContent(detail: state),
         ),
       ),
@@ -71,17 +69,13 @@ class _CommunityDetailContent extends ConsumerWidget {
               context.push('/communities/${community.id}/messages'),
         ),
         const SizedBox(height: AppSpacing.xl2),
-        _SectionHeader(
-          title: 'Flares',
-          trailing: '${detail.flares.length}',
-        ),
+        _SectionHeader(title: 'Flares', trailing: '${detail.flares.length}'),
         const SizedBox(height: AppSpacing.md),
         RollpitButton(
           label: 'Flare oluştur',
           variant: RollpitButtonVariant.secondary,
-          onPressed: () => context.push(
-            '/flares/create?communityId=${community.id}',
-          ),
+          onPressed: () =>
+              context.push('/flares/create?communityId=${community.id}'),
         ),
         const SizedBox(height: AppSpacing.md),
         if (detail.flares.isEmpty)
@@ -89,10 +83,7 @@ class _CommunityDetailContent extends ConsumerWidget {
         else
           ...detail.flares.map((flare) => _FlareTile(flare: flare)),
         const SizedBox(height: AppSpacing.xl2),
-        _SectionHeader(
-          title: 'Üyeler',
-          trailing: '${detail.members.length}',
-        ),
+        _SectionHeader(title: 'Üyeler', trailing: '${detail.members.length}'),
         const SizedBox(height: AppSpacing.md),
         if (detail.members.isEmpty)
           const _MutedText('Üye listesi henüz görünmüyor.')
@@ -178,17 +169,17 @@ class _CommunityHeader extends StatelessWidget {
             community.description!.isNotEmpty) ...[
           Text(
             community.description!,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.md),
         ],
         Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textTertiary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
@@ -201,10 +192,7 @@ class _CommunityHeader extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    required this.trailing,
-  });
+  const _SectionHeader({required this.title, required this.trailing});
 
   final String title;
   final String trailing;
@@ -217,9 +205,9 @@ class _SectionHeader extends StatelessWidget {
         const Spacer(),
         Text(
           trailing,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textTertiary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textTertiary),
         ),
       ],
     );
@@ -323,18 +311,15 @@ class _MutedText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
     );
   }
 }
 
 class _CommunityDetailError extends ConsumerWidget {
-  const _CommunityDetailError({
-    required this.message,
-    required this.slug,
-  });
+  const _CommunityDetailError({required this.message, required this.slug});
 
   final String message;
   final String slug;
@@ -350,9 +335,9 @@ class _CommunityDetailError extends ConsumerWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.error,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
             ),
             const SizedBox(height: AppSpacing.lg),
             TextButton.icon(

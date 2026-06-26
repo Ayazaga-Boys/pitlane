@@ -40,9 +40,7 @@ const _mockPins = [
 ];
 
 ProviderContainer _containerWithPins() => ProviderContainer(
-      overrides: [
-        allPinsProvider.overrideWith((ref) async => _mockPins),
-      ],
+      overrides: [allPinsProvider.overrideWith((ref) async => _mockPins)],
     );
 
 void main() {
@@ -195,7 +193,9 @@ void main() {
           .read(mapFiltersProvider.notifier)
           .setVehicle(VehicleFilter.motorcycle);
       expect(
-          container.read(mapFiltersProvider).vehicle, VehicleFilter.motorcycle);
+        container.read(mapFiltersProvider).vehicle,
+        VehicleFilter.motorcycle,
+      );
     });
 
     test('reset restores defaults', () {

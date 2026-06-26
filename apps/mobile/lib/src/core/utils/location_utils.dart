@@ -12,7 +12,8 @@ String toH3Cell(
   int resolution = H3Constants.proximityResolution,
 }) {
   return _formatH3Index(
-      _h3.geoToCell(GeoCoord(lat: lat, lon: lng), resolution));
+    _h3.geoToCell(GeoCoord(lat: lat, lon: lng), resolution),
+  );
 }
 
 /// H3 hücresinin merkez koordinatı (harita pini için)

@@ -28,9 +28,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   Future<void> _verify() async {
     final token = _otpController.text.trim();
     if (token.length != 8) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('8 haneli kodu gir')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('8 haneli kodu gir')));
       return;
     }
 
@@ -53,9 +53,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   Future<void> _resend() async {
     await ref.read(authNotifierProvider.notifier).sendOtp(widget.email);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Kod tekrar gönderildi')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Kod tekrar gönderildi')));
   }
 
   @override

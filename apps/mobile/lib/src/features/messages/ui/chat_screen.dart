@@ -64,11 +64,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.more_vert),
             tooltip: 'Güvenlik seçenekleri',
-            onPressed: () => showModerationSheet(
-              context,
-              ref: ref,
-              target: target,
-            ),
+            onPressed: () =>
+                showModerationSheet(context, ref: ref, target: target),
           ),
         ],
       ),
@@ -94,10 +91,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
               ),
             ),
-            _Composer(
-              controller: _controller,
-              onSend: _send,
-            ),
+            _Composer(controller: _controller, onSend: _send),
           ],
         ),
       ),
@@ -137,9 +131,9 @@ class _MessageBubble extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 280),
               child: Text(
                 message.body,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: textColor,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: textColor),
               ),
             ),
           ),
@@ -147,9 +141,9 @@ class _MessageBubble extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(
           DateFormat('HH:mm').format(message.createdAt),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textTertiary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
         ),
       ],
     );
@@ -157,10 +151,7 @@ class _MessageBubble extends StatelessWidget {
 }
 
 class _Composer extends StatelessWidget {
-  const _Composer({
-    required this.controller,
-    required this.onSend,
-  });
+  const _Composer({required this.controller, required this.onSend});
 
   final TextEditingController controller;
   final VoidCallback onSend;
@@ -214,9 +205,9 @@ class _EmptyChat extends StatelessWidget {
         child: Text(
           'Henüz mesajınız yok',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
         ),
       ),
     );
@@ -236,9 +227,9 @@ class _ChatError extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.error,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );

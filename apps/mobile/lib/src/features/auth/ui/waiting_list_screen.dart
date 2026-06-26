@@ -75,8 +75,9 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
     if (state.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(state.error.toString()),
-            backgroundColor: AppColors.error),
+          content: Text(state.error.toString()),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }
@@ -108,9 +109,9 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
             children: [
               Text(
                 'Rollpit yakında kapılarını açıyor.',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
@@ -132,8 +133,10 @@ class _WaitingListScreenState extends ConsumerState<WaitingListScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Araç tipi
-              Text('Araç Tipin',
-                  style: Theme.of(context).textTheme.labelMedium),
+              Text(
+                'Araç Tipin',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
               const SizedBox(height: AppSpacing.sm),
               SegmentedButton<String>(
                 segments: _vehicles
@@ -192,8 +195,11 @@ class _SuccessView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check_circle_outline,
-                  size: 72, color: AppColors.success),
+              const Icon(
+                Icons.check_circle_outline,
+                size: 72,
+                color: AppColors.success,
+              ),
               const SizedBox(height: AppSpacing.lg),
               Text(
                 'Listeye katıldın!',

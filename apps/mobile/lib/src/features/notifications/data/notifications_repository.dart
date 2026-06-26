@@ -7,8 +7,9 @@ import '../../../core/errors/app_exception.dart';
 import '../../../shared/providers/supabase_provider.dart';
 import '../models/rollpit_notification.dart';
 
-final notificationsRepositoryProvider =
-    Provider<NotificationsRepository>((ref) {
+final notificationsRepositoryProvider = Provider<NotificationsRepository>((
+  ref,
+) {
   return NotificationsRepository(ref.watch(supabaseClientProvider));
 });
 
@@ -17,10 +18,12 @@ class NotificationsRepository {
       : _dio = Dio(
           BaseOptions(
             baseUrl: AppConstants.apiBaseUrl,
-            connectTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
-            receiveTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
+            connectTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
+            receiveTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
             headers: const {'Content-Type': 'application/json'},
           ),
         );

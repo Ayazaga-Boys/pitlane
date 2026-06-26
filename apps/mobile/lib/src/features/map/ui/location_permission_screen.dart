@@ -7,8 +7,11 @@ import '../../../shared/widgets/rollpit_button.dart';
 /// Konum izni rationale ekranı
 /// GPS izni reddedildiyse veya ilk kez isteniyorsa gösterilir
 class LocationPermissionScreen extends StatelessWidget {
-  const LocationPermissionScreen(
-      {super.key, required this.onGranted, required this.onDismiss});
+  const LocationPermissionScreen({
+    super.key,
+    required this.onGranted,
+    required this.onDismiss,
+  });
   final VoidCallback onGranted;
   final VoidCallback onDismiss;
 
@@ -40,14 +43,17 @@ class LocationPermissionScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.location_on_outlined,
-                size: 72, color: AppColors.pitRed),
+            const Icon(
+              Icons.location_on_outlined,
+              size: 72,
+              color: AppColors.pitRed,
+            ),
             const SizedBox(height: AppSpacing.lg),
             Text(
               'Konum İzni',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(

@@ -20,10 +20,7 @@ class FollowedUserLocation {
   final String h3Cell;
   final WsPresenceStatus status;
 
-  FollowedUserLocation copyWith({
-    String? h3Cell,
-    WsPresenceStatus? status,
-  }) {
+  FollowedUserLocation copyWith({String? h3Cell, WsPresenceStatus? status}) {
     return FollowedUserLocation(
       userId: userId,
       h3Cell: h3Cell ?? this.h3Cell,
@@ -47,10 +44,7 @@ class FollowedUsersRepository {
 
     final response = await _dio.get<Map<String, dynamic>>(
       '/v2/follows/following',
-      queryParameters: {
-        'user_id': userId,
-        'limit': 500,
-      },
+      queryParameters: {'user_id': userId, 'limit': 500},
       options: Options(headers: _headers()),
     );
     final items = (response.data?['data'] as List<dynamic>?) ?? const [];
@@ -93,8 +87,9 @@ class FollowedUsersRepository {
   }
 }
 
-final followedUsersRepositoryProvider =
-    Provider<FollowedUsersRepository>((ref) {
+final followedUsersRepositoryProvider = Provider<FollowedUsersRepository>((
+  ref,
+) {
   final supabase = ref.watch(supabaseClientProvider);
   final dio = Dio(
     BaseOptions(
@@ -111,8 +106,10 @@ final followedUsersRepositoryProvider =
   );
 });
 
-final activeVehicleIconSlugProvider =
-    FutureProvider.family<String?, String>((ref, userId) {
+final activeVehicleIconSlugProvider = FutureProvider.family<String?, String>((
+  ref,
+  userId,
+) {
   return ref
       .watch(followedUsersRepositoryProvider)
       .getActiveVehicleIconSlug(userId);
@@ -206,17 +203,13 @@ class FollowedUserLocationsNotifier
     if (!_subscribedUserIds.contains(event.userId)) return;
     final previous = state[event.userId];
     if (previous == null) return;
-    state = {
-      ...state,
-      event.userId: previous.copyWith(status: event.status),
-    };
+    state = {...state, event.userId: previous.copyWith(status: event.status)};
   }
 }
 
 final followedUserLocationsProvider = NotifierProvider<
-    FollowedUserLocationsNotifier, Map<String, FollowedUserLocation>>(
-  FollowedUserLocationsNotifier.new,
-);
+    FollowedUserLocationsNotifier,
+    Map<String, FollowedUserLocation>>(FollowedUserLocationsNotifier.new);
 
 final followedUserPinsProvider = Provider<List<MapPin>>((ref) {
   final locations = ref.watch(followedUserLocationsProvider);

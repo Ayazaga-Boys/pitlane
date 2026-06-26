@@ -70,8 +70,9 @@ class ProfileCompletionScreen extends ConsumerWidget {
                 ProfileCompletionStep.vehicle => const _VehicleStep(),
                 ProfileCompletionStep.permissions => const _PermissionsStep(),
                 ProfileCompletionStep.rules => const _RulesStep(),
-                ProfileCompletionStep.done =>
-                  const Center(child: CircularProgressIndicator()),
+                ProfileCompletionStep.done => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
               },
             ),
           ),
@@ -82,10 +83,7 @@ class ProfileCompletionScreen extends ConsumerWidget {
 }
 
 class _OnboardingFrame extends StatelessWidget {
-  const _OnboardingFrame({
-    required this.progress,
-    required this.child,
-  });
+  const _OnboardingFrame({required this.progress, required this.child});
 
   final double progress;
   final Widget child;
@@ -196,16 +194,16 @@ class _IdentityStepState extends ConsumerState<_IdentityStep> {
       children: [
         Text(
           'Garaj kartını hazırlayalım',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           'Kullanıcı adın profilde ve topluluklarda görünür.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.xl2),
         RollpitTextField(
@@ -330,16 +328,16 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
       children: [
         Text(
           'İlk aracını ekle',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           'Rollpit deneyimi araç profiliyle başlar. Sonra garajına yenilerini ekleyebilirsin.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.xl2),
         DropdownButtonFormField<VehicleType>(
@@ -347,10 +345,8 @@ class _VehicleStepState extends ConsumerState<_VehicleStep> {
           decoration: const InputDecoration(labelText: 'Araç tipi'),
           items: VehicleType.values
               .map(
-                (type) => DropdownMenuItem(
-                  value: type,
-                  child: Text(type.label),
-                ),
+                (type) =>
+                    DropdownMenuItem(value: type, child: Text(type.label)),
               )
               .toList(),
           onChanged: isLoading
@@ -431,16 +427,16 @@ class _PermissionsStep extends ConsumerWidget {
       children: [
         Text(
           'Sinyalleri açalım',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           'Konumun ham olarak saklanmaz; cihazında H3 hücresine çevrilir.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.xl2),
         const _InfoTile(
@@ -476,22 +472,23 @@ class _RulesStep extends ConsumerWidget {
       children: [
         Text(
           'Topluluk çizgisi',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
           'Saygılı, güvenli ve yolda kalanı yalnız bırakmayan bir topluluk istiyoruz.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.xl2),
         const _RuleTile(text: 'Tehlikeli sürüşü teşvik eden içerik paylaşma.'),
         const _RuleTile(text: 'Yardım çağrılarını gerçek ihtiyaç için kullan.'),
         const _RuleTile(
-            text: 'Taciz, spam ve sahte profil Rollpit’de yer bulmaz.'),
+          text: 'Taciz, spam ve sahte profil Rollpit’de yer bulmaz.',
+        ),
         const Spacer(),
         RollpitButton(
           label: 'Kabul et ve başla',
@@ -563,14 +560,14 @@ class _RuleTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle,
-              color: AppColors.success, size: AppSpacing.xl),
+          const Icon(
+            Icons.check_circle,
+            color: AppColors.success,
+            size: AppSpacing.xl,
+          ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+            child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
           ),
         ],
       ),
@@ -592,10 +589,9 @@ class _ErrorState extends ConsumerWidget {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(color: AppColors.error),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
           ),
           const SizedBox(height: AppSpacing.lg),
           RollpitButton(

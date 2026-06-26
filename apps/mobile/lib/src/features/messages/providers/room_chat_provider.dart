@@ -48,6 +48,4 @@ class RoomChatNotifier
 }
 
 final roomChatProvider = AsyncNotifierProvider.family<RoomChatNotifier,
-    List<DmMessage>, MessageRoom>(
-  RoomChatNotifier.new,
-);
+    List<DmMessage>, MessageRoom>(RoomChatNotifier.new);

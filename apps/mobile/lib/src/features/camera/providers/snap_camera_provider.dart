@@ -68,9 +68,7 @@ class SnapCameraNotifier extends AsyncNotifier<SnapCameraState> {
 
   void retake() {
     final current = state.valueOrNull ?? const SnapCameraState();
-    state = AsyncData(
-      current.copyWith(clearPreview: true, uploadProgress: 0),
-    );
+    state = AsyncData(current.copyWith(clearPreview: true, uploadProgress: 0));
   }
 
   Future<void> share() async {
@@ -88,10 +86,7 @@ class SnapCameraNotifier extends AsyncNotifier<SnapCameraState> {
     state = AsyncData(current.copyWith(uploadProgress: 0.62));
     await Future<void>.delayed(const Duration(milliseconds: 120));
     state = AsyncData(
-      current.copyWith(
-        uploadProgress: 1,
-        uploadedAssetId: result.assetId,
-      ),
+      current.copyWith(uploadProgress: 1, uploadedAssetId: result.assetId),
     );
   }
 }

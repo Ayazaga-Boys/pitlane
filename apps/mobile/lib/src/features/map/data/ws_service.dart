@@ -34,20 +34,14 @@ class WsHelpEvent {
 }
 
 class WsPresenceEvent {
-  const WsPresenceEvent({
-    required this.userId,
-    required this.status,
-  });
+  const WsPresenceEvent({required this.userId, required this.status});
 
   final String userId;
   final WsPresenceStatus status;
 }
 
 class WsLocationShareEvent {
-  const WsLocationShareEvent({
-    required this.userId,
-    required this.h3Cell,
-  });
+  const WsLocationShareEvent({required this.userId, required this.h3Cell});
 
   final String userId;
   final String h3Cell;
@@ -175,8 +169,9 @@ class WsService {
     final msg = jsonDecode(raw as String) as Map<String, dynamic>;
     switch (msg['type']) {
       case 'heatmap_update':
-        final cells = (msg['cells'] as Map<String, dynamic>)
-            .map((k, v) => MapEntry(k, v as int));
+        final cells = (msg['cells'] as Map<String, dynamic>).map(
+          (k, v) => MapEntry(k, v as int),
+        );
         _heatmapController.add(cells);
       case 'help_nearby':
         final event = parseWsHelpEvent(msg);
@@ -254,11 +249,7 @@ class WsService {
 
   void _resubscribeAll() {
     for (final entry in _subscriptions.entries) {
-      _send({
-        'type': 'subscribe_cell',
-        'h3_cell': entry.key,
-        'k': entry.value,
-      });
+      _send({'type': 'subscribe_cell', 'h3_cell': entry.key, 'k': entry.value});
     }
     for (final userId in _userSubscriptions) {
       _send({'type': 'subscribe_user', 'user_id': userId});

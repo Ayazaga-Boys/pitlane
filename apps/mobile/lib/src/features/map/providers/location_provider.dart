@@ -29,28 +29,31 @@ class LocationNotifier extends AsyncNotifier<String?> {
       distanceFilter: kLocationDistanceFilterMeters,
     );
 
-    _positionSub = Geolocator.getPositionStream(locationSettings: settings)
-        .listen((position) {
-      final cell = toH3Cell(
-        position.latitude,
-        position.longitude,
-        resolution: H3Constants.proximityResolution,
-      );
-      state = AsyncData(cell);
-      final ws = ref.read(wsServiceProvider);
-      if (ref.read(locationSharingProvider)) {
-        ws.sendLocation(cell);
-      }
-      if (_subscribedCell != cell) {
-        if (_subscribedCell != null) {
-          ws.unsubscribeCell(_subscribedCell!);
+    _positionSub =
+        Geolocator.getPositionStream(locationSettings: settings).listen(
+      (position) {
+        final cell = toH3Cell(
+          position.latitude,
+          position.longitude,
+          resolution: H3Constants.proximityResolution,
+        );
+        state = AsyncData(cell);
+        final ws = ref.read(wsServiceProvider);
+        if (ref.read(locationSharingProvider)) {
+          ws.sendLocation(cell);
         }
-        ws.subscribeCell(cell, k: H3Constants.helpKRing);
-        _subscribedCell = cell;
-      }
-    }, onError: (_) {
-      // Konum alınamazsa sessizce geç
-    });
+        if (_subscribedCell != cell) {
+          if (_subscribedCell != null) {
+            ws.unsubscribeCell(_subscribedCell!);
+          }
+          ws.subscribeCell(cell, k: H3Constants.helpKRing);
+          _subscribedCell = cell;
+        }
+      },
+      onError: (_) {
+        // Konum alınamazsa sessizce geç
+      },
+    );
   }
 
   void stopTracking() {

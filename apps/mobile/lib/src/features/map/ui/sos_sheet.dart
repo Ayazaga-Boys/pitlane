@@ -99,17 +99,20 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text('Acil Yardım',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.error,
-                    )),
+            Text(
+              'Acil Yardım',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.error,
+                  ),
+            ),
             const SizedBox(height: AppSpacing.xs),
-            Text('Sorun türünü seç, yakındaki Rollpit üyeleri görsün.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppColors.textSecondary)),
+            Text(
+              'Sorun türünü seç, yakındaki Rollpit üyeleri görsün.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ),
             const SizedBox(height: AppSpacing.lg),
             Wrap(
               spacing: AppSpacing.sm,
@@ -125,16 +128,21 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
+                      ),
                       decoration: BoxDecoration(
                         color: selected ? AppColors.error : AppColors.surface3,
                         borderRadius: BorderRadius.circular(AppSpacing.xl),
                       ),
-                      child: Text('${type.emoji} ${type.label}',
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500)),
+                      child: Text(
+                        '${type.emoji} ${type.label}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -164,8 +172,10 @@ class _SosSheetState extends ConsumerState<_SosSheet> {
             ),
             if (_error != null) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text(_error!,
-                  style: const TextStyle(color: AppColors.error, fontSize: 13)),
+              Text(
+                _error!,
+                style: const TextStyle(color: AppColors.error, fontSize: 13),
+              ),
             ],
             const SizedBox(height: AppSpacing.lg),
             RollpitButton(

@@ -19,6 +19,6 @@ class BusinessPinDetailNotifier
 }
 
 final businessPinDetailProvider = AsyncNotifierProvider.family<
-    BusinessPinDetailNotifier, BusinessPin, String>(
-  BusinessPinDetailNotifier.new,
-);
+    BusinessPinDetailNotifier,
+    BusinessPin,
+    String>(BusinessPinDetailNotifier.new);

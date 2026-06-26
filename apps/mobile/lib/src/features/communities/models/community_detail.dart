@@ -23,9 +23,7 @@ class CommunityMember {
         username;
     final isOnline = json['is_online'] as bool? ?? false;
     final rawPresenceStatus = json['presence_status'] as String?;
-    final presenceStatus = PresenceStatus.fromApiValue(
-      rawPresenceStatus,
-    );
+    final presenceStatus = PresenceStatus.fromApiValue(rawPresenceStatus);
 
     return CommunityMember(
       id: json['id'] as String? ?? json['user_id'] as String? ?? '',

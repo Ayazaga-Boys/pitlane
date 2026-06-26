@@ -9,9 +9,7 @@ void main() {
   testWidgets('app starts without crashing', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          allPinsProvider.overrideWith((ref) async => []),
-        ],
+        overrides: [allPinsProvider.overrideWith((ref) async => [])],
         child: const RollpitApp(),
       ),
     );

@@ -5,13 +5,7 @@ import '../constants/profile_constants.dart';
 import '../models/rollpit_profile.dart';
 import '../models/vehicle.dart';
 
-enum ProfileCompletionStep {
-  identity,
-  vehicle,
-  permissions,
-  rules,
-  done,
-}
+enum ProfileCompletionStep { identity, vehicle, permissions, rules, done }
 
 class ProfileCompletionState {
   const ProfileCompletionState({
@@ -66,9 +60,9 @@ class ProfileCompletionNotifier extends AsyncNotifier<ProfileCompletionState> {
   Future<ProfileCompletionState> build() async {
     final repository = ref.read(profileRepositoryProvider);
     final profile = await repository.getCurrentProfile();
-    final vehicles = await AsyncValue.guard(repository.getVehicles).then(
-      (value) => value.valueOrNull ?? const <Vehicle>[],
-    );
+    final vehicles = await AsyncValue.guard(
+      repository.getVehicles,
+    ).then((value) => value.valueOrNull ?? const <Vehicle>[]);
 
     return ProfileCompletionState(
       profile: profile,
@@ -142,17 +136,29 @@ class ProfileCompletionNotifier extends AsyncNotifier<ProfileCompletionState> {
       return previous.copyWith(
         vehicles: previous.vehicles
             .map(
-              (vehicle) => Vehicle(
-                id: vehicle.id,
-                type: vehicle.type,
-                make: vehicle.make,
-                model: vehicle.model,
-                year: vehicle.year,
-                color: vehicle.color,
-                photoUrl: vehicle.photoUrl,
-                iconSlug: vehicle.iconSlug,
-                isPrimary: vehicle.id == vehicleId,
-              ),
+              (vehicle) => vehicle.copyWith(isPrimary: vehicle.id == vehicleId),
+            )
+            .toList(growable: false),
+      );
+    });
+  }
+
+  Future<void> updateVehicleIcon({
+    required String vehicleId,
+    required String iconSlug,
+  }) async {
+    final previous = state.valueOrNull ?? const ProfileCompletionState();
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final updated = await ref
+          .read(profileRepositoryProvider)
+          .updateVehicleIcon(vehicleId: vehicleId, iconSlug: iconSlug);
+      return previous.copyWith(
+        vehicles: previous.vehicles
+            .map(
+              (vehicle) => vehicle.id == vehicleId
+                  ? vehicle.copyWith(iconSlug: updated.iconSlug ?? iconSlug)
+                  : vehicle,
             )
             .toList(growable: false),
       );
@@ -173,10 +179,7 @@ class ProfileCompletionNotifier extends AsyncNotifier<ProfileCompletionState> {
   void acceptRules() {
     final previous = state.valueOrNull ?? const ProfileCompletionState();
     state = AsyncData(
-      previous.copyWith(
-        step: ProfileCompletionStep.done,
-        rulesAccepted: true,
-      ),
+      previous.copyWith(step: ProfileCompletionStep.done, rulesAccepted: true),
     );
   }
 

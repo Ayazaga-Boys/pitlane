@@ -72,9 +72,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Asfaltta yalnız değilsin.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: AppSpacing.xl3),
               RollpitTextField(

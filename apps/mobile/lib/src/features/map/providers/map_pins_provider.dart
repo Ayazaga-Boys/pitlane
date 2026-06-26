@@ -49,14 +49,14 @@ class MapPin {
 // ─── HTTP client ─────────────────────────────────────────────────────────────
 
 final _dioProvider = Provider<Dio>((ref) {
-  return Dio(BaseOptions(
-    baseUrl: AppConstants.apiBaseUrl,
-    connectTimeout: const Duration(seconds: AppConstants.apiTimeoutSeconds),
-    receiveTimeout: const Duration(seconds: AppConstants.apiTimeoutSeconds),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  ));
+  return Dio(
+    BaseOptions(
+      baseUrl: AppConstants.apiBaseUrl,
+      connectTimeout: const Duration(seconds: AppConstants.apiTimeoutSeconds),
+      receiveTimeout: const Duration(seconds: AppConstants.apiTimeoutSeconds),
+      headers: {'Content-Type': 'application/json'},
+    ),
+  );
 });
 
 Map<String, String> _authHeaders(Ref ref) {
@@ -158,7 +158,7 @@ String? _formatDate(String? iso) {
       'Eyl',
       'Eki',
       'Kas',
-      'Ara'
+      'Ara',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   } catch (_) {
@@ -249,8 +249,10 @@ final allPinsProvider = FutureProvider<List<MapPin>>((ref) async {
   }
 });
 
-final filteredPinsProvider =
-    Provider.family<List<MapPin>, MapFilters>((ref, f) {
+final filteredPinsProvider = Provider.family<List<MapPin>, MapFilters>((
+  ref,
+  f,
+) {
   final pins = ref.watch(allPinsProvider).valueOrNull ?? [];
   return pins.where((pin) {
     if (f.hideBusinesses && pin.type == MapPinType.business) return false;

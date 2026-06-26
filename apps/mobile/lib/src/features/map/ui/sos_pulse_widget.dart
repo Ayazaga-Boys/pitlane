@@ -24,12 +24,14 @@ class _SosPulseWidgetState extends State<SosPulseWidget>
       duration: const Duration(milliseconds: 1400),
     )..repeat();
 
-    _scale = Tween<double>(begin: 1.0, end: 2.2).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
-    );
-    _opacity = Tween<double>(begin: 0.6, end: 0.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
-    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 2.2,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    _opacity = Tween<double>(
+      begin: 0.6,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
   @override
@@ -52,8 +54,9 @@ class _SosPulseWidgetState extends State<SosPulseWidget>
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    AppColors.error.withAlpha((_opacity.value * 255).toInt()),
+                color: AppColors.error.withAlpha(
+                  (_opacity.value * 255).toInt(),
+                ),
               ),
             ),
           ),

@@ -56,20 +56,18 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Hayalet mod kısayolu',
               subtitle: 'Haritadaki görünürlük kontrolünü açık tut',
               value: prefs.ghostModeShortcut,
-              onChanged: (value) =>
-                  ref.read(settingsPreferencesProvider.notifier).update(
-                        prefs.copyWith(ghostModeShortcut: value),
-                      ),
+              onChanged: (value) => ref
+                  .read(settingsPreferencesProvider.notifier)
+                  .update(prefs.copyWith(ghostModeShortcut: value)),
             ),
             _SettingsSwitchTile(
               icon: Icons.done_all,
               title: 'Görüldü işareti',
               subtitle: 'DM içinde okundu bilgisini paylaş',
               value: prefs.readReceipts,
-              onChanged: (value) =>
-                  ref.read(settingsPreferencesProvider.notifier).update(
-                        prefs.copyWith(readReceipts: value),
-                      ),
+              onChanged: (value) => ref
+                  .read(settingsPreferencesProvider.notifier)
+                  .update(prefs.copyWith(readReceipts: value)),
             ),
             _SettingsSwitchTile(
               icon: Icons.circle_outlined,
@@ -90,10 +88,9 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: 'Durumunu sarı DND olarak göster',
               value: prefs.dndMode,
               onChanged: prefs.showOnlineStatus
-                  ? (value) =>
-                      ref.read(settingsPreferencesProvider.notifier).update(
-                            prefs.copyWith(dndMode: value),
-                          )
+                  ? (value) => ref
+                      .read(settingsPreferencesProvider.notifier)
+                      .update(prefs.copyWith(dndMode: value))
                   : null,
             ),
             _SettingsTile(
@@ -112,10 +109,9 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Genel bildirimler',
               subtitle: 'Tüm bildirim kategorileri için ana anahtar',
               value: prefs.generalNotifications,
-              onChanged: (value) =>
-                  ref.read(settingsPreferencesProvider.notifier).update(
-                        prefs.copyWith(generalNotifications: value),
-                      ),
+              onChanged: (value) => ref
+                  .read(settingsPreferencesProvider.notifier)
+                  .update(prefs.copyWith(generalNotifications: value)),
             ),
             _SettingsTile(
               icon: Icons.tune,
@@ -136,10 +132,9 @@ class SettingsScreen extends ConsumerWidget {
               title: 'Sürerken kullanma kilidi',
               subtitle: '10 km/s üzerindeyken kayıt akışını kilitle',
               value: prefs.drivingSafetyLock,
-              onChanged: (value) =>
-                  ref.read(settingsPreferencesProvider.notifier).update(
-                        prefs.copyWith(drivingSafetyLock: value),
-                      ),
+              onChanged: (value) => ref
+                  .read(settingsPreferencesProvider.notifier)
+                  .update(prefs.copyWith(drivingSafetyLock: value)),
             ),
             _LanguageTile(prefs: prefs),
             const _SettingsTile(
@@ -176,10 +171,8 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.code,
               title: 'Açık kaynak lisansları',
               subtitle: 'Kullanılan paketlerin lisansları',
-              onTap: () => showLicensePage(
-                context: context,
-                applicationName: 'Rollpit',
-              ),
+              onTap: () =>
+                  showLicensePage(context: context, applicationName: 'Rollpit'),
             ),
             const SizedBox(height: AppSpacing.lg),
             const _SectionTitle('Destek'),
@@ -281,8 +274,9 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('İptal'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(context)
-                .pop(confirmController.text.trim().toUpperCase() == 'SIL'),
+            onPressed: () => Navigator.of(
+              context,
+            ).pop(confirmController.text.trim().toUpperCase() == 'SIL'),
             child: const Text('Hesabı sil'),
           ),
         ],
@@ -333,9 +327,9 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             Text(
               body,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.xl),
             RollpitButton(
@@ -402,8 +396,10 @@ class _SettingsTile extends StatelessWidget {
         ),
         child: ListTile(
           enabled: onTap != null,
-          leading:
-              Icon(icon, color: onTap == null ? AppColors.textTertiary : color),
+          leading: Icon(
+            icon,
+            color: onTap == null ? AppColors.textTertiary : color,
+          ),
           title: Text(title),
           subtitle: Text(subtitle),
           trailing: loading
@@ -494,9 +490,9 @@ class _LanguageTile extends ConsumerWidget {
                 .toList(growable: false),
             onChanged: (value) {
               if (value == null) return;
-              ref.read(settingsPreferencesProvider.notifier).update(
-                    prefs.copyWith(language: value),
-                  );
+              ref
+                  .read(settingsPreferencesProvider.notifier)
+                  .update(prefs.copyWith(language: value));
             },
           ),
         ),

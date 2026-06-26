@@ -10,7 +10,8 @@ class AuthRepository {
 
   /// POST /v1/auth/invite-codes/validate
   Future<({bool valid, int remainingUses})> validateInviteCode(
-      String code) async {
+    String code,
+  ) async {
     try {
       final res = await _dio.post<Map<String, dynamic>>(
         '${AppConstants.apiBaseUrl}/v1/auth/invite-codes/validate',
@@ -55,11 +56,13 @@ class AuthRepository {
 }
 
 final _dioProvider = Provider<Dio>((ref) {
-  return Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
-    headers: {'Content-Type': 'application/json'},
-  ));
+  return Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      headers: {'Content-Type': 'application/json'},
+    ),
+  );
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

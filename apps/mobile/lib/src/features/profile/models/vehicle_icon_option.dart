@@ -19,63 +19,101 @@ class VehicleIconOption {
 }
 
 abstract final class VehicleIconCatalog {
-  static const xceedTestCrossover = VehicleIconOption(
-    slug: 'compact_crossover_green_01',
-    label: 'XCeed test crossover',
+  static const carSedan = VehicleIconOption(
+    slug: 'car_sedan',
+    label: 'Sedan',
     type: VehicleType.car,
     icon: Icons.directions_car_filled_outlined,
-    previewAsset:
-        'assets/vehicle_icons/compact_crossover_green_01/angle_000.png',
   );
 
-  static const sportHatch = VehicleIconOption(
-    slug: 'sport_hatch_01',
-    label: 'Sport hatchback',
+  static const carSuv = VehicleIconOption(
+    slug: 'car_suv',
+    label: 'SUV',
+    type: VehicleType.car,
+    icon: Icons.directions_car_filled_outlined,
+  );
+
+  static const carHatchback = VehicleIconOption(
+    slug: 'car_hatchback',
+    label: 'Hatchback',
     type: VehicleType.car,
     icon: Icons.directions_car_outlined,
   );
 
-  static const sedan = VehicleIconOption(
-    slug: 'sedan_01',
-    label: 'Sedan',
+  static const carPickup = VehicleIconOption(
+    slug: 'car_pickup',
+    label: 'Pickup',
     type: VehicleType.car,
-    icon: Icons.local_taxi_outlined,
+    icon: Icons.local_shipping_outlined,
   );
 
-  static const nakedBike = VehicleIconOption(
-    slug: 'naked_motorcycle_01',
-    label: 'Naked motor',
+  static const carClassic = VehicleIconOption(
+    slug: 'car_classic',
+    label: 'Klasik',
+    type: VehicleType.car,
+    icon: Icons.directions_car_filled_outlined,
+  );
+
+  static const carSport = VehicleIconOption(
+    slug: 'car_sport',
+    label: 'Spor',
+    type: VehicleType.car,
+    icon: Icons.sports_motorsports_outlined,
+  );
+
+  static const motorcycleStandard = VehicleIconOption(
+    slug: 'motorcycle_standard',
+    label: 'Standart',
     type: VehicleType.motorcycle,
     icon: Icons.two_wheeler_outlined,
   );
 
-  static const touringBike = VehicleIconOption(
-    slug: 'touring_motorcycle_01',
-    label: 'Touring motor',
+  static const motorcycleChopper = VehicleIconOption(
+    slug: 'motorcycle_chopper',
+    label: 'Chopper',
     type: VehicleType.motorcycle,
     icon: Icons.motorcycle_outlined,
   );
 
-  static const other = VehicleIconOption(
-    slug: 'generic_vehicle_01',
-    label: 'Genel araç',
-    type: VehicleType.other,
-    icon: Icons.garage_outlined,
+  static const motorcycleSport = VehicleIconOption(
+    slug: 'motorcycle_sport',
+    label: 'Spor',
+    type: VehicleType.motorcycle,
+    icon: Icons.sports_motorsports_outlined,
+  );
+
+  static const motorcycleEnduro = VehicleIconOption(
+    slug: 'motorcycle_enduro',
+    label: 'Enduro',
+    type: VehicleType.motorcycle,
+    icon: Icons.two_wheeler_outlined,
+  );
+
+  static const motorcycleScooter = VehicleIconOption(
+    slug: 'motorcycle_scooter',
+    label: 'Scooter',
+    type: VehicleType.motorcycle,
+    icon: Icons.motorcycle_outlined,
   );
 
   static const options = [
-    xceedTestCrossover,
-    sportHatch,
-    sedan,
-    nakedBike,
-    touringBike,
-    other,
+    carSedan,
+    carSuv,
+    carHatchback,
+    carPickup,
+    carClassic,
+    carSport,
+    motorcycleStandard,
+    motorcycleChopper,
+    motorcycleSport,
+    motorcycleEnduro,
+    motorcycleScooter,
   ];
 
   static List<VehicleIconOption> optionsFor(VehicleType type) {
     final filtered =
         options.where((option) => option.type == type).toList(growable: false);
-    return filtered.isEmpty ? const [other] : filtered;
+    return filtered.isEmpty ? const [carSedan] : filtered;
   }
 
   static VehicleIconOption resolve(String? slug, VehicleType type) {

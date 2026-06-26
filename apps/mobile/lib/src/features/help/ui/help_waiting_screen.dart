@@ -100,17 +100,17 @@ class _HelpWaitingContent extends ConsumerWidget {
           Text(
             request.status.label,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Yakındaki Rollpit üyeleri isteğini haritada görüyor.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.xl2),
           _InfoTile(
@@ -242,9 +242,9 @@ class _HelpStateMessage extends StatelessWidget {
         Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.xl),
         RollpitButton(label: actionLabel, onPressed: onAction),
