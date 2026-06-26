@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/app_avatar.dart';
 import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/user_list_tile_v2.dart';
 import '../models/community.dart';
 import '../models/community_detail.dart';
 import '../providers/communities_provider.dart';
@@ -238,31 +238,32 @@ class _MemberTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SurfaceTile(
-      leading: AppAvatar(
+      customChild: UserListTileV2(
         displayName: member.displayName,
         username: member.username,
-        imageUrl: member.avatarUrl,
+        avatarUrl: member.avatarUrl,
+        subtitle: member.role,
         presenceStatus: member.presenceStatus,
         presenceVisible: member.presenceVisible,
       ),
-      title: member.displayName,
-      subtitle: '@${member.username} · ${member.role}',
     );
   }
 }
 
 class _SurfaceTile extends StatelessWidget {
   const _SurfaceTile({
-    required this.leading,
-    required this.title,
-    required this.subtitle,
+    this.leading,
+    this.title,
+    this.subtitle,
     this.onTap,
+    this.customChild,
   });
 
-  final Widget leading;
-  final String title;
-  final String subtitle;
+  final Widget? leading;
+  final String? title;
+  final String? subtitle;
   final VoidCallback? onTap;
+  final Widget? customChild;
 
   @override
   Widget build(BuildContext context) {
@@ -274,12 +275,13 @@ class _SurfaceTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(color: AppColors.surface3),
         ),
-        child: ListTile(
-          leading: leading,
-          title: Text(title),
-          subtitle: Text(subtitle),
-          onTap: onTap,
-        ),
+        child: customChild ??
+            ListTile(
+              leading: leading,
+              title: Text(title!),
+              subtitle: Text(subtitle!),
+              onTap: onTap,
+            ),
       ),
     );
   }

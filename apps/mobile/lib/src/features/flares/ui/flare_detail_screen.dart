@@ -5,9 +5,9 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/app_avatar.dart';
 import '../../../shared/widgets/media_tile.dart';
 import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/user_list_tile_v2.dart';
 import '../models/flare.dart';
 import '../providers/flare_detail_provider.dart';
 
@@ -312,19 +312,11 @@ class _AttendeeTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(color: AppColors.surface3),
         ),
-        child: ListTile(
-          leading: AppAvatar(
-            displayName: attendee.displayName,
-            username: attendee.username,
-            imageUrl: attendee.avatarUrl,
-          ),
-          title: Text(attendee.displayName),
-          subtitle: Text(
-            [
-              if (attendee.username != null) '@${attendee.username}',
-              attendee.rsvpStatus.label,
-            ].join(' · '),
-          ),
+        child: UserListTileV2(
+          displayName: attendee.displayName,
+          username: attendee.username,
+          avatarUrl: attendee.avatarUrl,
+          subtitle: attendee.rsvpStatus.label,
         ),
       ),
     );
