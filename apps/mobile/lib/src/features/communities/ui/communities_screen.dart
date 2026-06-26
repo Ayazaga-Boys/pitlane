@@ -194,8 +194,9 @@ class _CommunityCard extends StatelessWidget {
                                 Flexible(
                                   child: Text(
                                     community.name,
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -215,9 +216,7 @@ class _CommunityCard extends StatelessWidget {
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
-                                  ?.copyWith(
-                                    color: AppColors.textTertiary,
-                                  ),
+                                  ?.copyWith(color: AppColors.textTertiary),
                             ),
                           ],
                         ),
@@ -258,10 +257,10 @@ class _CommunityCard extends StatelessWidget {
                       if (community.lastActivityLabel != null)
                         Text(
                           community.lastActivityLabel!,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.textTertiary,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppColors.textTertiary),
                         ),
                     ],
                   ),
@@ -308,9 +307,9 @@ class _EmptyCommunities extends StatelessWidget {
       child: Text(
         'Bu filtrelerle topluluk bulunamadı.',
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
       ),
     );
   }
@@ -330,9 +329,9 @@ class _CommunitiesError extends ConsumerWidget {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.error,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
           ),
           const SizedBox(height: AppSpacing.lg),
           TextButton.icon(

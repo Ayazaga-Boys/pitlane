@@ -38,10 +38,7 @@ enum VehicleIconSlug {
 }
 
 class VehicleIconCatalogEntry {
-  const VehicleIconCatalogEntry({
-    required this.slug,
-    required this.label,
-  });
+  const VehicleIconCatalogEntry({required this.slug, required this.label});
 
   final VehicleIconSlug slug;
   final String label;
@@ -49,25 +46,39 @@ class VehicleIconCatalogEntry {
 
 const localVehicleIconCatalog = [
   VehicleIconCatalogEntry(
-      slug: VehicleIconSlug.motorcycleStandard, label: 'Standard'),
+    slug: VehicleIconSlug.motorcycleStandard,
+    label: 'Standard',
+  ),
   VehicleIconCatalogEntry(
-      slug: VehicleIconSlug.motorcycleChopper, label: 'Chopper'),
+    slug: VehicleIconSlug.motorcycleChopper,
+    label: 'Chopper',
+  ),
   VehicleIconCatalogEntry(
-      slug: VehicleIconSlug.motorcycleSport, label: 'Sport'),
+    slug: VehicleIconSlug.motorcycleSport,
+    label: 'Sport',
+  ),
   VehicleIconCatalogEntry(
-      slug: VehicleIconSlug.motorcycleEnduro, label: 'Enduro'),
+    slug: VehicleIconSlug.motorcycleEnduro,
+    label: 'Enduro',
+  ),
   VehicleIconCatalogEntry(
-      slug: VehicleIconSlug.motorcycleScooter, label: 'Scooter'),
+    slug: VehicleIconSlug.motorcycleScooter,
+    label: 'Scooter',
+  ),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.carSedan, label: 'Sedan'),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.carSuv, label: 'SUV'),
   VehicleIconCatalogEntry(
-      slug: VehicleIconSlug.carHatchback, label: 'Hatchback'),
+    slug: VehicleIconSlug.carHatchback,
+    label: 'Hatchback',
+  ),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.carPickup, label: 'Pickup'),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.carClassic, label: 'Classic'),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.carSport, label: 'Sport'),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.car, label: 'Otomobil'),
   VehicleIconCatalogEntry(
-      slug: VehicleIconSlug.motorcycle, label: 'Motosiklet'),
+    slug: VehicleIconSlug.motorcycle,
+    label: 'Motosiklet',
+  ),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.chopper, label: 'Chopper'),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.pickup, label: 'Pickup'),
   VehicleIconCatalogEntry(slug: VehicleIconSlug.suv, label: 'SUV'),

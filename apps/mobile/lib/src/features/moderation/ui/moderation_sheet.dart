@@ -52,16 +52,13 @@ class _ModerationSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              target.label,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text(target.label, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Güvenlik işlemi seç',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.xl),
             RollpitButton(
@@ -92,10 +89,7 @@ class _ModerationSheet extends ConsumerWidget {
   }
 }
 
-Future<void> _showReportDialog(
-  BuildContext context,
-  ModerationTarget target,
-) {
+Future<void> _showReportDialog(BuildContext context, ModerationTarget target) {
   return showDialog<void>(
     context: context,
     builder: (_) => _ReportDialog(target: target),

@@ -12,25 +12,25 @@ class MainShell extends StatelessWidget {
       icon: Icons.map_outlined,
       activeIcon: Icons.map,
       label: 'Harita',
-      path: '/map'
+      path: '/map',
     ),
     (
       icon: Icons.group_outlined,
       activeIcon: Icons.group,
       label: 'Topluluklar',
-      path: '/communities'
+      path: '/communities',
     ),
     (
       icon: Icons.chat_bubble_outline,
       activeIcon: Icons.chat_bubble,
       label: 'Mesajlar',
-      path: '/messages'
+      path: '/messages',
     ),
     (
       icon: Icons.person_outline,
       activeIcon: Icons.person,
       label: 'Profil',
-      path: '/profile'
+      path: '/profile',
     ),
   ];
 
@@ -52,11 +52,13 @@ class MainShell extends StatelessWidget {
         selectedIndex: current,
         onDestinationSelected: (i) => context.go(_tabs[i].path),
         destinations: _tabs
-            .map((t) => NavigationDestination(
-                  icon: Icon(t.icon),
-                  selectedIcon: Icon(t.activeIcon, color: AppColors.pitRed),
-                  label: t.label,
-                ))
+            .map(
+              (t) => NavigationDestination(
+                icon: Icon(t.icon),
+                selectedIcon: Icon(t.activeIcon, color: AppColors.pitRed),
+                label: t.label,
+              ),
+            )
             .toList(),
       ),
     );

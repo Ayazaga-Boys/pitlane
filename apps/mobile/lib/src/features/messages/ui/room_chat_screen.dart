@@ -9,10 +9,7 @@ import '../models/message_room.dart';
 import '../providers/room_chat_provider.dart';
 
 class RoomChatScreen extends ConsumerStatefulWidget {
-  const RoomChatScreen({
-    super.key,
-    required this.room,
-  });
+  const RoomChatScreen({super.key, required this.room});
 
   final MessageRoom room;
 
@@ -103,9 +100,9 @@ class _RoomMessageBubble extends StatelessWidget {
         if (!message.isMine && message.senderName != null) ...[
           Text(
             message.senderName!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textTertiary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.xs),
         ],
@@ -125,9 +122,9 @@ class _RoomMessageBubble extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 280),
               child: Text(
                 message.body,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: textColor,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: textColor),
               ),
             ),
           ),
@@ -135,9 +132,9 @@ class _RoomMessageBubble extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(
           DateFormat('HH:mm').format(message.createdAt),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textTertiary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
         ),
       ],
     );
@@ -145,10 +142,7 @@ class _RoomMessageBubble extends StatelessWidget {
 }
 
 class _RoomComposer extends StatelessWidget {
-  const _RoomComposer({
-    required this.controller,
-    required this.onSend,
-  });
+  const _RoomComposer({required this.controller, required this.onSend});
 
   final TextEditingController controller;
   final VoidCallback onSend;
@@ -202,9 +196,9 @@ class _EmptyRoomChat extends StatelessWidget {
         child: Text(
           'Bu odada henüz mesaj yok',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(color: AppColors.textSecondary),
         ),
       ),
     );
@@ -224,9 +218,9 @@ class _RoomChatError extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.error,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );

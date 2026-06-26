@@ -18,10 +18,12 @@ class CommunityRepository {
       : _dio = Dio(
           BaseOptions(
             baseUrl: AppConstants.apiBaseUrl,
-            connectTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
-            receiveTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
+            connectTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
+            receiveTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
             headers: const {'Content-Type': 'application/json'},
           ),
         );

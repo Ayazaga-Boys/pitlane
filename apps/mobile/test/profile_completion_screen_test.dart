@@ -13,8 +13,9 @@ class _FakeProfileCompletionNotifier extends ProfileCompletionNotifier {
 }
 
 void main() {
-  testWidgets('back button returns to profile when opened directly',
-      (tester) async {
+  testWidgets('back button returns to profile when opened directly', (
+    tester,
+  ) async {
     final router = GoRouter(
       initialLocation: '/profile/complete',
       routes: [
@@ -24,9 +25,7 @@ void main() {
         ),
         GoRoute(
           path: '/profile',
-          builder: (_, __) => const Scaffold(
-            body: Text('Profil ekranı'),
-          ),
+          builder: (_, __) => const Scaffold(body: Text('Profil ekranı')),
         ),
       ],
     );

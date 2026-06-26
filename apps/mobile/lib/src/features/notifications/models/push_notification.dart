@@ -21,10 +21,7 @@ enum PushNotificationType {
 }
 
 class PushPayload {
-  const PushPayload({
-    required this.type,
-    required this.data,
-  });
+  const PushPayload({required this.type, required this.data});
 
   factory PushPayload.fromMap(Map<String, dynamic> data) {
     return PushPayload(

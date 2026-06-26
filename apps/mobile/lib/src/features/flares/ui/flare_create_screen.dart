@@ -13,11 +13,7 @@ import '../models/flare.dart';
 import '../providers/flare_create_provider.dart';
 
 class FlareCreateScreen extends ConsumerStatefulWidget {
-  const FlareCreateScreen({
-    super.key,
-    this.initialH3Cell,
-    this.communityId,
-  });
+  const FlareCreateScreen({super.key, this.initialH3Cell, this.communityId});
 
   final String? initialH3Cell;
   final String? communityId;
@@ -73,9 +69,9 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
 
     final created = await ref.read(flareCreateProvider.notifier).create(draft);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${created.title} yayına hazır.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('${created.title} yayına hazır.')));
     context.pop();
   }
 
@@ -179,16 +175,16 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
           children: [
             Text(
               'Buluşmayı yak',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Konum ham GPS olarak değil H3 hücresiyle gönderilir.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.xl2),
             RollpitTextField(
@@ -227,9 +223,9 @@ class _FlareCreateScreenState extends ConsumerState<FlareCreateScreen> {
             else
               Text(
                 'Haritadan konum seçimi bağlandığında bu alan otomatik dolar.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textTertiary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
               ),
             const SizedBox(height: AppSpacing.lg),
             _DateTimePickerTile(
@@ -312,8 +308,10 @@ class _DateTimePickerTile extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(child: Text(formatted)),
-                  const Icon(Icons.calendar_today_outlined,
-                      size: AppSpacing.lg),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: AppSpacing.lg,
+                  ),
                 ],
               ),
             ),
@@ -323,9 +321,9 @@ class _DateTimePickerTile extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             errorText!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.error,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.error),
           ),
         ],
       ],

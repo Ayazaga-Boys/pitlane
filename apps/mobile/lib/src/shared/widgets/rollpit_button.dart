@@ -27,22 +27,22 @@ class RollpitButton extends StatelessWidget {
       RollpitButtonVariant.primary => (
           AppColors.pitRed,
           Colors.white,
-          Colors.transparent
+          Colors.transparent,
         ),
       RollpitButtonVariant.secondary => (
           AppColors.surface3,
           AppColors.textPrimary,
-          Colors.transparent
+          Colors.transparent,
         ),
       RollpitButtonVariant.ghost => (
           Colors.transparent,
           AppColors.pitRed,
-          AppColors.pitRed
+          AppColors.pitRed,
         ),
       RollpitButtonVariant.destructive => (
           AppColors.error,
           Colors.white,
-          Colors.transparent
+          Colors.transparent,
         ),
     };
 
@@ -62,22 +62,25 @@ class RollpitButton extends StatelessWidget {
             side: border == Colors.transparent
                 ? BorderSide.none
                 : BorderSide(color: border),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
           child: isLoading
               ? const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white),
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (icon != null) ...[
                       Icon(icon, size: 18),
-                      const SizedBox(width: 8)
+                      const SizedBox(width: 8),
                     ],
                     Text(label),
                   ],

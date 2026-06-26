@@ -32,10 +32,7 @@ class DmChatNotifier extends FamilyAsyncNotifier<List<DmMessage>, String> {
     );
 
     result.when(
-      data: (message) => state = AsyncData([
-        ...previous,
-        message,
-      ]),
+      data: (message) => state = AsyncData([...previous, message]),
       error: (error, stackTrace) => state = AsyncError(error, stackTrace),
       loading: () {},
     );

@@ -17,9 +17,7 @@ class DmThread {
   factory DmThread.fromJson(Map<String, dynamic> json) {
     final isOnline = json['is_online'] as bool? ?? false;
     final rawPresenceStatus = json['presence_status'] as String?;
-    final presenceStatus = PresenceStatus.fromApiValue(
-      rawPresenceStatus,
-    );
+    final presenceStatus = PresenceStatus.fromApiValue(rawPresenceStatus);
 
     return DmThread(
       peerId: json['peer_id'] as String? ?? json['id'] as String? ?? '',

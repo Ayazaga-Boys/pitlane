@@ -85,17 +85,17 @@ class _FlareDetailContent extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
         Text(
           flare.title,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
         ),
         if (flare.description != null && flare.description!.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
           Text(
             flare.description!,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           ),
         ],
         const SizedBox(height: AppSpacing.xl),
@@ -372,9 +372,9 @@ class _MutedText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textSecondary,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
     );
   }
 }
@@ -395,9 +395,9 @@ class _FlareDetailError extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.error,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
             ),
             const SizedBox(height: AppSpacing.lg),
             RollpitButton(

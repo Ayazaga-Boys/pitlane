@@ -17,10 +17,12 @@ class ProfileRepository {
       : _dio = Dio(
           BaseOptions(
             baseUrl: AppConstants.apiBaseUrl,
-            connectTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
-            receiveTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
+            connectTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
+            receiveTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
             headers: const {'Content-Type': 'application/json'},
           ),
         );
@@ -37,7 +39,8 @@ class ProfileRepository {
     final data = await _supabase
         .from('profiles')
         .select(
-            'id,username,display_name,avatar_url,bio,ghost_mode,is_verified')
+          'id,username,display_name,avatar_url,bio,ghost_mode,is_verified',
+        )
         .eq('id', userId)
         .maybeSingle();
 
@@ -137,6 +140,25 @@ class ProfileRepository {
     return Vehicle.fromJson(data);
   }
 
+  Future<Vehicle> updateVehicleIcon({
+    required String vehicleId,
+    required String iconSlug,
+  }) async {
+    final response = await _request(
+      () => _dio.patch<Map<String, dynamic>>(
+        '/v1/profiles/me/vehicles/$vehicleId',
+        data: {'icon_slug': iconSlug},
+        options: Options(headers: _authHeaders()),
+      ),
+    );
+
+    final data = response.data?['data'];
+    if (data is! Map<String, dynamic>) {
+      throw const ServerException('Araç kaydı okunamadı.');
+    }
+    return Vehicle.fromJson(data);
+  }
+
   Future<void> requestDataExport() async {
     await _request(
       () => _dio.get<Map<String, dynamic>>(
@@ -150,9 +172,7 @@ class ProfileRepository {
     await _request(
       () => _dio.delete<Map<String, dynamic>>(
         '/v1/profiles/me',
-        data: {
-          if (reason != null && reason.isNotEmpty) 'reason': reason,
-        },
+        data: {if (reason != null && reason.isNotEmpty) 'reason': reason},
         options: Options(headers: _authHeaders()),
       ),
     );
@@ -182,7 +202,8 @@ class ProfileRepository {
   }
 
   Future<Response<T>> _request<T>(
-      Future<Response<T>> Function() request) async {
+    Future<Response<T>> Function() request,
+  ) async {
     try {
       return await request();
     } on DioException catch (error) {

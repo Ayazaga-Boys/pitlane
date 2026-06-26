@@ -78,8 +78,9 @@ class Flare {
       communityId: data['community_id'] as String?,
       communityName: data['community_name'] as String?,
       coverUrl: data['cover_url'] as String?,
-      currentRsvpStatus:
-          FlareRsvpStatus.fromApiValue(data['current_rsvp_status'] as String?),
+      currentRsvpStatus: FlareRsvpStatus.fromApiValue(
+        data['current_rsvp_status'] as String?,
+      ),
       goingCount:
           data['going_count'] as int? ?? data['rsvp_count'] as int? ?? 0,
       maybeCount: data['maybe_count'] as int? ?? 0,

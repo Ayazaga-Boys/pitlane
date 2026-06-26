@@ -39,9 +39,9 @@ class CommunitiesNotifier extends AsyncNotifier<CommunitiesState> {
 
   Future<void> setQuery(String query) async {
     final previous = state.valueOrNull ?? const CommunitiesState();
-    state = AsyncData(previous.copyWith(
-      filters: previous.filters.copyWith(query: query),
-    ));
+    state = AsyncData(
+      previous.copyWith(filters: previous.filters.copyWith(query: query)),
+    );
 
     _searchDebounce?.cancel();
     _searchDebounce = Timer(
@@ -52,17 +52,19 @@ class CommunitiesNotifier extends AsyncNotifier<CommunitiesState> {
 
   Future<void> setCity(String city) async {
     final previous = state.valueOrNull ?? const CommunitiesState();
-    state = AsyncData(previous.copyWith(
-      filters: previous.filters.copyWith(city: city),
-    ));
+    state = AsyncData(
+      previous.copyWith(filters: previous.filters.copyWith(city: city)),
+    );
     await _refreshWithCurrentFilters();
   }
 
   Future<void> setVehicleType(CommunityVehicleType vehicleType) async {
     final previous = state.valueOrNull ?? const CommunitiesState();
-    state = AsyncData(previous.copyWith(
-      filters: previous.filters.copyWith(vehicleType: vehicleType),
-    ));
+    state = AsyncData(
+      previous.copyWith(
+        filters: previous.filters.copyWith(vehicleType: vehicleType),
+      ),
+    );
     await _refreshWithCurrentFilters();
   }
 
@@ -89,9 +91,7 @@ class CommunitiesNotifier extends AsyncNotifier<CommunitiesState> {
     final created =
         await ref.read(communityRepositoryProvider).createCommunity(draft);
     state = AsyncData(
-      previous.copyWith(
-        communities: [created, ...previous.communities],
-      ),
+      previous.copyWith(communities: [created, ...previous.communities]),
     );
     return created;
   }

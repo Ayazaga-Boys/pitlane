@@ -18,10 +18,12 @@ class MessagesRepository {
       : _dio = Dio(
           BaseOptions(
             baseUrl: AppConstants.apiBaseUrl,
-            connectTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
-            receiveTimeout:
-                const Duration(seconds: AppConstants.apiTimeoutSeconds),
+            connectTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
+            receiveTimeout: const Duration(
+              seconds: AppConstants.apiTimeoutSeconds,
+            ),
             headers: const {'Content-Type': 'application/json'},
           ),
         );
@@ -89,7 +91,8 @@ class MessagesRepository {
       }
       if (error.response?.statusCode == 403) {
         throw const ValidationException(
-            'Bu kullanıcıya mesaj gönderemiyorsun.');
+          'Bu kullanıcıya mesaj gönderemiyorsun.',
+        );
       }
       return _messageFromDraft(draft);
     }

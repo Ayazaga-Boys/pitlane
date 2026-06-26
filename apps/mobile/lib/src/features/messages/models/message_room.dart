@@ -10,11 +10,7 @@ enum MessageRoomType {
 }
 
 class MessageRoom {
-  const MessageRoom({
-    required this.type,
-    required this.id,
-    this.title,
-  });
+  const MessageRoom({required this.type, required this.id, this.title});
 
   final MessageRoomType type;
   final String id;

@@ -56,8 +56,11 @@ class _HelpDetailSheet extends ConsumerWidget {
                     color: AppColors.error.withAlpha(30),
                     borderRadius: BorderRadius.circular(AppSpacing.md),
                   ),
-                  child:
-                      const Icon(Icons.sos, color: AppColors.error, size: 28),
+                  child: const Icon(
+                    Icons.sos,
+                    color: AppColors.error,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -66,18 +69,18 @@ class _HelpDetailSheet extends ConsumerWidget {
                     children: [
                       Text(
                         pin.title,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       if (pin.subtitle != null)
                         Text(
                           pin.subtitle!,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
                         ),
                     ],
                   ),
@@ -93,8 +96,11 @@ class _HelpDetailSheet extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on_outlined,
-                      color: AppColors.textSecondary, size: 18),
+                  const Icon(
+                    Icons.location_on_outlined,
+                    color: AppColors.textSecondary,
+                    size: 18,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     'Yakın bölge — haritada işaretli',

@@ -62,9 +62,9 @@ class _BusinessPinDetailContent extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         Text(
           pin.category.label,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
         ),
         if (!pin.isActive) ...[
           const SizedBox(height: AppSpacing.md),
@@ -261,9 +261,9 @@ class _StatusBanner extends StatelessWidget {
             Expanded(
               child: Text(
                 text,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.textPrimary),
               ),
             ),
           ],
@@ -333,9 +333,9 @@ class _BusinessPinError extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.error,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );

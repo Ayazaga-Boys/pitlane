@@ -17,6 +17,8 @@ abstract final class AppConstants {
 
   static const apiTimeoutSeconds = 8;
 
-  static const isDev =
-      bool.fromEnvironment('DART_VM_FLAGS', defaultValue: true);
+  static const isDev = bool.fromEnvironment(
+    'DART_VM_FLAGS',
+    defaultValue: true,
+  );
 }

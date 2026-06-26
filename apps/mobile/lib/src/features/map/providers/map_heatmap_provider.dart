@@ -14,9 +14,7 @@ class VehicleHeatmapRepository {
   Future<Map<String, int>> getHeatmap(VehicleFilter vehicleFilter) async {
     final response = await _dio.get<Map<String, dynamic>>(
       '/v2/map/heatmap',
-      queryParameters: {
-        'vehicle_type': vehicleFilter.apiValue,
-      },
+      queryParameters: {'vehicle_type': vehicleFilter.apiValue},
       options: Options(headers: _headers()),
     );
     final items = (response.data?['data'] as List<dynamic>?) ?? const [];
@@ -45,8 +43,9 @@ extension VehicleFilterApiValue on VehicleFilter {
       };
 }
 
-final vehicleHeatmapRepositoryProvider =
-    Provider<VehicleHeatmapRepository>((ref) {
+final vehicleHeatmapRepositoryProvider = Provider<VehicleHeatmapRepository>((
+  ref,
+) {
   final supabase = ref.watch(supabaseClientProvider);
   final dio = Dio(
     BaseOptions(

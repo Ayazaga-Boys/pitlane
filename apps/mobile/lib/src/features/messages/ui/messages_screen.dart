@@ -70,9 +70,9 @@ class _ThreadTile extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Text(
               thread.lastMessageAtLabel,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
             ),
           ],
         ),
@@ -187,9 +187,9 @@ class _EmptyMessages extends StatelessWidget {
         Text(
           'Profil veya topluluklardan bir sürücüye mesaj attığında konuşmalar burada görünür.',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
         ),
       ],
     );
@@ -209,9 +209,9 @@ class _MessagesError extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.error,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );

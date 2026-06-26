@@ -33,7 +33,8 @@ class Vehicle {
     return Vehicle(
       id: json['id'] as String,
       type: VehicleType.fromApiValue(
-          json['type'] as String? ?? VehicleType.other.apiValue),
+        json['type'] as String? ?? VehicleType.other.apiValue,
+      ),
       make: json['make'] as String? ?? '',
       model: json['model'] as String? ?? '',
       year: json['year'] as int?,
@@ -53,4 +54,27 @@ class Vehicle {
   final String? photoUrl;
   final String? iconSlug;
   final bool isPrimary;
+
+  Vehicle copyWith({
+    VehicleType? type,
+    String? make,
+    String? model,
+    int? year,
+    String? color,
+    String? photoUrl,
+    String? iconSlug,
+    bool? isPrimary,
+  }) {
+    return Vehicle(
+      id: id,
+      type: type ?? this.type,
+      make: make ?? this.make,
+      model: model ?? this.model,
+      year: year ?? this.year,
+      color: color ?? this.color,
+      photoUrl: photoUrl ?? this.photoUrl,
+      iconSlug: iconSlug ?? this.iconSlug,
+      isPrimary: isPrimary ?? this.isPrimary,
+    );
+  }
 }

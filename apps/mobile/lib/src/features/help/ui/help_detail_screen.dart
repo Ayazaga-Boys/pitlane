@@ -23,8 +23,9 @@ class HelpDetailScreen extends ConsumerWidget {
       if (error != null && previous?.isLoading == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(error.toString()),
-              backgroundColor: AppColors.error),
+            content: Text(error.toString()),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     });
@@ -199,9 +200,9 @@ class _HelpDetailError extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.error,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );

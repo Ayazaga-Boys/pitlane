@@ -24,7 +24,8 @@ class MapPinClusterItem implements gmc.ClusterItem {
 // ─── Cluster marker builder ───────────────────────────────────────────────────
 
 Future<Marker> buildClusterMarker(
-    gmc.Cluster<MapPinClusterItem> cluster) async {
+  gmc.Cluster<MapPinClusterItem> cluster,
+) async {
   if (cluster.count == 1) {
     final pin = cluster.items.first.pin;
     return Marker(
@@ -73,8 +74,10 @@ Future<BitmapDescriptor> _clusterBitmap({required String label}) async {
   )..layout();
   tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
 
-  final image =
-      await recorder.endRecording().toImage(size.toInt(), size.toInt());
+  final image = await recorder.endRecording().toImage(
+        size.toInt(),
+        size.toInt(),
+      );
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   return BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
 }
@@ -84,8 +87,10 @@ Future<BitmapDescriptor> _clusterBitmap({required String label}) async {
 /// ClusterManager instance'ı pin listesiyle birlikte döner.
 /// Map screen'de markers callback setlenir: manager.updateClusterManagerState()
 final clusterManagerProvider =
-    Provider.family<gmc.ClusterManager<MapPinClusterItem>, List<MapPin>>(
-        (ref, pins) {
+    Provider.family<gmc.ClusterManager<MapPinClusterItem>, List<MapPin>>((
+  ref,
+  pins,
+) {
   final items = pins.map(MapPinClusterItem.new).toList();
   return gmc.ClusterManager<MapPinClusterItem>(
     items,

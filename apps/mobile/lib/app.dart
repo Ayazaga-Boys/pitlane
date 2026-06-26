@@ -64,10 +64,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
         path: '/auth/waiting-list',
         builder: (_, __) => const WaitingListScreen(),
       ),
-      GoRoute(
-        path: '/auth/login',
-        builder: (_, __) => const LoginScreen(),
-      ),
+      GoRoute(path: '/auth/login', builder: (_, __) => const LoginScreen()),
       GoRoute(
         path: '/auth/otp',
         builder: (_, state) => OtpScreen(email: state.extra as String),
@@ -101,15 +98,13 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/communities/:slug',
-            builder: (_, state) => CommunityDetailScreen(
-              slug: state.pathParameters['slug']!,
-            ),
+            builder: (_, state) =>
+                CommunityDetailScreen(slug: state.pathParameters['slug']!),
           ),
           GoRoute(
             path: '/pins/:id',
-            builder: (_, state) => BusinessPinDetailScreen(
-              id: state.pathParameters['id']!,
-            ),
+            builder: (_, state) =>
+                BusinessPinDetailScreen(id: state.pathParameters['id']!),
           ),
           GoRoute(
             path: '/flares/create',
@@ -120,9 +115,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/flares/:id',
-            builder: (_, state) => FlareDetailScreen(
-              id: state.pathParameters['id']!,
-            ),
+            builder: (_, state) =>
+                FlareDetailScreen(id: state.pathParameters['id']!),
           ),
           GoRoute(
             path: '/flares/:id/chat',
@@ -139,9 +133,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/messages/:peerId',
-            builder: (_, state) => ChatScreen(
-              peerId: state.pathParameters['peerId']!,
-            ),
+            builder: (_, state) =>
+                ChatScreen(peerId: state.pathParameters['peerId']!),
           ),
           GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
           GoRoute(
@@ -156,15 +149,11 @@ final _routerProvider = Provider<GoRouter>((ref) {
             path: '/notifications',
             builder: (_, __) => const NotificationsScreen(),
           ),
-          GoRoute(
-            path: '/help',
-            builder: (_, __) => const HelpWaitingScreen(),
-          ),
+          GoRoute(path: '/help', builder: (_, __) => const HelpWaitingScreen()),
           GoRoute(
             path: '/help/:id',
-            builder: (_, state) => HelpDetailScreen(
-              id: state.pathParameters['id']!,
-            ),
+            builder: (_, state) =>
+                HelpDetailScreen(id: state.pathParameters['id']!),
           ),
           GoRoute(
             path: '/camera',
@@ -173,9 +162,8 @@ final _routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
     ],
-    errorBuilder: (_, state) => Scaffold(
-      body: Center(child: Text('404 — ${state.error}')),
-    ),
+    errorBuilder: (_, state) =>
+        Scaffold(body: Center(child: Text('404 — ${state.error}'))),
   );
 });
 

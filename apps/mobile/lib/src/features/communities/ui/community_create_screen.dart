@@ -140,16 +140,16 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
           children: [
             Text(
               'Yeni garaj alanı',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Topluluğun adı, tipi ve araç odağı keşifte görünür.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.xl2),
             RollpitTextField(
@@ -178,10 +178,8 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
               decoration: const InputDecoration(labelText: 'Topluluk tipi'),
               items: CommunityType.values
                   .map(
-                    (type) => DropdownMenuItem(
-                      value: type,
-                      child: Text(type.label),
-                    ),
+                    (type) =>
+                        DropdownMenuItem(value: type, child: Text(type.label)),
                   )
                   .toList(),
               onChanged: isLoading
@@ -194,10 +192,8 @@ class _CommunityCreateScreenState extends ConsumerState<CommunityCreateScreen> {
               decoration: const InputDecoration(labelText: 'Araç tipi'),
               items: CommunityVehicleType.values
                   .map(
-                    (type) => DropdownMenuItem(
-                      value: type,
-                      child: Text(type.label),
-                    ),
+                    (type) =>
+                        DropdownMenuItem(value: type, child: Text(type.label)),
                   )
                   .toList(),
               onChanged: isLoading

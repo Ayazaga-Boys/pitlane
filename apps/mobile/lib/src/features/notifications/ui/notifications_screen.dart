@@ -75,9 +75,9 @@ class _NotificationTile extends ConsumerWidget {
         subtitle: Text(notification.body),
         trailing: Text(
           notification.createdAtLabel,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textTertiary,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
         ),
         onTap: () async {
           await ref
@@ -86,11 +86,10 @@ class _NotificationTile extends ConsumerWidget {
           if (!context.mounted) return;
           final deepLink = notification.deepLink;
           if (deepLink != null && deepLink.isNotEmpty) {
-            final safeDeepLink = ref
-                .read(pushDeepLinkResolverProvider)
-                .resolveMap({
+            final safeDeepLink =
+                ref.read(pushDeepLinkResolverProvider).resolveMap({
               'type': notification.type.apiValue,
-              'deep_link': deepLink
+              'deep_link': deepLink,
             });
             if (safeDeepLink != null) context.push(safeDeepLink);
           }
@@ -150,9 +149,9 @@ class _NotificationsError extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.error,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppColors.error),
         ),
       ),
     );

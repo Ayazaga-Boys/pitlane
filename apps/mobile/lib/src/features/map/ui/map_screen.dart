@@ -74,8 +74,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
       if (!mounted) return;
       _showHelpEventSnackBar(event);
     });
-    _socialEventSub =
-        ref.read(wsServiceProvider).socialEventStream.listen((event) {
+    _socialEventSub = ref.read(wsServiceProvider).socialEventStream.listen((
+      event,
+    ) {
       if (!mounted) return;
       _showSocialEventSnackBar(event);
     });
@@ -134,13 +135,15 @@ class _MapScreenState extends ConsumerState<MapScreen>
       try {
         final boundary = h3CellBoundary(entry.key);
         final intensity = entry.value / maxCount;
-        polygons.add(Polygon(
-          polygonId: PolygonId(entry.key),
-          points: boundary.map((g) => LatLng(g.lat, g.lon)).toList(),
-          fillColor: _heatColor(intensity).withAlpha(110),
-          strokeWidth: 0,
-          strokeColor: Colors.transparent,
-        ));
+        polygons.add(
+          Polygon(
+            polygonId: PolygonId(entry.key),
+            points: boundary.map((g) => LatLng(g.lat, g.lon)).toList(),
+            fillColor: _heatColor(intensity).withAlpha(110),
+            strokeWidth: 0,
+            strokeColor: Colors.transparent,
+          ),
+        );
       } catch (_) {
         continue;
       }
@@ -151,10 +154,16 @@ class _MapScreenState extends ConsumerState<MapScreen>
   Color _heatColor(double intensity) {
     if (intensity < 0.5) {
       return Color.lerp(
-          const Color(0xFF0096C7), const Color(0xFFFFB703), intensity * 2)!;
+        const Color(0xFF0096C7),
+        const Color(0xFFFFB703),
+        intensity * 2,
+      )!;
     }
     return Color.lerp(
-        const Color(0xFFFFB703), AppColors.pitRed, (intensity - 0.5) * 2)!;
+      const Color(0xFFFFB703),
+      AppColors.pitRed,
+      (intensity - 0.5) * 2,
+    )!;
   }
 
   Future<void> _goToMyLocation() async {
@@ -177,13 +186,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
   void _updateClusterManager(List<MapPin> pins) {
     final items = pins.map(MapPinClusterItem.new).toList();
     if (_clusterManager == null) {
-      _clusterManager = gmc.ClusterManager<MapPinClusterItem>(
-        items,
-        (markers) {
-          if (mounted) setState(() => _clusteredMarkers = markers);
-        },
-        markerBuilder: _buildClusterMarkerWithNav,
-      );
+      _clusterManager = gmc.ClusterManager<MapPinClusterItem>(items, (markers) {
+        if (mounted) setState(() => _clusteredMarkers = markers);
+      }, markerBuilder: _buildClusterMarkerWithNav);
       if (_mapController != null) {
         _clusterManager!.setMapId(_mapController!.mapId);
       }
@@ -193,7 +198,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   Future<Marker> _buildClusterMarkerWithNav(
-      gmc.Cluster<MapPinClusterItem> cluster) async {
+    gmc.Cluster<MapPinClusterItem> cluster,
+  ) async {
     if (cluster.count == 1) {
       final pin = cluster.items.first.pin;
       return _toMarker(pin);
@@ -202,7 +208,8 @@ class _MapScreenState extends ConsumerState<MapScreen>
   }
 
   Future<Marker> _buildClusterBadge(
-      gmc.Cluster<MapPinClusterItem> cluster) async {
+    gmc.Cluster<MapPinClusterItem> cluster,
+  ) async {
     const size = 56.0;
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
@@ -231,8 +238,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
     )..layout();
     tp.paint(canvas, Offset((size - tp.width) / 2, (size - tp.height) / 2));
 
-    final image =
-        await recorder.endRecording().toImage(size.toInt(), size.toInt());
+    final image = await recorder.endRecording().toImage(
+          size.toInt(),
+          size.toInt(),
+        );
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     final icon = BitmapDescriptor.bytes(bytes!.buffer.asUint8List());
 
@@ -338,12 +347,14 @@ class _MapScreenState extends ConsumerState<MapScreen>
                 .read(vehicleMarkerIconCacheProvider)
                 .getCachedDescriptor(selfIconSlug, isSelf: true) ==
             null) {
-      unawaited(ref
-          .read(vehicleMarkerIconCacheProvider)
-          .getIcon(VehicleIconSlug.fromValue(selfIconSlug), isSelf: true)
-          .then((_) {
-        if (mounted) setState(() {});
-      }));
+      unawaited(
+        ref
+            .read(vehicleMarkerIconCacheProvider)
+            .getIcon(VehicleIconSlug.fromValue(selfIconSlug), isSelf: true)
+            .then((_) {
+          if (mounted) setState(() {});
+        }),
+      );
     }
     final icon = _currentZoom >= 12
         ? (_vehicleIcons[_vehicleIconAngle] ??
@@ -433,10 +444,7 @@ class _MapScreenState extends ConsumerState<MapScreen>
     return 1.14;
   }
 
-  Future<BitmapDescriptor> _businessMarkerIcon(
-    MapPin pin,
-    double scale,
-  ) async {
+  Future<BitmapDescriptor> _businessMarkerIcon(MapPin pin, double scale) async {
     final scaleBucket = (scale * 100).round();
     final cacheKey = [
       pin.id,
@@ -523,8 +531,10 @@ class _MapScreenState extends ConsumerState<MapScreen>
       maxLines: 1,
     );
 
-    final imageOut =
-        await recorder.endRecording().toImage(width.toInt(), height.toInt());
+    final imageOut = await recorder.endRecording().toImage(
+          width.toInt(),
+          height.toInt(),
+        );
     final bytes = await imageOut.toByteData(format: ui.ImageByteFormat.png);
     final descriptor = BitmapDescriptor.bytes(
       bytes!.buffer.asUint8List(),
@@ -634,9 +644,9 @@ class _MapScreenState extends ConsumerState<MapScreen>
       case MapPinType.business:
         _showBusinessDetailSheet(pin);
       case MapPinType.followedUser:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(pin.subtitle ?? pin.title)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(pin.subtitle ?? pin.title)));
     }
   }
 
@@ -900,8 +910,11 @@ class _BusinessLocationSheet extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.place_outlined,
-                      size: 18, color: AppColors.textSecondary),
+                  const Icon(
+                    Icons.place_outlined,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
@@ -977,9 +990,11 @@ class _TopBarChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: 16,
-                color: active ? Colors.white : AppColors.textSecondary),
+            Icon(
+              icon,
+              size: 16,
+              color: active ? Colors.white : AppColors.textSecondary,
+            ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               label,

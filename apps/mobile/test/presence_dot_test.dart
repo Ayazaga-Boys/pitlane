@@ -7,9 +7,7 @@ void main() {
   testWidgets('PresenceDot renders visible status semantics', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(
-          body: PresenceDot(status: PresenceStatus.dnd),
-        ),
+        home: Scaffold(body: PresenceDot(status: PresenceStatus.dnd)),
       ),
     );
 
@@ -20,10 +18,7 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: PresenceDot(
-            status: PresenceStatus.online,
-            visible: false,
-          ),
+          body: PresenceDot(status: PresenceStatus.online, visible: false),
         ),
       ),
     );

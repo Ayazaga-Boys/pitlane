@@ -39,9 +39,9 @@ class _SnapCameraScreenState extends ConsumerState<SnapCameraScreen> {
       final assetId = next.valueOrNull?.uploadedAssetId;
       final previousAssetId = previous?.valueOrNull?.uploadedAssetId;
       if (assetId != null && assetId != previousAssetId) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Snap hazır: $assetId')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Snap hazır: $assetId')));
       }
     });
 
@@ -350,9 +350,9 @@ class _PreviewActions extends ConsumerWidget {
             uploadProgress >= 1
                 ? 'Yükleme hazırlandı'
                 : 'Yükleme hazırlanıyor...',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.lg),
         ],
@@ -387,10 +387,7 @@ class _PreviewActions extends ConsumerWidget {
 }
 
 class _ChoiceWrap extends StatelessWidget {
-  const _ChoiceWrap({
-    required this.title,
-    required this.children,
-  });
+  const _ChoiceWrap({required this.title, required this.children});
 
   final String title;
   final List<Widget> children;
@@ -430,8 +427,10 @@ class _SafetyBanner extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             children: [
-              const Icon(Icons.warning_amber_outlined,
-                  color: AppColors.warning),
+              const Icon(
+                Icons.warning_amber_outlined,
+                color: AppColors.warning,
+              ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
@@ -448,10 +447,7 @@ class _SafetyBanner extends StatelessWidget {
 }
 
 class _OverlayPill extends StatelessWidget {
-  const _OverlayPill({
-    required this.icon,
-    required this.label,
-  });
+  const _OverlayPill({required this.icon, required this.label});
 
   final IconData icon;
   final String label;

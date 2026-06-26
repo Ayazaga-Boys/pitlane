@@ -71,10 +71,7 @@ class SnapPreview {
 }
 
 class SnapUploadResult {
-  const SnapUploadResult({
-    required this.assetId,
-    this.uploadUrl,
-  });
+  const SnapUploadResult({required this.assetId, this.uploadUrl});
 
   final String assetId;
   final String? uploadUrl;
