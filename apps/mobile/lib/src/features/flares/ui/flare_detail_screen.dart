@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/app_avatar.dart';
+import '../../../shared/widgets/media_tile.dart';
 import '../../../shared/widgets/rollpit_button.dart';
 import '../models/flare.dart';
 import '../providers/flare_detail_provider.dart';
@@ -57,12 +58,10 @@ class _FlareDetailContent extends ConsumerWidget {
       padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         if (flare.coverUrl != null && flare.coverUrl!.isNotEmpty) ...[
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(flare.coverUrl!, fit: BoxFit.cover),
-            ),
+          MediaTile(
+            url: flare.coverUrl,
+            placeholderIcon: Icons.local_fire_department_outlined,
+            semanticLabel: 'Flare kapak görseli',
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
