@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../shared/widgets/presence_dot.dart';
+import '../../../shared/widgets/app_avatar.dart';
 import '../../../shared/widgets/rollpit_button.dart';
 import '../models/community.dart';
 import '../models/community_detail.dart';
@@ -237,30 +237,13 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = member.displayName.trim().isNotEmpty
-        ? member.displayName.characters.first.toUpperCase()
-        : '?';
-
     return _SurfaceTile(
-      leading: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          CircleAvatar(
-            backgroundColor: AppColors.surface3,
-            backgroundImage: member.avatarUrl == null
-                ? null
-                : NetworkImage(member.avatarUrl!),
-            child: member.avatarUrl == null ? Text(initial) : null,
-          ),
-          Positioned(
-            right: -1,
-            bottom: -1,
-            child: PresenceDot(
-              status: member.presenceStatus,
-              visible: member.presenceVisible,
-            ),
-          ),
-        ],
+      leading: AppAvatar(
+        displayName: member.displayName,
+        username: member.username,
+        imageUrl: member.avatarUrl,
+        presenceStatus: member.presenceStatus,
+        presenceVisible: member.presenceVisible,
       ),
       title: member.displayName,
       subtitle: '@${member.username} · ${member.role}',
