@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/models/presence_status.dart';
+import '../models/follow_request.dart';
 import '../models/follow_status.dart';
 import '../models/social_user.dart';
 import '../models/social_user_page.dart';
@@ -30,6 +31,14 @@ abstract interface class SocialRepository {
     int limit = 20,
   });
 
+  Future<List<FollowRequest>> listIncomingFollowRequests();
+
+  Future<void> acceptFollowRequest(String requestId);
+
+  Future<void> rejectFollowRequest(String requestId);
+
+  Future<void> deleteFollowRequest(String requestId);
+
   Future<SocialUser> follow(String username);
 
   Future<SocialUser> unfollow(String username);
@@ -39,12 +48,14 @@ class MockSocialRepository implements SocialRepository {
   MockSocialRepository({this.responseDelay = Duration.zero})
       : _users = _seedUsers(),
         _followers = _seedFollowers(),
-        _following = _seedFollowing();
+        _following = _seedFollowing(),
+        _followRequests = _seedFollowRequests();
 
   final Duration responseDelay;
   final Map<String, SocialUser> _users;
   final Map<String, List<SocialUser>> _followers;
   final Map<String, List<SocialUser>> _following;
+  final List<FollowRequest> _followRequests;
 
   @override
   Future<SocialUser> getUserByUsername(String username) async {
@@ -74,6 +85,27 @@ class MockSocialRepository implements SocialRepository {
     await getUserByUsername(username);
     return _page(_following[username] ?? const [],
         cursor: cursor, limit: limit);
+  }
+
+  @override
+  Future<List<FollowRequest>> listIncomingFollowRequests() async {
+    await _wait();
+    return List.unmodifiable(_followRequests);
+  }
+
+  @override
+  Future<void> acceptFollowRequest(String requestId) async {
+    await _resolveFollowRequest(requestId);
+  }
+
+  @override
+  Future<void> rejectFollowRequest(String requestId) async {
+    await _resolveFollowRequest(requestId);
+  }
+
+  @override
+  Future<void> deleteFollowRequest(String requestId) async {
+    await _resolveFollowRequest(requestId);
   }
 
   @override
@@ -122,6 +154,13 @@ class MockSocialRepository implements SocialRepository {
     final nextCursor = end < source.length ? end.toString() : null;
 
     return SocialUserPage(items: items, nextCursor: nextCursor);
+  }
+
+  Future<void> _resolveFollowRequest(String requestId) async {
+    await _wait();
+    final index = _followRequests.indexWhere((item) => item.id == requestId);
+    if (index == -1) throw const NotFoundException('Takip isteği bulunamadı.');
+    _followRequests.removeAt(index);
   }
 
   static Map<String, SocialUser> _seedUsers() {
@@ -310,5 +349,36 @@ class MockSocialRepository implements SocialRepository {
         ),
       ],
     };
+  }
+
+  static List<FollowRequest> _seedFollowRequests() {
+    return [
+      const FollowRequest(
+        id: 'follow-request-ayse',
+        createdAtLabel: 'Şimdi',
+        user: SocialUser(
+          id: 'mock-request-1',
+          username: 'ayse_garaj',
+          displayName: 'Ayşe Garaj',
+          bio: 'Garaj sohbeti ve rota planı.',
+          presenceStatus: PresenceStatus.online,
+          followersCount: 89,
+          followingCount: 54,
+        ),
+      ),
+      const FollowRequest(
+        id: 'follow-request-can',
+        createdAtLabel: '18 dk',
+        user: SocialUser(
+          id: 'mock-request-2',
+          username: 'can_miata',
+          displayName: 'Can Miata',
+          bio: 'Viraj, bakım, lastik muhabbeti.',
+          presenceStatus: PresenceStatus.dnd,
+          followersCount: 205,
+          followingCount: 91,
+        ),
+      ),
+    ];
   }
 }

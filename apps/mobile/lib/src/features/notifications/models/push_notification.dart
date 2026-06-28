@@ -6,6 +6,8 @@ enum PushNotificationType {
   dmNew('dm_new'),
   communityMessage('community_message'),
   communityInvite('community_invite'),
+  followReceived('follow_received'),
+  followAccepted('follow_accepted'),
   system('system');
 
   const PushNotificationType(this.apiValue);
@@ -38,6 +40,7 @@ class PushPayload {
   String? get flareId => data['flare_id'] as String?;
   String? get peerId =>
       data['peer_id'] as String? ?? data['sender_id'] as String?;
+  String? get username => data['username'] as String?;
 }
 
 class DeviceRegistrationDraft {

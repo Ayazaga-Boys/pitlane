@@ -4,6 +4,8 @@ enum RollpitNotificationType {
   flareStarting('flare_starting', 'Flare'),
   dmNew('dm_new', 'Mesaj'),
   communityMessage('community_message', 'Topluluk'),
+  followReceived('follow_received', 'Takip'),
+  followAccepted('follow_accepted', 'Takip'),
   system('system', 'Sistem');
 
   const RollpitNotificationType(this.apiValue, this.label);
@@ -85,6 +87,9 @@ class RollpitNotification {
       RollpitNotificationType.communityMessage => data['community_id'] == null
           ? null
           : '/communities/${data['community_id']}/messages',
+      RollpitNotificationType.followReceived => '/follow-requests',
+      RollpitNotificationType.followAccepted =>
+        data['username'] == null ? null : '/profile/${data['username']}',
       RollpitNotificationType.system => null,
     };
   }

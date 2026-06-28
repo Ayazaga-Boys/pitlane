@@ -109,6 +109,9 @@ class _NotificationTile extends ConsumerWidget {
         Icons.local_fire_department_outlined,
       RollpitNotificationType.dmNew => Icons.chat_bubble_outline,
       RollpitNotificationType.communityMessage => Icons.groups_outlined,
+      RollpitNotificationType.followReceived ||
+      RollpitNotificationType.followAccepted =>
+        Icons.person_add_alt_1_outlined,
       RollpitNotificationType.system => Icons.info_outline,
     };
   }

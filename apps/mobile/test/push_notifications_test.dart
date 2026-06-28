@@ -72,6 +72,21 @@ void main() {
       expect(link, '/messages/sender-42');
     });
 
+    test('builds follow requests route', () {
+      final link = resolver.resolveMap({'type': 'follow_received'});
+
+      expect(link, '/follow-requests');
+    });
+
+    test('builds accepted follow profile route', () {
+      final link = resolver.resolveMap({
+        'type': 'follow_accepted',
+        'username': 'selin_e30',
+      });
+
+      expect(link, '/profile/selin_e30');
+    });
+
     test('returns null when required entity id is missing', () {
       final link = resolver.resolveMap({'type': 'flare_invite'});
 
