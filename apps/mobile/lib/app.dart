@@ -31,6 +31,7 @@ import 'src/features/profile/ui/profile_completion_screen.dart';
 import 'src/features/profile/ui/profile_screen.dart';
 import 'src/features/settings/ui/settings_screen.dart';
 import 'src/features/social/providers/social_connections_provider.dart';
+import 'src/features/social/ui/follow_requests_screen.dart';
 import 'src/features/social/ui/public_profile_screen.dart';
 import 'src/features/social/ui/social_connections_screen.dart';
 import 'src/shared/widgets/main_shell.dart';
@@ -138,6 +139,10 @@ final _routerProvider = Provider<GoRouter>((ref) {
             path: '/messages/:peerId',
             builder: (_, state) =>
                 ChatScreen(peerId: state.pathParameters['peerId']!),
+          ),
+          GoRoute(
+            path: '/follow-requests',
+            builder: (_, __) => const FollowRequestsScreen(),
           ),
           GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
           GoRoute(

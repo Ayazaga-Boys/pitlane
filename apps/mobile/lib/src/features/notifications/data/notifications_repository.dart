@@ -91,6 +91,22 @@ class NotificationsRepository {
 
   static const _mockNotifications = [
     RollpitNotification(
+      id: 'follow-received',
+      type: RollpitNotificationType.followReceived,
+      title: 'Yeni takip isteği',
+      body: 'Ayşe Garaj seni takip etmek istiyor.',
+      deepLink: '/follow-requests',
+      createdAtLabel: 'Şimdi',
+    ),
+    RollpitNotification(
+      id: 'follow-accepted',
+      type: RollpitNotificationType.followAccepted,
+      title: 'Takip isteğin kabul edildi',
+      body: 'Selin Arslan takip isteğini kabul etti.',
+      deepLink: '/profile/selin_e30',
+      createdAtLabel: '8 dk',
+    ),
+    RollpitNotification(
       id: 'flare-starting',
       type: RollpitNotificationType.flareStarting,
       title: 'Sahil cruise yaklaşıyor',

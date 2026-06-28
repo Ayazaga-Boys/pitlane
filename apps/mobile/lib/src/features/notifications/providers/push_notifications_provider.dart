@@ -84,6 +84,9 @@ class PushDeepLinkResolver {
         payload.flareId == null ? null : '/flares/${payload.flareId}',
       PushNotificationType.dmNew =>
         payload.peerId == null ? null : '/messages/${payload.peerId}',
+      PushNotificationType.followReceived => '/follow-requests',
+      PushNotificationType.followAccepted =>
+        payload.username == null ? null : '/profile/${payload.username}',
       PushNotificationType.communityMessage ||
       PushNotificationType.communityInvite ||
       PushNotificationType.system =>
@@ -105,6 +108,8 @@ class PushDeepLinkResolver {
       '/flares/',
       '/messages/',
       '/communities/',
+      '/profile/',
+      '/follow-requests',
       '/notifications',
       '/settings/notifications',
     ];

@@ -74,8 +74,8 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
   - Private hesapsa "İstek gönder"
   - Followers / Following sayıları (tıklanabilir liste)
 - [x] **Followers/Following liste ekranları** — mock cursor pagination ile hazır
-- [ ] **Follow request bildirimleri** — kabul / reddet / sil
-- [ ] **Bildirim feed**'ine yeni türler ekle: `follow_received`, `follow_accepted`
+- [x] **Follow request bildirimleri** — kabul / reddet / sil
+- [x] **Bildirim feed**'ine yeni türler ekle: `follow_received`, `follow_accepted`
 
 ### V2.3 — Post Sistemi (Hafta 3-4)
 
