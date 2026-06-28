@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/widgets/async_paged_list.dart';
 import '../../../shared/widgets/v2_state_views.dart';
 import '../models/rollpit_notification.dart';
 import '../providers/notifications_provider.dart';
@@ -40,21 +41,15 @@ class NotificationsScreen extends ConsumerWidget {
             message: error.toString(),
             onRetry: () => ref.invalidate(notificationsProvider),
           ),
-          data: (items) => RefreshIndicator(
+          data: (items) => AsyncPagedList<RollpitNotification>(
+            items: items,
             onRefresh: () => ref.read(notificationsProvider.notifier).refresh(),
-            child: items.isEmpty
-                ? const V2EmptyState(
-                    icon: Icons.notifications_none,
-                    title: 'Bildirim yok',
-                    scrollable: true,
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: AppSpacing.md),
-                    itemBuilder: (_, index) => _NotificationTile(items[index]),
-                  ),
+            emptyState: const V2EmptyState(
+              icon: Icons.notifications_none,
+              title: 'Bildirim yok',
+              scrollable: true,
+            ),
+            itemBuilder: (_, item, __) => _NotificationTile(item),
           ),
         ),
       ),
