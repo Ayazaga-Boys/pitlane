@@ -69,11 +69,11 @@ V2'nin en büyük UI yükü sende. Story kamerası, post composer, keşfet feed'
 
 > Bağımlılık: Erol'un follow endpoint'leri
 
-- [ ] **Profil sayfası** (`/profile/:username`) — başka kullanıcının
+- [x] **Profil sayfası** (`/profile/:username`) — başka kullanıcının
   - Follow / Unfollow butonu
   - Private hesapsa "İstek gönder"
   - Followers / Following sayıları (tıklanabilir liste)
-- [ ] **Followers/Following liste ekranları**
+- [x] **Followers/Following liste ekranları** — mock cursor pagination ile hazır
 - [ ] **Follow request bildirimleri** — kabul / reddet / sil
 - [ ] **Bildirim feed**'ine yeni türler ekle: `follow_received`, `follow_accepted`
 
@@ -529,7 +529,7 @@ Furkan'ın ilk sprintte kilit açan işleri:
 3. [x] `SocialRepository` interface + mock implementation kur
 4. [x] Başka kullanıcı profil ekranını mock data ile ayağa kaldır
 5. [x] Follow button state machine'i bitir
-6. Followers/following listelerini cursor pagination ile hazırla
+6. [x] Followers/following listelerini cursor pagination ile hazırla
 7. Tasarım sistemi dokümanına avatar/story/follow component kurallarını ekle
 
 Bu 7 madde bitince V2 sosyal UI'nın omurgası kurulmuş olur.

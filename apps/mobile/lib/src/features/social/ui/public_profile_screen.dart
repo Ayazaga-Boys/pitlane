@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -153,12 +154,16 @@ class _SocialStats extends StatelessWidget {
               child: _StatBlock(
                 label: 'Takipçi',
                 value: user.followersCount.toString(),
+                onTap: () =>
+                    context.push('/profile/${user.username}/followers'),
               ),
             ),
             Expanded(
               child: _StatBlock(
                 label: 'Takip',
                 value: user.followingCount.toString(),
+                onTap: () =>
+                    context.push('/profile/${user.username}/following'),
               ),
             ),
           ],
@@ -169,29 +174,37 @@ class _SocialStats extends StatelessWidget {
 }
 
 class _StatBlock extends StatelessWidget {
-  const _StatBlock({required this.label, required this.value});
+  const _StatBlock({required this.label, required this.value, this.onTap});
 
   final String label;
   final String value;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadius.sm),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
+          ],
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-        ),
-      ],
+      ),
     );
   }
 }
