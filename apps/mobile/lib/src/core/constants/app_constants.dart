@@ -21,4 +21,9 @@ abstract final class AppConstants {
     'DART_VM_FLAGS',
     defaultValue: true,
   );
+
+  static const useMockV2Social = bool.fromEnvironment(
+    'USE_MOCK_V2_SOCIAL',
+    defaultValue: true,
+  );
 }
