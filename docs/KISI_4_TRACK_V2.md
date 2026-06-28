@@ -471,14 +471,14 @@ Backend kontratları netleşirken UI'nın ihtiyacı olan minimum response şekil
 
 `15_TASARIM_SISTEMI.md` içine V2 için ayrıca eklenmeli:
 
-- [ ] Avatar ölçüleri: 24 / 32 / 40 / 56 / 88
-- [ ] Presence dot ölçüleri: avatar boyutuna göre 6 / 8 / 10 / 12
-- [ ] Story ring renkleri: unseen / seen / muted / own
-- [ ] Post card spacing ve media aspect ratio kuralları
-- [ ] Action icon set: like, comment, share, bookmark, mute, report
-- [ ] Role badge renkleri: owner/admin/mod/member/custom
-- [ ] Urgency renkleri: critical/urgent/request
-- [ ] Upload progress pattern: inline, sheet, fullscreen
+- [x] Avatar ölçüleri: 24 / 32 / 40 / 56 / 88
+- [x] Presence dot ölçüleri: avatar boyutuna göre 6 / 8 / 10 / 12
+- [x] Story ring renkleri: unseen / seen / muted / own
+- [x] Post card spacing ve media aspect ratio kuralları
+- [x] Action icon set: like, comment, share, bookmark, mute, report
+- [x] Role badge renkleri: owner/admin/mod/member/custom
+- [x] Urgency renkleri: critical/urgent/request
+- [x] Upload progress pattern: inline, sheet, fullscreen
 
 ---
 
@@ -530,6 +530,6 @@ Furkan'ın ilk sprintte kilit açan işleri:
 4. [x] Başka kullanıcı profil ekranını mock data ile ayağa kaldır
 5. [x] Follow button state machine'i bitir
 6. [x] Followers/following listelerini cursor pagination ile hazırla
-7. Tasarım sistemi dokümanına avatar/story/follow component kurallarını ekle
+7. [x] Tasarım sistemi dokümanına avatar/story/follow component kurallarını ekle
 
 Bu 7 madde bitince V2 sosyal UI'nın omurgası kurulmuş olur.

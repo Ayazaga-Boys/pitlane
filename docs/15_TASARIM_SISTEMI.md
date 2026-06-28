@@ -269,6 +269,104 @@ Loading: `CircularProgressIndicator` (16) ile metin yer değiştirir.
 - Drag-to-dismiss aktif
 - Maksimum yükseklik: ekran - 64
 
+### V2 Sosyal Komponent Kuralları
+
+#### Avatar + Presence
+
+| Kullanım | Avatar çapı | `AppAvatar.radius` | Presence dot |
+|---|---:|---:|---:|
+| Mini meta / reaction | 24 | 12 | 6 |
+| Liste kompakt | 32 | 16 | 8 |
+| Liste varsayılan | 40 | 20 | 8 |
+| Profil header | 56 | 28 | 10 |
+| Profil hero | 88 | 44 | 12 |
+
+- Avatar her zaman `AppAvatar` ile render edilir; boş görselde initials fallback zorunludur.
+- Presence sadece kullanıcı izin verdiyse görünür; `presence_visible = false` ise dot tamamen saklanır.
+- Presence renkleri: `online = success`, `dnd = warning`, `offline = text-tertiary`.
+- Presence dot avatarın sağ altına taşar, arka planla ayrışması için 2 px yüzey border kullanır.
+
+#### Follow Button
+
+| State | Label | Variant | Aksiyon |
+|---|---|---|---|
+| `none` public | Takip et | primary | Follow |
+| `none` private | İstek gönder | primary | Follow request |
+| `requested` | İstek gönderildi | secondary | İsteği geri al |
+| `following` | Takiptesin | secondary | Unfollow |
+| `blocked` | Engellendi | secondary disabled | Yok |
+
+- Follow aksiyonları optimistic çalışır; hata halinde provider eski state'e döner.
+- Public profil istatistikleri tıklanabilir olmalı: takipçi ve takip edilen listeleri aynı liste yüzeyini paylaşır.
+
+#### Story Ring
+
+| State | Ring |
+|---|---|
+| `unseen` | `pit-red -> warning` sweep gradient |
+| `seen` | `surface-3` 2 px stroke |
+| `muted` | `text-tertiary` 1 px stroke + opacity 0.55 |
+| `own` | `pit-red` 2 px stroke + küçük plus rozeti |
+
+- Ring avatar dışına 3 px boşlukla çizilir.
+- Feed üstü story ring boyutu 64, profil hero ring boyutu 96 olmalı.
+
+#### Post Card
+
+- Kart yüzeyi `surface-2`, border `surface-3`, radius `md`.
+- Medya oranı feed'de 4:5 veya 1:1; detay ekranında 16:9 kabul edilebilir.
+- Medya render'ı `MediaTile` ile yapılır; image/video placeholder, loading, error ve retry state'i zorunludur.
+- İç padding `space-lg`; yazar satırı ile medya arasında `space-md`, caption ile aksiyon satırı arasında `space-sm`.
+- Caption maksimum 3 satır gösterilir; detay ekranında tam metin açılır.
+
+#### Action Icon Set
+
+| Aksiyon | İkon |
+|---|---|
+| Like | `favorite_border` / aktif `favorite` |
+| Comment | `chat_bubble_outline` |
+| Share | `ios_share` |
+| Bookmark | `bookmark_border` / aktif `bookmark` |
+| Mute | `volume_off_outlined` |
+| Report | `flag_outlined` |
+
+- İkon butonları en az 44×44 dokunma hedefiyle çizilir.
+- Aktif sosyal aksiyon rengi `pit-red`, pasif renk `text-secondary`.
+
+#### Role Badge
+
+| Rol | Renk |
+|---|---|
+| owner | `pit-red` |
+| admin | `warning` |
+| mod | `info` |
+| member | `surface-3` |
+| custom | Community'nin seçtiği renk; yoksa `pit-red-soft` |
+
+- Rozet yüksekliği 24, radius `pill`, yatay padding `space-sm`.
+- Üye listelerinde rozetler kullanıcı adının altında tek satırda akar; taşarsa `+N` özeti kullanılır.
+
+#### Urgency Badge
+
+| Seviye | Renk | Kullanım |
+|---|---|---|
+| critical | `error` | Acil yardım |
+| urgent | `warning` | Yakında destek gerekli |
+| request | `info` | İhtiyaç / rica |
+
+- Aciliyet rozeti formda seçili state olarak, listelerde küçük chip olarak kullanılır.
+
+#### Upload Progress
+
+| Pattern | Kullanım |
+|---|---|
+| inline | Küçük medya kartı veya belge satırı içinde |
+| sheet | Avatar, post, story, belge yükleme ana akışı |
+| fullscreen | Kamera/story upload sırasında ekran kilitleyen kritik akış |
+
+- Varsayılan upload pattern'ı `UploadProgressSheet` olmalı.
+- Progress 0.0–1.0 aralığında clamp edilir, yüzde metni ve screen reader value birlikte verilir.
+
 ---
 
 ## 9. Hareket (Motion)
