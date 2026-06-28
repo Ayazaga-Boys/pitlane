@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/widgets/rollpit_button.dart';
+import '../../../shared/widgets/upload_progress_sheet.dart';
 import '../models/snap_camera.dart';
 import '../providers/snap_camera_provider.dart';
 
@@ -340,19 +341,13 @@ class _PreviewActions extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (uploadProgress > 0) ...[
-          Semantics(
-            label: 'Snap yükleme ilerlemesi',
-            value: '${(uploadProgress * 100).round()} yüzde',
-            child: LinearProgressIndicator(value: uploadProgress),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            uploadProgress >= 1
-                ? 'Yükleme hazırlandı'
-                : 'Yükleme hazırlanıyor...',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          UploadProgressSheet(
+            progress: uploadProgress,
+            title: 'Snap yükleme hazırlanıyor',
+            doneTitle: 'Snap yükleme hazır',
+            body: uploadProgress >= 1
+                ? 'Paylaşım için medya varlığı hazırlandı.'
+                : 'Medya Cloudflare yükleme akışına hazırlanıyor.',
           ),
           const SizedBox(height: AppSpacing.lg),
         ],
